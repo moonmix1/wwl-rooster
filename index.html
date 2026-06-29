@@ -31,7 +31,8 @@
           overflow-x: auto; padding: 0 8px; }
   .tab { padding: 14px 18px; font-size: 0.85rem; font-weight: 600; color: var(--subtle);
          cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent;
-         margin-bottom: -1px; transition: all 0.15s; }
+         margin-bottom: -1px; transition: all 0.15s;
+         display: inline-flex; align-items: center; gap: 5px; }
   .tab.actief { color: var(--bank); border-bottom-color: var(--bank); }
   .tab:hover:not(.actief) { color: var(--muted); }
   .content { padding: 20px; max-width: 900px; margin: 0 auto; }
@@ -402,9 +403,9 @@ function renderVandaagMetMeldingen(meldingen) {
   const bOch = d.bankOch ? d.bankOch.replace('★','').trim() : null;
   const bAv  = d.bank    ? d.bank.replace('★','').trim()    : null;
   if(bOch) kaarten.push({rol:'Bank ochtend',naam:bOch,tijd:'10:00–16:00',cls:'bankoch'});
-  if(bAv)  kaarten.push({rol:'Bank avond',  naam:bAv, tijd:'16:00–22:00',cls:'bank'});
-  if(d.corvee) kaarten.push({rol:'Corvee',naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
-  if(d.kook)   kaarten.push({rol:'Kook',naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
+  if(d.kook)   kaarten.push({rol:'Kook',   naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
+  if(bAv)  kaarten.push({rol:'Bank avond', naam:bAv, tijd:'16:00–22:00',cls:'bank'});
+  if(d.corvee) kaarten.push({rol:'Corvee', naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
   document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>`
     <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}">
       <div class="rol">${k.rol}</div>
