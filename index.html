@@ -196,9 +196,9 @@
         <thead><tr>
           <th>Dag</th>
           <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
+          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
           <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
           <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">17–21u</span></th>
-          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
         </tr></thead>
         <tbody id="week-body"></tbody>
       </table>
@@ -438,9 +438,9 @@ function renderWeek() {
     return `<tr class="${dag===vandaag?'vandaag':''}">
       <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
       <td>${d.bankOch?pill(d.bankOch,'bankoch'):'<span class="kantoor-label">kantoor aanwezig</span>'}</td>
+      <td>${d.kook?pill(d.kook,'kook'):'—'}</td>
       <td>${d.bank?pill(d.bank,'bank'):'—'}</td>
       <td>${d.corvee?pill(d.corvee,'corvee'):'—'}</td>
-      <td>${d.kook?pill(d.kook,'kook'):'—'}</td>
     </tr>`;
   }).join('');
 }
