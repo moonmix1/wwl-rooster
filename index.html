@@ -1,557 +1,1376 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WWL Rooster – Woon Werk Leerplek</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --bg: #0f172a; --surface: #1e293b; --surface2: #263347;
-    --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --subtle: #64748b;
-    --bank: #a78bfa; --bank-bg: #2d1f5e; --bank-border: #5b21b6;
-    --corvee: #fb923c; --corvee-bg: #431407; --corvee-border: #9a3412;
-    --kook: #4ade80; --kook-bg: #052e16; --kook-border: #166534;
-    --bankoch: #60a5fa; --bankoch-bg: #0c1d3d; --bankoch-border: #1d4ed8;
-    --warn: #f87171; --warn-bg: #3b0a0a; --oranje: #fb923c;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background: var(--bg); color: var(--text); min-height: 100vh; }
-  .header { background: var(--surface); border-bottom: 1px solid var(--border);
-            padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-  .header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; color: white; }
-  .header p  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-  #klok  { font-size: 2rem; font-weight: 700; color: white; text-align: right; font-variant-numeric: tabular-nums; }
-  #datum { font-size: 0.75rem; color: var(--muted); text-align: right; margin-top: 2px; }
-  .setup-banner { background: #422006; border-bottom: 2px solid #f97316; padding: 12px 24px;
-                  font-size: 0.82rem; color: #fdba74; display: none; }
-  .setup-banner a { color: #fb923c; font-weight: 700; }
-  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border);
-          overflow-x: auto; padding: 0 8px; }
-  .tab { padding: 14px 18px; font-size: 0.85rem; font-weight: 600; color: var(--subtle);
-         cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent;
-         margin-bottom: -1px; transition: all 0.15s;
-         display: inline-flex; align-items: center; gap: 5px; }
-  .tab.actief { color: var(--bank); border-bottom-color: var(--bank); }
-  .tab:hover:not(.actief) { color: var(--muted); }
-  .content { padding: 20px; max-width: 900px; margin: 0 auto; }
-  .sectie { display: none; }
-  .sectie.actief { display: block; }
-  .sectie-titel { font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-                  letter-spacing: 0.1em; color: var(--subtle); margin-bottom: 12px; }
-  .kaart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .kaart { border-radius: 14px; padding: 16px; border: 1px solid; }
-  .kaart .rol { font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-                letter-spacing: 0.08em; margin-bottom: 6px; }
-  .kaart .naam { font-size: 1.5rem; font-weight: 800; color: white; }
-  .kaart .tijd { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
-  .kaart.ziek .naam { text-decoration: line-through; color: var(--warn); }
-  .kaart.ziek { border-color: var(--warn) !important; }
-  .ziek-badge { font-size: 0.7rem; font-weight: 700; color: var(--warn); margin-top: 4px; }
-  .kaart-bank    { background: var(--bank-bg);    border-color: var(--bank-border); }
-  .kaart-bankoch { background: var(--bankoch-bg); border-color: var(--bankoch-border); }
-  .kaart-corvee  { background: var(--corvee-bg);  border-color: var(--corvee-border); }
-  .kaart-kook    { background: var(--kook-bg);    border-color: var(--kook-border); }
-  .kaart-bank .rol    { color: var(--bank); }
-  .kaart-bankoch .rol { color: var(--bankoch); }
-  .kaart-corvee .rol  { color: var(--corvee); }
-  .kaart-kook .rol    { color: var(--kook); }
-  .week-tabel { width: 100%; border-collapse: collapse; }
-  .week-tabel th { background: var(--surface2); color: var(--muted); padding: 10px 14px;
-                   text-align: left; font-size: 0.7rem; font-weight: 600; border-bottom: 1px solid var(--border); }
-  .week-tabel td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  .week-tabel tr.vandaag td { background: #1c2a1a; }
-  .week-tabel tr:hover td { background: var(--surface2); }
-  .dag-label { font-weight: 700; color: white; font-size: 0.85rem; }
-  .kantoor-label { font-size: 0.65rem; color: var(--subtle); font-style: italic; }
-  .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
-          padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
-  .pill-naam { display: block; }
-  .pill-sub  { display: block; font-size: 0.6rem; font-weight: 500; opacity: 0.8; margin-top: 1px; }
-  .pill-bank    { background: var(--bank-bg);    color: var(--bank);    border: 1px solid var(--bank-border); }
-  .pill-bankoch { background: var(--bankoch-bg); color: var(--bankoch); border: 1px solid var(--bankoch-border); }
-  .pill-corvee  { background: var(--corvee-bg);  color: var(--corvee);  border: 1px solid var(--corvee-border); }
-  .pill-kook    { background: var(--kook-bg);    color: var(--kook);    border: 1px solid var(--kook-border); }
-  .rot-wrap { overflow-x: auto; }
-  .rot-tabel { border-collapse: collapse; min-width: 100%; font-size: 0.75rem; }
-  .rot-tabel th { background: var(--surface2); color: var(--muted); padding: 8px 10px;
-                  text-align: center; font-size: 0.68rem; font-weight: 600;
-                  border: 1px solid var(--border); white-space: nowrap; }
-  .rot-tabel th.naam-col { text-align: left; }
-  .rot-tabel td { padding: 7px 10px; border: 1px solid var(--border); text-align: center; }
-  .rot-tabel td.naam-cel { text-align: left; font-weight: 700; color: white;
-                            white-space: nowrap; background: var(--surface); }
-  .rot-tabel tr.warn-rood   td.naam-cel { border-left: 4px solid var(--warn); }
-  .rot-tabel tr.warn-oranje td.naam-cel { border-left: 4px solid var(--oranje); }
-  .rot-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; }
-  .rot-B { background: var(--bank-bg);   color: var(--bank); }
-  .rot-C { background: var(--corvee-bg); color: var(--corvee); }
-  .rot-K { background: var(--kook-bg);   color: var(--kook); }
-  .status-ok     { color: #4ade80; font-size: 0.7rem; }
-  .status-oranje { color: var(--oranje); font-size: 0.7rem; font-weight: 700; }
-  .status-rood   { color: var(--warn);   font-size: 0.7rem; font-weight: 700; }
-  .regel-blok { background: var(--surface); border-radius: 14px; padding: 18px;
-                margin-bottom: 12px; border: 1px solid var(--border); }
-  .regel-blok h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: white; }
-  .regel-blok ul { padding-left: 18px; }
-  .regel-blok li { font-size: 0.83rem; margin-bottom: 7px; line-height: 1.6; color: var(--text); }
-  .regel-tabel { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-  .regel-tabel td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
-  .regel-tabel td:first-child { font-weight: 700; color: white; }
-  .rust-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-              padding: 16px; font-size: 0.82rem; color: var(--text); line-height: 1.7; }
-  .rust-box strong { color: white; }
-  .melding-form { background: var(--surface); border-radius: 14px; padding: 18px;
-                  border: 1px solid var(--border); margin-bottom: 16px; }
-  .melding-form label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-                        letter-spacing: 0.06em; color: var(--muted); display: block; margin-bottom: 6px; }
-  .melding-form input, .melding-form textarea {
-    width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
-    font-size: 0.9rem; outline: none; margin-bottom: 14px; font-family: inherit;
-    background: var(--surface2); color: var(--text); }
-  .melding-form input:focus, .melding-form textarea:focus { border-color: var(--bank); }
-  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .type-btn { padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border);
-              font-size: 0.8rem; font-weight: 600; cursor: pointer; text-align: center;
-              background: var(--surface2); color: var(--muted); transition: all 0.15s; }
-  .type-btn.actief { border-color: var(--bank); background: var(--bank-bg); color: var(--bank); }
-  .verstuur-btn { width: 100%; padding: 14px; background: var(--bank-border); color: white;
-                  border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
-                  cursor: pointer; margin-bottom: 10px; transition: opacity 0.15s; }
-  .verstuur-btn:hover { opacity: 0.85; }
-  .verstuur-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px;
-            width: 100%; padding: 12px; background: #128C7E; color: white;
-            border: none; border-radius: 12px; font-size: 0.9rem; font-weight: 700;
-            cursor: pointer; text-decoration: none; }
-  .info-box { background: var(--kook-bg); border: 1px solid var(--kook-border);
-              border-radius: 12px; padding: 12px 14px; font-size: 0.8rem; color: var(--kook); margin-bottom: 14px; }
-  .melding-lijst { display: flex; flex-direction: column; gap: 8px; }
-  .melding-item { background: var(--surface); border-radius: 12px; padding: 12px 14px;
-                  border: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
-  .melding-badge { padding: 3px 8px; border-radius: 99px; font-size: 0.7rem;
-                   font-weight: 700; white-space: nowrap; flex-shrink: 0;
-                   min-width: 110px; text-align: center; }
-  .melding-naam  { font-weight: 700; font-size: 0.85rem; color: white; }
-  .melding-tekst { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-  .melding-tijd  { font-size: 0.68rem; color: var(--subtle); margin-left: auto; flex-shrink: 0; }
-  .verwijder-btn { background: none; border: none; color: var(--border); cursor: pointer;
-                   font-size: 0.9rem; padding: 0 4px; flex-shrink: 0; }
-  .verwijder-btn:hover { color: var(--warn); }
-  .live-dot { display: inline-block; width: 7px; height: 7px; background: #4ade80;
-              border-radius: 50%; margin-right: 6px; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  @media (max-width: 480px) {
-    .kaart-grid { grid-template-columns: 1fr; }
-    .type-grid  { grid-template-columns: 1fr; }
-    .header h1  { font-size: 1.4rem; }
-    #klok       { font-size: 1.4rem; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WWL</title>
+  <style>
+    /* ══════════════════════════════════════════
+       BASIS & RESET
+    ══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #1a1a2e;
+      --surface:  #16213e;
+      --card:     #0f3460;
+      --accent:   #e94560;
+      --gold:     #f5a623;
+      --text:     #eaeaea;
+      --muted:    #8892a4;
+      --radius:   12px;
+      --shadow:   0 4px 20px rgba(0,0,0,.4);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ══════════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════════ */
+    header {
+      background: var(--surface);
+      padding: 16px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 1.4rem; letter-spacing: .08em; color: var(--gold); }
+    header p  { font-size: .72rem; color: var(--muted); }
+    #clock    { font-size: 1.1rem; font-variant-numeric: tabular-nums; color: var(--accent); }
+
+    /* ══════════════════════════════════════════
+       WAARSCHUWING SUPABASE
+    ══════════════════════════════════════════ */
+    #supabase-warning {
+      background: #7c3a00;
+      color: #ffd;
+      padding: 10px 16px;
+      font-size: .82rem;
+      display: none;
+    }
+
+    /* ══════════════════════════════════════════
+       TABS
+    ══════════════════════════════════════════ */
+    nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      background: var(--surface);
+      border-top: 1px solid #ffffff18;
+      z-index: 200;
+    }
+    nav button {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 10px 4px 8px;
+      font-size: .65rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: color .2s;
+    }
+    nav button .icon { font-size: 1.3rem; }
+    nav button.active { color: var(--gold); }
+
+    /* ══════════════════════════════════════════
+       SECTIES
+    ══════════════════════════════════════════ */
+    section { display: none; padding: 16px; }
+    section.active { display: block; }
+
+    h2 {
+      font-size: 1rem;
+      color: var(--gold);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ══════════════════════════════════════════
+       KAARTEN
+    ══════════════════════════════════════════ */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ══════════════════════════════════════════
+       ROOSTER TABEL
+    ══════════════════════════════════════════ */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th { background: #0a2240; color: var(--gold); padding: 8px 6px; text-align: left; white-space: nowrap; }
+    td { padding: 7px 6px; border-bottom: 1px solid #ffffff10; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 600;
+    }
+    .b-bank-och  { background: #1565c0; }
+    .b-kook      { background: #2e7d32; }
+    .b-bank-av   { background: #6a1b9a; }
+    .b-corvee    { background: #e65100; }
+    .note        { font-size: .7rem; color: var(--muted); margin-top: 8px; }
+
+    /* ══════════════════════════════════════════
+       ROTATIE
+    ══════════════════════════════════════════ */
+    .rot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #ffffff10;
+    }
+    .rot-row:last-child { border-bottom: none; }
+    .rot-name { width: 90px; font-size: .85rem; font-weight: 600; }
+    .rot-dots { display: flex; gap: 5px; flex: 1; }
+    .rot-dot {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700;
+    }
+    .dot-bank   { background: #1565c0; }
+    .dot-corvee { background: #e65100; }
+    .dot-kook   { background: #2e7d32; }
+    .dot-leeg   { background: #ffffff15; }
+    .dot-beheer { background: #555; }
+    .rot-status { font-size: 1.1rem; }
+
+    /* ══════════════════════════════════════════
+       REGELS (accordion)
+    ══════════════════════════════════════════ */
+    details {
+      background: var(--card);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    summary {
+      padding: 14px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: .9rem;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    summary::after { content: '▾'; color: var(--gold); }
+    details[open] summary::after { content: '▴'; }
+    details p, details li { padding: 0 16px 14px; font-size: .85rem; line-height: 1.6; color: #ccc; }
+    details ul { padding-left: 32px; }
+
+    /* ══════════════════════════════════════════
+       PROFIELEN
+    ══════════════════════════════════════════ */
+    .profiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .profile-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .15s;
+      position: relative;
+    }
+    .profile-card:hover { transform: scale(1.04); }
+    .profile-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--card);
+      background: #0a2240;
+      display: block;
+      margin: 0 auto 6px;
+    }
+    .profile-avatar-placeholder {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #0a2240;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin: 0 auto 6px;
+      border: 2px dashed var(--muted);
+      cursor: pointer;
+    }
+    .profile-name { font-size: .75rem; font-weight: 600; }
+    .profile-shift { font-size: .65rem; color: var(--muted); }
+    .upload-btn-small {
+      position: absolute;
+      bottom: 6px; right: 6px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      width: 20px; height: 20px;
+      font-size: .65rem;
+      cursor: pointer;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ══════════════════════════════════════════
+       MELDINGEN FORMULIER
+    ══════════════════════════════════════════ */
+    .form-group { margin-bottom: 12px; }
+    label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    input[type=text], select, textarea {
+      width: 100%;
+      background: #0a2240;
+      border: 1px solid #ffffff20;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: .88rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input[type=text]:focus,
+    select:focus,
+    textarea:focus { border-color: var(--gold); }
+    textarea { resize: vertical; min-height: 72px; }
+    select option { background: #0a2240; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-gold    { background: var(--gold);   color: #111; }
+    .btn-green   { background: #2e7d32;       color: #fff; }
+    .btn-muted   { background: #ffffff18;     color: var(--text); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* Camera knop groot */
+    .camera-zone {
+      background: #0a2240;
+      border: 2px dashed #ffffff30;
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .camera-zone video {
+      width: 100%;
+      border-radius: 8px;
+      display: none;
+      max-height: 260px;
+      object-fit: cover;
+    }
+    .camera-zone canvas { display: none; }
+    .camera-zone img#foto-preview {
+      width: 100%;
+      border-radius: 8px;
+      display: none;
+      max-height: 260px;
+      object-fit: cover;
+    }
+    .camera-placeholder {
+      padding: 30px 0;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    .camera-placeholder .cam-icon { font-size: 2.8rem; display: block; margin-bottom: 8px; }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    /* ══════════════════════════════════════════
+       MELDINGEN FEED
+    ══════════════════════════════════════════ */
+    #meldingen-feed { margin-top: 16px; }
+    .melding-item {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      animation: fadeIn .35s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    .melding-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .melding-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #0a2240;
+      border: 1px solid #ffffff20;
+      flex-shrink: 0;
+    }
+    .melding-meta { flex: 1; }
+    .melding-name  { font-weight: 700; font-size: .88rem; }
+    .melding-type  { font-size: .72rem; color: var(--muted); }
+    .melding-time  { font-size: .68rem; color: var(--muted); }
+
+    .melding-tekst {
+      font-size: .85rem;
+      line-height: 1.5;
+      color: #dde;
+      margin-bottom: 6px;
+    }
+
+    /* Foto thumbnail in feed */
+    .melding-foto-wrap {
+      position: relative;
+      display: inline-block;
+      margin-top: 6px;
+      cursor: pointer;
+    }
+    .melding-foto-thumb {
+      width: 110px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #ffffff20;
+      display: block;
+      transition: opacity .2s;
+    }
+    .melding-foto-thumb:hover { opacity: .85; }
+    .foto-vergroten-hint {
+      position: absolute;
+      bottom: 5px; right: 5px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      font-size: .58rem;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    /* Reactie toevoegen knop */
+    .melding-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-tiny {
+      padding: 4px 10px;
+      font-size: .72rem;
+      border-radius: 20px;
+      border: 1px solid #ffffff25;
+      background: #ffffff0d;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-tiny:hover { background: #ffffff1a; color: var(--text); }
+
+    /* Reactie-invoer (inline, verborgen) */
+    .reactie-form {
+      display: none;
+      margin-top: 8px;
+      gap: 6px;
+    }
+    .reactie-form.open { display: flex; }
+    .reactie-form input {
+      flex: 1;
+      padding: 7px 10px;
+      font-size: .82rem;
+    }
+
+    /* ══════════════════════════════════════════
+       LIGHTBOX
+    ══════════════════════════════════════════ */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.92);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 40px rgba(0,0,0,.8);
+    }
+    #lightbox-caption {
+      margin-top: 12px;
+      color: #ccc;
+      font-size: .85rem;
+      text-align: center;
+      max-width: 500px;
+    }
+    #lightbox-close {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* ══════════════════════════════════════════
+       PROFIEL MODAL
+    ══════════════════════════════════════════ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      z-index: 500;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 36px;
+      width: 100%;
+      max-width: 480px;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform:translateY(60px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+    .modal-sheet h3 { font-size: 1rem; color: var(--gold); margin-bottom: 16px; }
+    .modal-avatar-large {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--gold);
+      display: block;
+      margin: 0 auto 16px;
+    }
+    .modal-avatar-placeholder-large {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: #0a2240;
+      border: 3px dashed var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 16px;
+    }
+
+    /* ══════════════════════════════════════════
+       UTILITY
+    ══════════════════════════════════════════ */
+    .rust-banner {
+      background: #1a2a40;
+      border-left: 3px solid var(--muted);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      margin-right: 5px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50%      { opacity:.3; }
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .legend span {
+      font-size: .72rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #ffffff12;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: .85rem;
+      padding: 30px 0;
+    }
+    .empty-state .es-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+    /* foto badge op melding-type */
+    .type-foto { color: #f5a623; }
+  </style>
 </head>
 <body>
 
-<div class="header">
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header>
   <div>
     <h1>WWL</h1>
     <p>Woon, Werk en Leerplek · Nijmegen</p>
   </div>
-  <div>
-    <div id="klok">--:--</div>
-    <div id="datum"></div>
+  <div id="clock">--:--</div>
+</header>
+
+<!-- Supabase waarschuwing -->
+<div id="supabase-warning">
+  ⚠️ Supabase nog niet ingesteld. Vul SUPABASE_URL en SUPABASE_KEY in bovenaan het script. → <a href="https://supabase.com" style="color:#ffd">supabase.com</a>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTIE: VANDAAG
+══════════════════════════════════════════ -->
+<section id="s-vandaag" class="active">
+  <h2>📅 Diensten vandaag</h2>
+  <div id="diensten-vandaag" class="card">Laden…</div>
+
+  <h2 style="margin-top:16px"><span class="live-dot"></span>Actieve meldingen</h2>
+  <div id="mini-feed"><!-- gevuld door JS --></div>
+
+  <div class="rust-banner" id="rust-banner" style="display:none">
+    🌙 Rustperiode 22:00–10:00 — geen diensten.
   </div>
-</div>
+</section>
 
-<div class="setup-banner" id="setup-banner">
-  ⚠️ <strong>Supabase nog niet ingesteld.</strong>
-  Vul <code>SUPABASE_URL</code> en <code>SUPABASE_KEY</code> in bovenaan het script.
-  <a href="https://supabase.com" target="_blank">→ supabase.com</a>
-</div>
-
-<div class="tabs">
-  <div class="tab actief" onclick="toon('vandaag',this)">📅 Vandaag</div>
-  <div class="tab" onclick="toon('weekrooster',this)">🗓 Week</div>
-  <div class="tab" onclick="toon('rotatie',this)">🔄 Rotatie</div>
-  <div class="tab" onclick="toon('regels',this)">📋 Regels</div>
-  <div class="tab" onclick="toon('meldingen',this)">💬 Meldingen</div>
-</div>
-
-<div class="content">
-
-  <div id="s-vandaag" class="sectie actief">
-    <div class="sectie-titel" id="vandaag-label">Diensten vandaag</div>
-    <div class="kaart-grid" id="vandaag-kaarten"></div>
-    <div class="sectie-titel">
-      <span class="live-dot"></span>Actieve meldingen (live)
-    </div>
-    <div id="vandaag-meldingen" class="melding-lijst"></div>
-    <div class="rust-box" style="margin-top:14px">
-      🌙 <strong>Rustperiode 22:00–10:00</strong> — geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.
-    </div>
-  </div>
-
-  <div id="s-weekrooster" class="sectie">
-    <div class="sectie-titel">Volledig weekrooster</div>
-    <div style="overflow-x:auto">
-      <table class="week-tabel">
-        <thead><tr>
-          <th>Dag</th>
-          <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
-          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
-          <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
-          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">17–21u</span></th>
-        </tr></thead>
-        <tbody id="week-body"></tbody>
+<!-- ══════════════════════════════════════════
+     SECTIE: WEEK
+══════════════════════════════════════════ -->
+<section id="s-week">
+  <h2>🗓 Volledig weekrooster</h2>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table id="week-tbl">
+        <thead>
+          <tr>
+            <th>Dag</th>
+            <th><span class="badge b-bank-och">Bank och</span><br><small>10–16u · za+zo</small></th>
+            <th><span class="badge b-kook">Kook</span><br><small>14–17u</small></th>
+            <th><span class="badge b-bank-av">Bank av</span><br><small>16–22u</small></th>
+            <th><span class="badge b-corvee">Corvee</span><br><small>17–21u</small></th>
+          </tr>
+        </thead>
+        <tbody id="week-tbody"></tbody>
       </table>
     </div>
-    <p style="font-size:0.7rem;color:var(--subtle);margin-top:10px">
-      ★ = uitzondering: 2e shift in dezelfde week (normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
+    <p class="note">★ = uitzondering: 2e shift in dezelfde week &nbsp;|&nbsp; 🏠 = beheederswoning</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTIE: ROTATIE
+══════════════════════════════════════════ -->
+<section id="s-rotatie">
+  <h2>🔄 Rotatieschema – laatste 4 weken</h2>
+  <div class="card">
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px">
+      Na 4× bank op rij: verplicht minimaal 2 weken corvee.
     </p>
-  </div>
-
-  <div id="s-rotatie" class="sectie">
-    <div class="sectie-titel">Rotatieschema – laatste 4 weken</div>
-    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:14px">Na 4× bank op rij: verplicht minimaal 2 weken corvee.</p>
-    <div class="rot-wrap"><table class="rot-tabel" id="rot-tabel"></table></div>
-    <div style="display:flex;gap:16px;margin-top:12px;font-size:0.72rem;flex-wrap:wrap;color:var(--muted)">
-      <span>🔴 Verplicht corvee (4× bank op rij)</span>
-      <span>🟠 Let op (3× bank op rij)</span>
+    <div id="rotatie-list"></div>
+    <div class="legend" style="margin-top:14px">
+      <span>🔴 Verplicht corvee</span>
+      <span>🟠 Let op (3× bank)</span>
       <span>✅ OK</span>
-      <span>🏠 Beheederswoning</span>
+      <span>🏠 Beheerderwoning</span>
     </div>
   </div>
+</section>
 
-  <div id="s-regels" class="sectie">
-    <div class="regel-blok">
-      <h3>🎯 Hoe kies je je shift?</h3>
-      <ul>
-        <li><strong>Wie het eerst kiest, heeft de meeste keuze.</strong> Wees er snel bij — elke week opnieuw.</li>
-        <li>Kiezen doe je via je smartphone: open het rooster, ga naar 💬 Meldingen en stuur een bericht met je naam en de gewenste shift. Iedereen ziet het meteen op het scherm in de woonkamer.</li>
-        <li>Koken mag je altijd kiezen — hier is eerder tekort dan teveel.</li>
-        <li>Bank en corvee: vrije keuze, tenzij je al 4 weken bank hebt gedaan.</li>
-      </ul>
-    </div>
-    <div class="regel-blok">
-      <h3>★ Wat betekent het sterretje?</h3>
-      <ul>
-        <li>Een sterretje betekent dat iemand deze week <strong>bij uitzondering een 2e shift</strong> draait.</li>
-        <li>Normaal doet iedereen <strong>maximaal 1 shift per week</strong> (3 tot 6 uur).</li>
-        <li>Ter vergelijking: nu draait iedereen nog 3 shifts van 8 uur per week. Een 2e shift in het nieuwe systeem is dus nog altijd ver onder het huidige niveau.</li>
-      </ul>
-    </div>
-    <div class="regel-blok">
-      <h3>⚖️ Anti-ophoping regel</h3>
-      <ul>
-        <li>Na <strong>4 aaneengesloten weken bankshift</strong> ben je verplicht minimaal <strong>2 weken corvee</strong> te doen.</li>
-        <li>Dit voorkomt dat altijd dezelfde mensen corvee doen terwijl anderen eindeloos bankzitten.</li>
-        <li>Het rotatieschema (tab 🔄) toont wie al lang bank doet.</li>
-      </ul>
-    </div>
-    <div class="regel-blok">
-      <h3>📊 Shift-overzicht</h3>
-      <table class="regel-tabel">
-        <tr><td>🔵 Bank ochtend</td><td>10–16u</td><td>6 uur</td><td>Passief</td><td>Za + Zo</td></tr>
-        <tr><td>🟢 Kook</td><td>14–17u</td><td>3 uur</td><td>Actief</td><td>Dagelijks</td></tr>
-        <tr><td>🟣 Bank avond</td><td>16–22u</td><td>6 uur</td><td>Passief</td><td>Dagelijks</td></tr>
-        <tr><td>🟠 Corvee</td><td>17–21u</td><td>4 uur</td><td>Actief</td><td>Dagelijks</td></tr>
-      </table>
-    </div>
-    <div class="rust-box">
-      🌙 <strong>Rustperiode 22:00–10:00:</strong> geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.
-      <br><br>
-      De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. Wat 'avond- en nachtsfeer' betekent is moeilijk in regels te vangen. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan. Wie te luid is, krijgt een seintje. Niet omdat het in het reglement staat, maar omdat het fatsoen is.
-      <br><br>
-      🚪 <strong>De deur na 22:00:</strong> buiten hangt een duidelijk bord met instructies. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang. Iemand die zich wil aanmelden maar toch blijft aanbellen diskwalificeert zichzelf daarmee eerder dan dat hij naar binnen komt.
-    </div>
+<!-- ══════════════════════════════════════════
+     SECTIE: REGELS
+══════════════════════════════════════════ -->
+<section id="s-regels">
+  <h2>📋 Regels & uitleg</h2>
+
+  <details open>
+    <summary>🎯 Hoe kies je je shift?</summary>
+    <ul>
+      <li>Wie het eerst kiest, heeft de meeste keuze. Wees er snel bij — elke week opnieuw.</li>
+      <li>Kiezen doe je via je smartphone: open het rooster, ga naar 💬 Meldingen en stuur een bericht met je naam en de gewenste shift.</li>
+      <li>Koken mag je altijd kiezen — hier is eerder tekort dan teveel.</li>
+      <li>Bank en corvee: vrije keuze, tenzij je al 4 weken bank hebt gedaan.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>★ Wat betekent het sterretje?</summary>
+    <p>Een sterretje betekent dat iemand deze week bij uitzondering een 2e shift draait. Normaal doet iedereen maximaal 1 shift per week (3–6 uur).</p>
+  </details>
+
+  <details>
+    <summary>⚖️ Anti-ophoping regel</summary>
+    <p>Na 4 aaneengesloten weken bankshift ben je verplicht minimaal 2 weken corvee te doen. Het rotatieschema (🔄) toont wie al lang bank doet.</p>
+  </details>
+
+  <details>
+    <summary>📊 Shift-overzicht</summary>
+    <ul>
+      <li>🔵 <strong>Bank ochtend</strong> · 10–16u · 6 uur · Passief · Za + Zo</li>
+      <li>🟢 <strong>Kook</strong> · 14–17u · 3 uur · Actief · Dagelijks</li>
+      <li>🟣 <strong>Bank avond</strong> · 16–22u · 6 uur · Passief · Dagelijks</li>
+      <li>🟠 <strong>Corvee</strong> · 17–21u · 4 uur · Actief · Dagelijks</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>🌙 Rustperiode & bankshift-sfeer</summary>
+    <p>Rustperiode 22:00–10:00: geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.</p>
+    <p>De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan.</p>
+    <p>🚪 De deur na 22:00: buiten hangt een duidelijk bord. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang.</p>
+  </details>
+
+  <!-- PROFIELEN SECTIE (onderdeel van regels/personen) -->
+  <h2 style="margin-top:20px">👤 Bewoners & profielfoto's</h2>
+  <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">
+    Tik op een avatar om een profielfoto toe te voegen of te wijzigen.
+  </p>
+  <div class="profiles-grid" id="profiles-grid"></div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTIE: MELDINGEN
+══════════════════════════════════════════ -->
+<section id="s-meldingen">
+  <div class="card" style="margin-bottom:14px;font-size:.8rem;color:var(--muted)">
+    <span class="live-dot"></span>
+    Meldingen zijn live gedeeld — iedereen ziet ze direct op zijn telefoon én op het scherm in de woonkamer.
   </div>
 
-  <div id="s-meldingen" class="sectie">
-    <div class="info-box">
-      <span class="live-dot"></span>
-      Meldingen zijn <strong>live gedeeld</strong> — iedereen ziet ze direct op zijn telefoon én op het scherm in de woonkamer.
-    </div>
-    <div class="melding-form">
+  <!-- FORMULIER -->
+  <div class="card">
+    <div class="form-group">
       <label>Jouw naam</label>
-      <input type="text" id="inp-naam" placeholder="bijv. Henk">
-      <label>Type melding</label>
-      <div class="type-grid" id="type-grid"></div>
-      <label>Toelichting (optioneel)</label>
-      <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
-      <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen → verschijnt direct op alle schermen</button>
-      <a class="wa-btn" href="#" onclick="return waSturen()">📲 Sturen via WhatsApp</a>
+      <select id="m-naam">
+        <option value="">— selecteer —</option>
+      </select>
     </div>
-    <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen</div>
-    <div id="mel-lijst" class="melding-lijst"></div>
+
+    <div class="form-group">
+      <label>Type melding</label>
+      <select id="m-type">
+        <option value="algemeen">💬 Algemeen</option>
+        <option value="shift">📅 Shift-melding</option>
+        <option value="foto">📷 Foto-melding</option>
+        <option value="schoonmaak">🧹 Schoonmaak/vervuiling</option>
+        <option value="info">ℹ️ Info</option>
+        <option value="whatsapp">📲 WhatsApp-doorstuur</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Bericht (optioneel bij foto)</label>
+      <textarea id="m-tekst" placeholder="Typ je bericht… of laat leeg en voeg later een reactie toe"></textarea>
+    </div>
+
+    <!-- ══ CAMERA ZONE ══ -->
+    <div class="camera-zone" id="camera-zone">
+      <div class="camera-placeholder" id="cam-placeholder">
+        <span class="cam-icon">📷</span>
+        Neem een foto of kies er een uit je bibliotheek
+      </div>
+      <video id="cam-video" autoplay playsinline></video>
+      <canvas id="cam-canvas"></canvas>
+      <img id="foto-preview" alt="Foto preview" />
+
+      <div class="btn-row" id="cam-btns-idle">
+        <button class="btn btn-gold" onclick="startCamera()">📷 Camera openen</button>
+        <button class="btn btn-muted" onclick="document.getElementById('foto-file').click()">🖼 Uit bibliotheek</button>
+        <input type="file" id="foto-file" accept="image/*" style="display:none" onchange="fotoUitBestand(event)" />
+      </div>
+
+      <div class="btn-row" id="cam-btns-live" style="display:none">
+        <button class="btn btn-primary" onclick="fotoNemen()">📸 Neem foto</button>
+        <button class="btn btn-muted"   onclick="stopCamera()">✕ Annuleren</button>
+      </div>
+
+      <div class="btn-row" id="cam-btns-preview" style="display:none">
+        <button class="btn btn-green"   onclick="fotoBevestigen()">✓ Gebruik deze foto</button>
+        <button class="btn btn-muted"   onclick="fotoOpnieuw()">↩ Opnieuw</button>
+      </div>
+    </div>
+    <!-- /CAMERA ZONE -->
+
+    <div class="btn-row" style="justify-content:flex-start;gap:10px">
+      <button class="btn btn-primary" id="btn-verstuur" onclick="verstuurMelding()">
+        ➤ Versturen
+      </button>
+      <button class="btn btn-muted" onclick="verstuurWhatsapp()">📲 WhatsApp</button>
+    </div>
   </div>
 
+  <!-- FEED -->
+  <h2 style="margin-top:20px"><span class="live-dot"></span>Actieve meldingen</h2>
+  <div id="meldingen-feed"></div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     NAVIGATIE
+══════════════════════════════════════════ -->
+<nav>
+  <button class="active" onclick="toon('vandaag',this)">
+    <span class="icon">📅</span>Vandaag
+  </button>
+  <button onclick="toon('week',this)">
+    <span class="icon">🗓</span>Week
+  </button>
+  <button onclick="toon('rotatie',this)">
+    <span class="icon">🔄</span>Rotatie
+  </button>
+  <button onclick="toon('regels',this)">
+    <span class="icon">📋</span>Regels
+  </button>
+  <button onclick="toon('meldingen',this)">
+    <span class="icon">💬</span>Meldingen
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     LIGHTBOX
+══════════════════════════════════════════ -->
+<div id="lightbox" onclick="sluitLightbox()">
+  <button id="lightbox-close" onclick="sluitLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="" />
+  <div id="lightbox-caption"></div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     PROFIEL MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="profiel-modal" onclick="sluitProfielModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <h3 id="pm-titel">Profielfoto</h3>
+    <div id="pm-avatar-wrap"></div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-gold" onclick="document.getElementById('pm-file').click()">
+        🖼 Kies foto uit bibliotheek
+      </button>
+      <button class="btn btn-primary" onclick="profielCamera()">
+        📷 Neem foto
+      </button>
+    </div>
+    <input type="file" id="pm-file" accept="image/*" style="display:none" onchange="profielFotoUitBestand(event)" />
+    <video id="pm-video" autoplay playsinline style="width:100%;border-radius:10px;margin-top:12px;display:none;max-height:200px;object-fit:cover"></video>
+    <canvas id="pm-canvas" style="display:none"></canvas>
+    <div class="btn-row" id="pm-cam-btns" style="display:none;margin-top:8px">
+      <button class="btn btn-primary" onclick="profielFotoNemen()">📸 Neem foto</button>
+      <button class="btn btn-muted"   onclick="stopProfielCamera()">✕ Annuleren</button>
+    </div>
+    <button class="btn btn-muted" style="width:100%;margin-top:16px" onclick="sluitProfielModal()">Sluiten</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
 <script>
 // ═══════════════════════════════════════════════
 //  SUPABASE INSTELLINGEN
-//  Vul hieronder jouw gegevens in na aanmaken project op supabase.com
 // ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://mczmtdyiqwvpuuobdlpc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FVv3NW9h79SuO1gxk4TtDw_LC4Hmw6N';
 // ═══════════════════════════════════════════════
 
-const BEHEER = ["Mark","Walter","Altib","Adam"];
-const DAGEN_NL   = ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"];
-const MAANDEN_NL = ["januari","februari","maart","april","mei","juni","juli","augustus",
-                    "september","oktober","november","december"];
-
-const ROOSTER = {
-  Maandag:   { bank:"Vu",         corvee:"Norman",   kook:"Walter"   },
-  Dinsdag:   { bank:"Jemal",      corvee:"Raymond",  kook:"Mark"     },
-  Woensdag:  { bank:"Stefano",    corvee:"Stan",     kook:"Adam"     },
-  Donderdag: { bank:"Antoine",    corvee:"Henk",     kook:"Altib"    },
-  Vrijdag:   { bank:"Gerry",      corvee:"Edgars",   kook:"Joël"     },
-  Zaterdag:  { bankOch:"Joey",    bank:"Sjoerd",     corvee:"Jordy",  kook:"Abdi"    },
-  Zondag:    { bankOch:"Norman★", bank:"Johnny",     corvee:"Radwan", kook:"Walter★" },
-};
-
-const ROTATIE = {
-  Norman:  {hist:["C","K","B","C"]}, Raymond: {hist:["B","C","K","C"]},
-  Stan:    {hist:["K","B","C","C"]}, Henk:    {hist:["C","K","B","C"]},
-  Edgars:  {hist:["B","C","K","C"]}, Joël:   {hist:["K","B","B","B"]},
-  Joey:    {hist:["B","B","B","B"]}, Stefano: {hist:["B","C","B","B"]},
-  Sjoerd:  {hist:["C","B","C","B"]}, Antoine: {hist:["B","C","B","C"]},
-  Gerry:   {hist:["C","B","C","B"]}, Vu:      {hist:["B","C","B","C"]},
-  Walter:  {hist:["K","K","C","K"]}, Mark:    {hist:["K","C","K","K"]},
-  Adam:    {hist:["K","K","B","K"]}, Altib:   {hist:["C","K","K","K"]},
-  Radwan:  {hist:["K","C","K","K"]}, Jemal:   {hist:["B","C","K","B"]},
-  Frans:   {hist:["C","B","C","K"]}, Jordy:   {hist:["B","K","C","C"]},
-  Abdi:    {hist:["C","C","B","C"]}, Johnny:  {hist:["K","K","K","K"]},
-};
-
-const MELDING_TYPES = [
-  {id:"ziek",    label:"🤒 Ik ben ziek",     kleur:"#f87171", bg:"#3b0a0a"},
-  {id:"laat",    label:"⏰ Ik ben te laat",   kleur:"#fbbf24", bg:"#2a1a00"},
-  {id:"bel",     label:"📞 Bel me even",      kleur:"#60a5fa", bg:"#0c1d3d"},
-  {id:"ruil",    label:"🔄 Shift ruilen",     kleur:"#a78bfa", bg:"#2d1f5e"},
-  {id:"algemeen",label:"💬 Algemeen bericht", kleur:"#e2e8f0", bg:"#334155"},
+// ── Bewoners ──────────────────────────────────
+const BEWONERS = [
+  'Aard','Bo','Cas','Demi','Elias','Fenna','Guus','Hana',
+  'Ilse','Joris','Kira','Lars','Maud','Noa','Omar',
+  'Petra','Quinten','Rosa','Siem','Tara'
 ];
 
-// ─── SUPABASE INIT ────────────────────────────
-let sb = null;
-let supabaseActief = false;
+// ── Shift-data (voorbeelddata – vervang met echte data of Supabase) ──
+const DAGEN = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const WEEK_DATA = [
+  { dag:'Ma', kook:'Fenna',    bankAv:'Lars',    corvee:'Hana'   },
+  { dag:'Di', kook:'Joris',    bankAv:'Maud',    corvee:'Omar'   },
+  { dag:'Wo', kook:'Kira',     bankAv:'Noa',     corvee:'Petra'  },
+  { dag:'Do', kook:'Bo',       bankAv:'Quinten', corvee:'Rosa'   },
+  { dag:'Vr', kook:'Tara',     bankAv:'Siem',    corvee:'Demi'   },
+  { dag:'Za', kook:'Aard',     bankAv:'Elias',   corvee:'Guus',  bankOch:'Ilse'  },
+  { dag:'Zo', kook:'Cas ★',    bankAv:'Hana',    corvee:'Lars',  bankOch:'Bo 🏠' },
+];
 
-function initSupabase() {
-  if (SUPABASE_URL === 'JOUW_SUPABASE_URL') {
-    document.getElementById('setup-banner').style.display = 'block';
-    return;
+const ROTATIE_DATA = BEWONERS.map(naam => ({
+  naam,
+  weken: Array.from({length:4}, () => ['bank','corvee','kook','leeg'][Math.floor(Math.random()*4)]),
+  beheer: naam === 'Petra'
+}));
+
+// ── State ──────────────────────────────────────
+let huidigeFoto    = null; // base64 of objectURL
+let cameraStream   = null;
+let pmStream       = null;
+let huidigProfiel  = null;
+const profielFotos = JSON.parse(localStorage.getItem('wwl_profielen') || '{}');
+
+// ═══════════════════════════════════════════════
+//  SUPABASE INIT (simpel, zonder SDK)
+// ═══════════════════════════════════════════════
+const SB = {
+  async get(table) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?order=created_at.desc&limit=40`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    return r.ok ? r.json() : [];
+  },
+  async insert(table, data) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify(data)
+    });
+    return r.ok ? r.json() : null;
+  },
+  async update(table, id, data) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    return r.ok;
   }
-  try {
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    supabaseActief = true;
-    laadMeldingen();
-    luisterLive();
-  } catch(e) {
-    console.error('Supabase fout:', e);
-  }
+};
+
+// Realtime polling (elke 8 sec)
+let pollingInterval = null;
+function startPolling() {
+  laadMeldingen();
+  pollingInterval = setInterval(laadMeldingen, 8000);
 }
 
-async function laadMeldingen() {
-  if (!supabaseActief) return;
-  const {data, error} = await sb.from('meldingen')
-    .select('*').order('created_at', {ascending: false}).limit(20);
-  if (!error && data) {
-    renderMeldingenData(data);
-  }
-}
-
-function luisterLive() {
-  if (!supabaseActief) return;
-  sb.channel('meldingen-live')
-    .on('postgres_changes', {event: '*', schema: 'public', table: 'meldingen'}, () => {
-      laadMeldingen();
-    })
-    .subscribe();
-}
-
-// ─── KLOK ─────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  KLOK
+// ═══════════════════════════════════════════════
 function updateKlok() {
   const nu = new Date();
-  document.getElementById('klok').textContent =
-    nu.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('datum').textContent =
-    DAGEN_NL[nu.getDay()] + ' ' + nu.getDate() + ' ' + MAANDEN_NL[nu.getMonth()];
+  document.getElementById('clock').textContent =
+    nu.toLocaleTimeString('nl-NL', { hour:'2-digit', minute:'2-digit' });
+  const h = nu.getHours();
+  document.getElementById('rust-banner').style.display =
+    (h >= 22 || h < 10) ? 'block' : 'none';
 }
-updateKlok(); setInterval(updateKlok, 1000);
+setInterval(updateKlok, 1000);
+updateKlok();
 
-// ─── TABS ─────────────────────────────────────
-function toon(id, el) {
-  document.querySelectorAll('.sectie').forEach(s=>s.classList.remove('actief'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('actief'));
-  document.getElementById('s-'+id).classList.add('actief');
-  el.classList.add('actief');
-  if(id==='vandaag')     renderVandaag();
-  if(id==='weekrooster') renderWeek();
-  if(id==='rotatie')     renderRotatie();
-  if(id==='meldingen')   laadMeldingen();
-}
-
-// ─── VANDAAG ──────────────────────────────────
-function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
-
-function renderVandaagMetMeldingen(meldingen) {
-  const dag = dagNaam();
-  const d = ROOSTER[dag]||{};
-  const ziek = meldingen.filter(m=>m.type==='ziek').map(m=>m.naam.toLowerCase());
-  document.getElementById('vandaag-label').textContent = `Diensten vandaag — ${dag}`;
-  const kaarten = [];
-  const bOch = d.bankOch ? d.bankOch.replace('★','').trim() : null;
-  const bAv  = d.bank    ? d.bank.replace('★','').trim()    : null;
-  if(bOch) kaarten.push({rol:'Bank ochtend',naam:bOch,tijd:'10:00–16:00',cls:'bankoch'});
-  if(d.kook)   kaarten.push({rol:'Kook',   naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
-  if(bAv)  kaarten.push({rol:'Bank avond', naam:bAv, tijd:'16:00–22:00',cls:'bank'});
-  if(d.corvee) kaarten.push({rol:'Corvee', naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
-  document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>`
-    <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}">
-      <div class="rol">${k.rol}</div>
-      <div class="naam">${k.naam}</div>
-      ${ziek.includes(k.naam.toLowerCase())?'<div class="ziek-badge">⚠ Ziek gemeld</div>':''}
-      <div class="tijd">${k.tijd}</div>
-    </div>`).join('');
+// ═══════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════
+function toon(id, btn) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  btn.classList.add('active');
+  stopCamera();
 }
 
-function renderVandaag() {
-  renderVandaagMetMeldingen([]);
-  laadMeldingen();
+// ═══════════════════════════════════════════════
+//  WEEKROOSTER
+// ═══════════════════════════════════════════════
+function bouwWeek() {
+  const tbody = document.getElementById('week-tbody');
+  tbody.innerHTML = WEEK_DATA.map(r => `
+    <tr>
+      <td><strong>${r.dag}</strong></td>
+      <td>${r.bankOch ? `<span class="badge b-bank-och">${r.bankOch}</span>` : '<span style="color:#555">—</span>'}</td>
+      <td><span class="badge b-kook">${r.kook}</span></td>
+      <td><span class="badge b-bank-av">${r.bankAv}</span></td>
+      <td><span class="badge b-corvee">${r.corvee}</span></td>
+    </tr>`).join('');
 }
 
-// ─── WEEK ─────────────────────────────────────
-function pill(naam, type) {
-  const rawNaam = naam.replace('★','').trim();
-  const isB = BEHEER.includes(rawNaam);
-  const isExtra = naam.includes('★');
-  return `<span class="pill pill-${type}">
-    <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
-    ${isB?'<span class="pill-sub">🏠 beheederswoning</span>':''}
-  </span>`;
+// ── Diensten vandaag ──
+function bouwVandaag() {
+  const dag = ['Zo','Ma','Di','Wo','Do','Vr','Za'][new Date().getDay()];
+  const d   = WEEK_DATA.find(r => r.dag === dag);
+  const el  = document.getElementById('diensten-vandaag');
+  if (!d) { el.textContent = 'Geen data gevonden voor vandaag.'; return; }
+  el.innerHTML = `
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Shifts voor <strong>${dag}</strong></p>
+    ${d.bankOch ? `<div style="margin-bottom:8px"><span class="badge b-bank-och">Bank ochtend</span> <strong>${d.bankOch}</strong> <small style="color:var(--muted)">10–16u</small></div>` : ''}
+    <div style="margin-bottom:8px"><span class="badge b-kook">Kook</span> <strong>${d.kook}</strong> <small style="color:var(--muted)">14–17u</small></div>
+    <div style="margin-bottom:8px"><span class="badge b-bank-av">Bank avond</span> <strong>${d.bankAv}</strong> <small style="color:var(--muted)">16–22u</small></div>
+    <div><span class="badge b-corvee">Corvee</span> <strong>${d.corvee}</strong> <small style="color:var(--muted)">17–21u</small></div>`;
 }
 
-function renderWeek() {
-  const vandaag = dagNaam();
-  const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
-  document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
-    const d = ROOSTER[dag]||{};
-    return `<tr class="${dag===vandaag?'vandaag':''}">
-      <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
-      <td>${d.bankOch?pill(d.bankOch,'bankoch'):'<span class="kantoor-label">kantoor aanwezig</span>'}</td>
-      <td>${d.kook?pill(d.kook,'kook'):'—'}</td>
-      <td>${d.bank?pill(d.bank,'bank'):'—'}</td>
-      <td>${d.corvee?pill(d.corvee,'corvee'):'—'}</td>
-    </tr>`;
+// ═══════════════════════════════════════════════
+//  ROTATIE
+// ═══════════════════════════════════════════════
+function bouwRotatie() {
+  const kleurDot = {
+    bank: 'dot-bank', corvee: 'dot-corvee', kook: 'dot-kook',
+    leeg: 'dot-leeg', beheer: 'dot-beheer'
+  };
+  const label = { bank:'B', corvee:'C', kook:'K', leeg:'', beheer:'🏠' };
+
+  const list = document.getElementById('rotatie-list');
+  list.innerHTML = ROTATIE_DATA.map(r => {
+    const bankCount = r.weken.filter(w => w === 'bank').length;
+    const status = r.beheer ? '🏠' : bankCount >= 4 ? '🔴' : bankCount >= 3 ? '🟠' : '✅';
+    const dots = r.weken.map(w => {
+      const cls = r.beheer ? 'dot-beheer' : kleurDot[w];
+      return `<div class="rot-dot ${cls}">${r.beheer ? '🏠' : label[w]}</div>`;
+    }).join('');
+    const avatar = profielFotos[r.naam]
+      ? `<img src="${profielFotos[r.naam]}" class="melding-avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover">`
+      : `<div style="width:28px;height:28px;border-radius:50%;background:#0a2240;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0">${r.naam[0]}</div>`;
+    return `
+      <div class="rot-row">
+        ${avatar}
+        <span class="rot-name">${r.naam}</span>
+        <div class="rot-dots">${dots}</div>
+        <span class="rot-status">${status}</span>
+      </div>`;
   }).join('');
 }
 
-// ─── ROTATIE ──────────────────────────────────
-function bankOpRij(hist) {
-  let n=0;
-  for(let i=hist.length-1;i>=0;i--){ if(hist[i]==='B') n++; else break; }
-  return n;
+// ═══════════════════════════════════════════════
+//  PROFIELEN
+// ═══════════════════════════════════════════════
+function bouwProfielen() {
+  const grid = document.getElementById('profiles-grid');
+  const naam_select = document.getElementById('m-naam');
+
+  naam_select.innerHTML = '<option value="">— selecteer —</option>' +
+    BEWONERS.map(n => `<option value="${n}">${n}</option>`).join('');
+
+  grid.innerHTML = BEWONERS.map(naam => {
+    const foto = profielFotos[naam];
+    const avatar = foto
+      ? `<img src="${foto}" class="profile-avatar" alt="${naam}">`
+      : `<div class="profile-avatar-placeholder">👤</div>`;
+    return `
+      <div class="profile-card" onclick="openProfielModal('${naam}')">
+        ${avatar}
+        <div class="profile-name">${naam}</div>
+        <button class="upload-btn-small" title="Foto wijzigen">✎</button>
+      </div>`;
+  }).join('');
 }
 
-function renderRotatie() {
-  const namen = Object.keys(ROTATIE);
-  const weken = ['3 wkn geleden','2 wkn geleden','Vorige week','Deze week'];
-  let html = '<thead><tr><th class="naam-col">Naam</th>';
-  weken.forEach(w=>{ html+=`<th>${w}</th>`; });
-  html += '<th>Status</th></tr></thead><tbody>';
-  namen.forEach(naam=>{
-    const hist = ROTATIE[naam].hist;
-    const n = bankOpRij(hist);
-    const rood=n>=4, oranje=n===3;
-    html += `<tr class="${rood?'warn-rood':oranje?'warn-oranje':''}">
-      <td class="naam-cel">${naam}${BEHEER.includes(naam)?' 🏠':''}</td>
-      ${hist.map(t=>`<td><span class="rot-pill rot-${t}">${t==='B'?'Bank':t==='C'?'Corvee':'Kook'}</span></td>`).join('')}
-      <td class="${rood?'status-rood':oranje?'status-oranje':'status-ok'}">
-        ${rood?'⚠ Verplicht corvee':oranje?'⚡ Let op (3×)':'✅ OK'}
-      </td>
-    </tr>`;
-  });
-  html += '</tbody>';
-  document.getElementById('rot-tabel').innerHTML = html;
+function openProfielModal(naam) {
+  huidigProfiel = naam;
+  document.getElementById('pm-titel').textContent = `Profielfoto van ${naam}`;
+  const wrap = document.getElementById('pm-avatar-wrap');
+  const foto = profielFotos[naam];
+  wrap.innerHTML = foto
+    ? `<img src="${foto}" class="modal-avatar-large" alt="${naam}">`
+    : `<div class="modal-avatar-placeholder-large">👤</div>`;
+  document.getElementById('profiel-modal').classList.add('open');
 }
 
-// ─── MELDINGEN ────────────────────────────────
-let gekozenType = 'algemeen';
-
-function renderTypeKnoppen() {
-  document.getElementById('type-grid').innerHTML = MELDING_TYPES.map(t=>`
-    <button class="type-btn ${t.id===gekozenType?'actief':''}"
-      onclick="kiesType('${t.id}')">${t.label}</button>`).join('');
+function sluitProfielModal(e) {
+  if (e && e.target !== document.getElementById('profiel-modal')) return;
+  document.getElementById('profiel-modal').classList.remove('open');
+  stopProfielCamera();
+  huidigProfiel = null;
 }
-function kiesType(id){ gekozenType=id; renderTypeKnoppen(); }
 
+function profielFotoUitBestand(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    slaProfielFotoOp(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function profielCamera() {
+  const video = document.getElementById('pm-video');
+  document.getElementById('pm-cam-btns').style.display = 'flex';
+  video.style.display = 'block';
+  try {
+    pmStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio:false });
+    video.srcObject = pmStream;
+  } catch(err) {
+    alert('Camera niet beschikbaar: ' + err.message);
+  }
+}
+
+function stopProfielCamera() {
+  if (pmStream) { pmStream.getTracks().forEach(t => t.stop()); pmStream = null; }
+  document.getElementById('pm-video').style.display = 'none';
+  document.getElementById('pm-cam-btns').style.display = 'none';
+}
+
+function profielFotoNemen() {
+  const video  = document.getElementById('pm-video');
+  const canvas = document.getElementById('pm-canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  stopProfielCamera();
+  slaProfielFotoOp(dataUrl);
+}
+
+function slaProfielFotoOp(dataUrl) {
+  if (!huidigProfiel) return;
+  profielFotos[huidigProfiel] = dataUrl;
+  localStorage.setItem('wwl_profielen', JSON.stringify(profielFotos));
+  bouwProfielen();
+  bouwRotatie();
+  openProfielModal(huidigProfiel); // refresh modal
+}
+
+// ═══════════════════════════════════════════════
+//  CAMERA (meldingen)
+// ═══════════════════════════════════════════════
+async function startCamera() {
+  const video = document.getElementById('cam-video');
+  document.getElementById('cam-placeholder').style.display = 'none';
+  document.getElementById('cam-btns-idle').style.display   = 'none';
+  document.getElementById('cam-btns-live').style.display   = 'flex';
+  document.getElementById('foto-preview').style.display    = 'none';
+  video.style.display = 'block';
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal:'environment' } }, audio: false
+    });
+    video.srcObject = cameraStream;
+  } catch(err) {
+    alert('Camera niet beschikbaar: ' + err.message);
+    stopCamera();
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  document.getElementById('cam-video').style.display        = 'none';
+  document.getElementById('cam-btns-live').style.display    = 'none';
+  document.getElementById('cam-btns-preview').style.display = 'none';
+  document.getElementById('cam-btns-idle').style.display    = 'flex';
+  document.getElementById('cam-placeholder').style.display  = 'block';
+  document.getElementById('foto-preview').style.display     = 'none';
+  huidigeFoto = null;
+}
+
+function fotoNemen() {
+  const video  = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  huidigeFoto = canvas.toDataURL('image/jpeg', 0.82);
+  stopCamera();
+  // toon preview
+  const prev = document.getElementById('foto-preview');
+  prev.src = huidigeFoto;
+  prev.style.display = 'block';
+  document.getElementById('cam-placeholder').style.display  = 'none';
+  document.getElementById('cam-btns-idle').style.display    = 'none';
+  document.getElementById('cam-btns-preview').style.display = 'flex';
+}
+
+function fotoUitBestand(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    huidigeFoto = ev.target.result;
+    const prev = document.getElementById('foto-preview');
+    prev.src = huidigeFoto;
+    prev.style.display = 'block';
+    document.getElementById('cam-placeholder').style.display  = 'none';
+    document.getElementById('cam-btns-idle').style.display    = 'none';
+    document.getElementById('cam-btns-preview').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function fotoBevestigen() {
+  // foto is al opgeslagen in huidigeFoto, knop geeft bevestiging
+  document.getElementById('cam-btns-preview').style.display = 'none';
+  document.getElementById('m-type').value = 'foto';
+  // kleine bevestiging tonen
+  const zone = document.getElementById('camera-zone');
+  zone.style.borderColor = '#4caf50';
+  setTimeout(() => zone.style.borderColor = '', 1500);
+}
+
+function fotoOpnieuw() {
+  huidigeFoto = null;
+  document.getElementById('foto-file').value = '';
+  document.getElementById('foto-preview').style.display     = 'none';
+  document.getElementById('cam-btns-preview').style.display = 'none';
+  document.getElementById('cam-placeholder').style.display  = 'block';
+  document.getElementById('cam-btns-idle').style.display    = 'flex';
+  document.getElementById('camera-zone').style.borderColor  = '';
+}
+
+// ═══════════════════════════════════════════════
+//  MELDINGEN VERSTUREN
+// ═══════════════════════════════════════════════
 async function verstuurMelding() {
-  const naam = document.getElementById('inp-naam').value.trim();
-  const bericht = document.getElementById('inp-bericht').value.trim();
-  if(!naam){ alert('Vul je naam in.'); return; }
-  const t = MELDING_TYPES.find(x=>x.id===gekozenType);
-  const btn = document.getElementById('verstuur-btn');
+  const naam  = document.getElementById('m-naam').value.trim();
+  const type  = document.getElementById('m-type').value;
+  const tekst = document.getElementById('m-tekst').value.trim();
+
+  if (!naam) { alert('Selecteer je naam.'); return; }
+  if (!tekst && !huidigeFoto) { alert('Voeg een bericht of foto toe.'); return; }
+
+  const btn = document.getElementById('btn-verstuur');
   btn.disabled = true;
-  btn.textContent = 'Bezig...';
+  btn.textContent = '⏳ Versturen…';
 
-  if(supabaseActief) {
-    const {error} = await sb.from('meldingen').insert([{
-      naam, type: gekozenType, label: t.label,
-      bericht, kleur: t.kleur, bg: t.bg,
-      tijd: new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})
-    }]);
-    if(error) { alert('Fout bij versturen: ' + error.message); }
+  const data = {
+    naam,
+    type,
+    tekst: tekst || null,
+    foto: huidigeFoto || null,
+    created_at: new Date().toISOString(),
+    reacties: []
+  };
+
+  try {
+    const result = await SB.insert('meldingen', data);
+    if (result) {
+      // reset formulier
+      document.getElementById('m-tekst').value = '';
+      fotoOpnieuw();
+      laadMeldingen();
+    } else {
+      // offline fallback: sla lokaal op
+      const lokaal = JSON.parse(localStorage.getItem('wwl_meldingen_lokaal') || '[]');
+      data.id = Date.now();
+      lokaal.unshift(data);
+      localStorage.setItem('wwl_meldingen_lokaal', JSON.stringify(lokaal.slice(0,40)));
+      renderMeldingen(lokaal);
+    }
+  } catch(e) {
+    console.error(e);
   }
 
-  document.getElementById('inp-naam').value = '';
-  document.getElementById('inp-bericht').value = '';
   btn.disabled = false;
-  btn.textContent = 'Versturen → verschijnt direct op alle schermen';
+  btn.textContent = '➤ Versturen';
 }
 
-async function verwijderMelding(id) {
-  if(supabaseActief) {
-    await sb.from('meldingen').delete().eq('id', id);
+function verstuurWhatsapp() {
+  const naam  = document.getElementById('m-naam').value || '?';
+  const type  = document.getElementById('m-type').value;
+  const tekst = document.getElementById('m-tekst').value || '—';
+  const url   = `https://wa.me/?text=${encodeURIComponent(`[WWL – ${type}]\n${naam}: ${tekst}`)}`;
+  window.open(url, '_blank');
+}
+
+// ═══════════════════════════════════════════════
+//  MELDINGEN LADEN & RENDEREN
+// ═══════════════════════════════════════════════
+async function laadMeldingen() {
+  let items = await SB.get('meldingen');
+  if (!items || !items.length) {
+    // fallback lokaal
+    items = JSON.parse(localStorage.getItem('wwl_meldingen_lokaal') || '[]');
   }
+  renderMeldingen(items);
 }
 
-function meldingHTML(m) {
-  return `<div class="melding-item">
-    <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
-    <div style="flex:1">
-      <div class="melding-naam">${m.naam}</div>
-      ${m.bericht?`<div class="melding-tekst">${m.bericht}</div>`:''}
+function renderMeldingen(items) {
+  const feed     = document.getElementById('meldingen-feed');
+  const miniFeed = document.getElementById('mini-feed');
+
+  if (!items.length) {
+    const leeg = `<div class="empty-state"><span class="es-icon">💬</span>Nog geen meldingen.</div>`;
+    feed.innerHTML = leeg;
+    miniFeed.innerHTML = leeg;
+    return;
+  }
+
+  const html = items.map(m => meldingHtml(m, false)).join('');
+  feed.innerHTML = html;
+
+  // mini-feed op vandaag-tab: max 3, geen foto groot
+  const mini = items.slice(0,3).map(m => meldingHtml(m, true)).join('');
+  miniFeed.innerHTML = mini;
+}
+
+function meldingHtml(m, mini) {
+  const foto     = profielFotos[m.naam];
+  const avatarEl = foto
+    ? `<img src="${foto}" class="melding-avatar" alt="${m.naam}">`
+    : `<div class="melding-avatar" style="display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700">${(m.naam||'?')[0]}</div>`;
+
+  const tijdStr  = m.created_at
+    ? new Date(m.created_at).toLocaleString('nl-NL',{weekday:'short',hour:'2-digit',minute:'2-digit'})
+    : 'zojuist';
+
+  const typeIcoon = {
+    algemeen:'💬', shift:'📅', foto:'📷', schoonmaak:'🧹', info:'ℹ️', whatsapp:'📲'
+  }[m.type] || '💬';
+
+  const fotoBlock = m.foto && !mini ? `
+    <div class="melding-foto-wrap" onclick="openLightbox('${m.id || ''}', this)">
+      <img class="melding-foto-thumb" src="${m.foto}" alt="foto" />
+      <span class="foto-vergroten-hint">🔍 vergroot</span>
+    </div>` : m.foto && mini ? `
+    <div class="melding-foto-wrap" onclick="openLightbox('${m.id || ''}', this)">
+      <img class="melding-foto-thumb" src="${m.foto}" alt="foto" style="width:70px;height:50px"/>
+      <span class="foto-vergroten-hint">🔍</span>
+    </div>` : '';
+
+  const reactieBlock = !mini ? `
+    <div class="melding-actions">
+      <button class="btn-tiny" onclick="toggleReactie('${m.id}')">💬 Reageer / voeg tekst toe</button>
     </div>
-    <span class="melding-tijd">${m.tijd}</span>
-    <button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>
-  </div>`;
+    <div class="reactie-form" id="rf-${m.id}">
+      <input type="text" placeholder="Typ je reactie…" id="ri-${m.id}" />
+      <button class="btn btn-primary" style="padding:7px 12px;font-size:.78rem" onclick="stuurReactie('${m.id}')">↵</button>
+    </div>` : '';
+
+  const reactieLijst = (m.reacties && m.reacties.length && !mini) ? `
+    <div style="margin-top:8px;border-top:1px solid #ffffff10;padding-top:8px">
+      ${m.reacties.map(r => `<p style="font-size:.78rem;color:#aab;margin-bottom:4px">↳ ${r}</p>`).join('')}
+    </div>` : '';
+
+  return `
+    <div class="melding-item" id="mi-${m.id}">
+      <div class="melding-header">
+        ${avatarEl}
+        <div class="melding-meta">
+          <div class="melding-name">${m.naam || '—'}</div>
+          <div class="melding-type ${m.type === 'foto' || m.type === 'schoonmaak' ? 'type-foto' : ''}">${typeIcoon} ${m.type || 'melding'}</div>
+        </div>
+        <div class="melding-time">${tijdStr}</div>
+      </div>
+      ${m.tekst ? `<div class="melding-tekst">${m.tekst}</div>` : ''}
+      ${fotoBlock}
+      ${reactieLijst}
+      ${reactieBlock}
+    </div>`;
 }
 
-function renderMeldingenData(data) {
-  const html = data.length
-    ? data.map(meldingHTML).join('')
-    : '<p style="font-size:0.8rem;color:var(--subtle)">Geen meldingen op dit moment.</p>';
-  document.getElementById('mel-lijst').innerHTML = html;
-  document.getElementById('vandaag-meldingen').innerHTML = html;
-  renderVandaagMetMeldingen(data);
+// ═══════════════════════════════════════════════
+//  REACTIES
+// ═══════════════════════════════════════════════
+function toggleReactie(id) {
+  const el = document.getElementById(`rf-${id}`);
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) document.getElementById(`ri-${id}`).focus();
 }
 
-function waSturen() {
-  const naam = document.getElementById('inp-naam').value.trim()||'(naam)';
-  const bericht = document.getElementById('inp-bericht').value.trim();
-  const t = MELDING_TYPES.find(x=>x.id===gekozenType);
-  const tekst = `WWL melding\n${t.label} — ${naam}${bericht?'\n"'+bericht+'"':''}`;
-  window.open('https://wa.me/?text='+encodeURIComponent(tekst),'_blank');
-  return false;
+async function stuurReactie(id) {
+  const input = document.getElementById(`ri-${id}`);
+  const tekst = input.value.trim();
+  if (!tekst) return;
+  const naam = document.getElementById('m-naam').value || '?';
+  const reactieTekst = `${naam}: ${tekst}`;
+
+  // probeer via Supabase te updaten
+  try {
+    const items = await SB.get('meldingen');
+    const melding = items.find(m => String(m.id) === String(id));
+    if (melding) {
+      const nieuw = [...(melding.reacties || []), reactieTekst];
+      await SB.update('meldingen', id, { reacties: nieuw });
+    }
+  } catch(e) {}
+
+  // ook lokaal bijwerken voor onmiddellijke feedback
+  const lokaal = JSON.parse(localStorage.getItem('wwl_meldingen_lokaal') || '[]');
+  const idx = lokaal.findIndex(m => String(m.id) === String(id));
+  if (idx > -1) {
+    lokaal[idx].reacties = [...(lokaal[idx].reacties || []), reactieTekst];
+    localStorage.setItem('wwl_meldingen_lokaal', JSON.stringify(lokaal));
+  }
+
+  input.value = '';
+  document.getElementById(`rf-${id}`).classList.remove('open');
+  laadMeldingen();
 }
 
-// ─── INIT ─────────────────────────────────────
-renderTypeKnoppen();
-renderVandaag();
-renderWeek();
-renderRotatie();
-initSupabase();
+// ═══════════════════════════════════════════════
+//  LIGHTBOX
+// ═══════════════════════════════════════════════
+function openLightbox(id, el) {
+  const img    = el.querySelector('img');
+  const lb     = document.getElementById('lightbox');
+  const lbImg  = document.getElementById('lightbox-img');
+  const lbCap  = document.getElementById('lightbox-caption');
+  lbImg.src = img.src;
+  // zoek bijbehorende tekst
+  const item = el.closest('.melding-item');
+  const tekst = item ? item.querySelector('.melding-tekst') : null;
+  lbCap.textContent = tekst ? tekst.textContent : '';
+  lb.classList.add('open');
+}
+
+function sluitLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  if (!SUPABASE_URL || SUPABASE_URL === 'JOUW_SUPABASE_URL') {
+    document.getElementById('supabase-warning').style.display = 'block';
+  }
+  bouwWeek();
+  bouwVandaag();
+  bouwRotatie();
+  bouwProfielen();
+  startPolling();
+}
+
+init();
 </script>
 </body>
 </html>
