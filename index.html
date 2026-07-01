@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WWL</title>
   <style>
-    /* ══════════════════════════════════════════
-       BASIS & RESET
-    ══════════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #1a1a2e;
-      --surface:  #16213e;
-      --card:     #0f3460;
-      --accent:   #e94560;
-      --gold:     #f5a623;
-      --text:     #eaeaea;
-      --muted:    #8892a4;
-      --radius:   12px;
-      --shadow:   0 4px 20px rgba(0,0,0,.4);
+      --bg:      #0d1b2a;
+      --surface: #1b2838;
+      --card:    #22334a;
+      --accent:  #4fc3f7;
+      --gold:    #ffd54f;
+      --green:   #69f0ae;
+      --red:     #ff5252;
+      --orange:  #ffab40;
+      --purple:  #ce93d8;
+      --text:    #e8eaf6;
+      --muted:   #7986a0;
+      --radius:  14px;
     }
 
     body {
@@ -27,47 +27,32 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding-bottom: 80px;
+      padding-bottom: 72px;
     }
 
-    /* ══════════════════════════════════════════
-       HEADER
-    ══════════════════════════════════════════ */
+    /* HEADER */
     header {
       background: var(--surface);
-      padding: 16px 20px 12px;
+      padding: 14px 18px 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: var(--shadow);
+      border-bottom: 1px solid #ffffff12;
       position: sticky;
       top: 0;
       z-index: 100;
     }
-    header h1 { font-size: 1.4rem; letter-spacing: .08em; color: var(--gold); }
-    header p  { font-size: .72rem; color: var(--muted); }
-    #clock    { font-size: 1.1rem; font-variant-numeric: tabular-nums; color: var(--accent); }
+    header h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: .06em; color: var(--gold); }
+    header p  { font-size: .7rem; color: var(--muted); margin-top: 1px; }
+    #clock    { font-size: 1.05rem; color: var(--accent); font-variant-numeric: tabular-nums; }
 
-    /* ══════════════════════════════════════════
-       WAARSCHUWING SUPABASE
-    ══════════════════════════════════════════ */
-    #supabase-warning {
-      background: #7c3a00;
-      color: #ffd;
-      padding: 10px 16px;
-      font-size: .82rem;
-      display: none;
-    }
-
-    /* ══════════════════════════════════════════
-       TABS
-    ══════════════════════════════════════════ */
+    /* TABS */
     nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
       display: flex;
       background: var(--surface);
-      border-top: 1px solid #ffffff18;
+      border-top: 1px solid #ffffff12;
       z-index: 200;
     }
     nav button {
@@ -75,105 +60,102 @@
       background: none;
       border: none;
       color: var(--muted);
-      padding: 10px 4px 8px;
-      font-size: .65rem;
+      padding: 9px 2px 7px;
+      font-size: .62rem;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      transition: color .2s;
     }
-    nav button .icon { font-size: 1.3rem; }
+    nav button span.icon { font-size: 1.25rem; }
     nav button.active { color: var(--gold); }
 
-    /* ══════════════════════════════════════════
-       SECTIES
-    ══════════════════════════════════════════ */
-    section { display: none; padding: 16px; }
+    /* SECTIES */
+    section { display: none; padding: 14px; }
     section.active { display: block; }
 
     h2 {
-      font-size: 1rem;
+      font-size: .95rem;
       color: var(--gold);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    /* ══════════════════════════════════════════
-       KAARTEN
-    ══════════════════════════════════════════ */
+    /* KAARTEN */
     .card {
       background: var(--card);
       border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow);
+      padding: 14px;
+      margin-bottom: 10px;
     }
 
-    /* ══════════════════════════════════════════
-       ROOSTER TABEL
-    ══════════════════════════════════════════ */
+    /* TABEL */
     .tbl-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-    th { background: #0a2240; color: var(--gold); padding: 8px 6px; text-align: left; white-space: nowrap; }
-    td { padding: 7px 6px; border-bottom: 1px solid #ffffff10; vertical-align: middle; }
+    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    th { background: #162030; color: var(--gold); padding: 7px 5px; text-align: left; white-space: nowrap; }
+    td { padding: 6px 5px; border-bottom: 1px solid #ffffff0e; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
+
     .badge {
       display: inline-block;
       padding: 2px 7px;
       border-radius: 20px;
-      font-size: .72rem;
-      font-weight: 600;
+      font-size: .7rem;
+      font-weight: 700;
     }
-    .b-bank-och  { background: #1565c0; }
-    .b-kook      { background: #2e7d32; }
-    .b-bank-av   { background: #6a1b9a; }
-    .b-corvee    { background: #e65100; }
-    .note        { font-size: .7rem; color: var(--muted); margin-top: 8px; }
+    .b-bank-och { background: #1565c0; }
+    .b-kook     { background: #2e7d32; }
+    .b-bank-av  { background: #6a1b9a; }
+    .b-corvee   { background: #bf360c; }
+    .note { font-size: .68rem; color: var(--muted); margin-top: 8px; }
 
-    /* ══════════════════════════════════════════
-       ROTATIE
-    ══════════════════════════════════════════ */
+    /* ROTATIE */
     .rot-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      border-bottom: 1px solid #ffffff10;
+      gap: 7px;
+      padding: 7px 0;
+      border-bottom: 1px solid #ffffff0e;
     }
     .rot-row:last-child { border-bottom: none; }
-    .rot-name { width: 90px; font-size: .85rem; font-weight: 600; }
-    .rot-dots { display: flex; gap: 5px; flex: 1; }
+    .rot-name { width: 80px; font-size: .82rem; font-weight: 600; flex-shrink: 0; }
+    .rot-dots { display: flex; gap: 4px; flex: 1; }
     .rot-dot {
-      width: 26px; height: 26px;
+      width: 24px; height: 24px;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: .65rem; font-weight: 700;
+      font-size: .6rem; font-weight: 700;
     }
     .dot-bank   { background: #1565c0; }
-    .dot-corvee { background: #e65100; }
+    .dot-corvee { background: #bf360c; }
     .dot-kook   { background: #2e7d32; }
-    .dot-leeg   { background: #ffffff15; }
-    .dot-beheer { background: #555; }
-    .rot-status { font-size: 1.1rem; }
+    .dot-leeg   { background: #ffffff12; }
+    .dot-beheer { background: #444; }
+    .rot-status { font-size: 1rem; }
 
-    /* ══════════════════════════════════════════
-       REGELS (accordion)
-    ══════════════════════════════════════════ */
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+    }
+    .legend span {
+      font-size: .7rem; padding: 2px 8px;
+      border-radius: 10px; background: #ffffff10;
+    }
+
+    /* ACCORDION */
     details {
       background: var(--card);
       border-radius: var(--radius);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       overflow: hidden;
     }
     summary {
-      padding: 14px 16px;
+      padding: 13px 14px;
       cursor: pointer;
       font-weight: 600;
-      font-size: .9rem;
+      font-size: .88rem;
       list-style: none;
       display: flex;
       justify-content: space-between;
@@ -181,380 +163,193 @@
     }
     summary::after { content: '▾'; color: var(--gold); }
     details[open] summary::after { content: '▴'; }
-    details p, details li { padding: 0 16px 14px; font-size: .85rem; line-height: 1.6; color: #ccc; }
-    details ul { padding-left: 32px; }
+    details p, details li { padding: 0 14px 12px; font-size: .83rem; line-height: 1.6; color: #bcc; }
+    details ul { padding-left: 28px; }
 
-    /* ══════════════════════════════════════════
-       PROFIELEN
-    ══════════════════════════════════════════ */
-    .profiles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .profile-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 10px 6px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform .15s;
-      position: relative;
-    }
-    .profile-card:hover { transform: scale(1.04); }
-    .profile-avatar {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--card);
-      background: #0a2240;
-      display: block;
-      margin: 0 auto 6px;
-    }
-    .profile-avatar-placeholder {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: #0a2240;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      margin: 0 auto 6px;
-      border: 2px dashed var(--muted);
-      cursor: pointer;
-    }
-    .profile-name { font-size: .75rem; font-weight: 600; }
-    .profile-shift { font-size: .65rem; color: var(--muted); }
-    .upload-btn-small {
-      position: absolute;
-      bottom: 6px; right: 6px;
-      background: var(--accent);
-      border: none;
-      border-radius: 50%;
-      width: 20px; height: 20px;
-      font-size: .65rem;
-      cursor: pointer;
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    /* ══════════════════════════════════════════
-       MELDINGEN FORMULIER
-    ══════════════════════════════════════════ */
-    .form-group { margin-bottom: 12px; }
-    label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    /* FORMULIER */
+    .form-group { margin-bottom: 10px; }
+    label { font-size: .78rem; color: var(--muted); display: block; margin-bottom: 3px; }
     input[type=text], select, textarea {
       width: 100%;
-      background: #0a2240;
-      border: 1px solid #ffffff20;
+      background: #162030;
+      border: 1px solid #ffffff18;
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 9px 11px;
       color: var(--text);
-      font-size: .88rem;
+      font-size: .86rem;
       outline: none;
-      transition: border-color .2s;
     }
-    input[type=text]:focus,
-    select:focus,
-    textarea:focus { border-color: var(--gold); }
-    textarea { resize: vertical; min-height: 72px; }
-    select option { background: #0a2240; }
+    input[type=text]:focus, select:focus, textarea:focus { border-color: var(--gold); }
+    textarea { resize: vertical; min-height: 68px; }
+    select option { background: #162030; }
 
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 11px 18px;
+      gap: 5px;
+      padding: 10px 16px;
       border: none;
       border-radius: 8px;
-      font-size: .88rem;
-      font-weight: 600;
+      font-size: .86rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: opacity .2s, transform .1s;
     }
-    .btn:active { transform: scale(.97); }
-    .btn-primary { background: var(--accent); color: #fff; }
+    .btn:active { opacity: .8; }
+    .btn-primary { background: var(--accent); color: #001; }
     .btn-gold    { background: var(--gold);   color: #111; }
     .btn-green   { background: #2e7d32;       color: #fff; }
-    .btn-muted   { background: #ffffff18;     color: var(--text); }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-muted   { background: #ffffff14;     color: var(--text); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* Camera knop groot */
-    .camera-zone {
-      background: #0a2240;
-      border: 2px dashed #ffffff30;
-      border-radius: var(--radius);
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 12px;
-      position: relative;
+    /* MELDINGEN */
+    .live-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #69f0ae;
+      margin-right: 4px;
+      animation: pulse 1.5s infinite;
     }
-    .camera-zone video {
-      width: 100%;
-      border-radius: 8px;
-      display: none;
-      max-height: 260px;
-      object-fit: cover;
-    }
-    .camera-zone canvas { display: none; }
-    .camera-zone img#foto-preview {
-      width: 100%;
-      border-radius: 8px;
-      display: none;
-      max-height: 260px;
-      object-fit: cover;
-    }
-    .camera-placeholder {
-      padding: 30px 0;
-      color: var(--muted);
-      font-size: .85rem;
-    }
-    .camera-placeholder .cam-icon { font-size: 2.8rem; display: block; margin-bottom: 8px; }
-    .btn-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 10px;
-    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    /* ══════════════════════════════════════════
-       MELDINGEN FEED
-    ══════════════════════════════════════════ */
-    #meldingen-feed { margin-top: 16px; }
     .melding-item {
       background: var(--card);
       border-radius: var(--radius);
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      animation: fadeIn .35s ease;
+      padding: 11px 13px;
+      margin-bottom: 8px;
+      animation: fadeIn .3s ease;
     }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
     .melding-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
+      gap: 9px;
+      margin-bottom: 5px;
     }
     .melding-avatar {
-      width: 34px; height: 34px;
+      width: 32px; height: 32px;
       border-radius: 50%;
-      object-fit: cover;
-      background: #0a2240;
-      border: 1px solid #ffffff20;
+      background: #162030;
+      border: 1px solid #ffffff18;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700;
       flex-shrink: 0;
+      overflow: hidden;
     }
+    .melding-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .melding-meta { flex: 1; }
-    .melding-name  { font-weight: 700; font-size: .88rem; }
-    .melding-type  { font-size: .72rem; color: var(--muted); }
-    .melding-time  { font-size: .68rem; color: var(--muted); }
+    .melding-name { font-weight: 700; font-size: .86rem; }
+    .melding-type { font-size: .7rem; color: var(--muted); }
+    .melding-time { font-size: .66rem; color: var(--muted); }
+    .melding-tekst { font-size: .83rem; line-height: 1.5; color: #ccd; margin-bottom: 5px; }
 
-    .melding-tekst {
-      font-size: .85rem;
-      line-height: 1.5;
-      color: #dde;
-      margin-bottom: 6px;
-    }
-
-    /* Foto thumbnail in feed */
+    /* FOTO IN FEED */
     .melding-foto-wrap {
-      position: relative;
       display: inline-block;
-      margin-top: 6px;
+      position: relative;
+      margin-top: 5px;
       cursor: pointer;
     }
     .melding-foto-thumb {
-      width: 110px;
-      height: 80px;
+      width: 100px; height: 72px;
       object-fit: cover;
-      border-radius: 8px;
-      border: 2px solid #ffffff20;
+      border-radius: 7px;
+      border: 2px solid #ffffff18;
       display: block;
-      transition: opacity .2s;
     }
     .melding-foto-thumb:hover { opacity: .85; }
-    .foto-vergroten-hint {
+    .foto-hint {
       position: absolute;
-      bottom: 5px; right: 5px;
+      bottom: 4px; right: 4px;
       background: rgba(0,0,0,.6);
       color: #fff;
-      font-size: .58rem;
-      padding: 2px 5px;
-      border-radius: 4px;
+      font-size: .56rem;
+      padding: 2px 4px;
+      border-radius: 3px;
     }
 
-    /* Reactie toevoegen knop */
-    .melding-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-      flex-wrap: wrap;
+    /* CAMERA ZONE */
+    .camera-zone {
+      background: #162030;
+      border: 2px dashed #ffffff25;
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 10px;
     }
+    .camera-zone video {
+      width: 100%; border-radius: 8px;
+      display: none; max-height: 240px; object-fit: cover;
+    }
+    .camera-zone canvas { display: none; }
+    #foto-preview {
+      width: 100%; border-radius: 8px;
+      display: none; max-height: 240px; object-fit: cover;
+    }
+    .cam-placeholder { padding: 24px 0; color: var(--muted); font-size: .82rem; }
+    .cam-placeholder .cam-icon { font-size: 2.4rem; display: block; margin-bottom: 6px; }
+    .btn-row {
+      display: flex; gap: 7px; flex-wrap: wrap;
+      justify-content: center; margin-top: 8px;
+    }
+
+    /* REACTIES */
     .btn-tiny {
-      padding: 4px 10px;
-      font-size: .72rem;
+      padding: 3px 9px; font-size: .7rem;
       border-radius: 20px;
-      border: 1px solid #ffffff25;
-      background: #ffffff0d;
+      border: 1px solid #ffffff20;
+      background: #ffffff0a;
       color: var(--muted);
       cursor: pointer;
-      transition: background .2s;
     }
-    .btn-tiny:hover { background: #ffffff1a; color: var(--text); }
-
-    /* Reactie-invoer (inline, verborgen) */
-    .reactie-form {
-      display: none;
-      margin-top: 8px;
-      gap: 6px;
-    }
+    .btn-tiny:hover { background: #ffffff18; color: var(--text); }
+    .reactie-form { display: none; margin-top: 6px; gap: 5px; }
     .reactie-form.open { display: flex; }
-    .reactie-form input {
-      flex: 1;
-      padding: 7px 10px;
-      font-size: .82rem;
-    }
+    .reactie-form input { flex: 1; padding: 6px 9px; font-size: .8rem; }
 
-    /* ══════════════════════════════════════════
-       LIGHTBOX
-    ══════════════════════════════════════════ */
+    /* LIGHTBOX */
     #lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.92);
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.93);
       z-index: 9999;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      padding: 20px;
+      align-items: center; justify-content: center;
+      flex-direction: column; padding: 20px;
     }
     #lightbox.open { display: flex; }
-    #lightbox img {
-      max-width: 100%;
-      max-height: 80vh;
-      border-radius: 10px;
-      box-shadow: 0 0 40px rgba(0,0,0,.8);
-    }
-    #lightbox-caption {
-      margin-top: 12px;
-      color: #ccc;
-      font-size: .85rem;
-      text-align: center;
-      max-width: 500px;
-    }
+    #lightbox img { max-width: 100%; max-height: 78vh; border-radius: 9px; }
+    #lightbox-caption { margin-top: 10px; color: #bbb; font-size: .83rem; text-align: center; max-width: 460px; }
     #lightbox-close {
-      position: absolute;
-      top: 16px; right: 20px;
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 2rem;
-      cursor: pointer;
-      line-height: 1;
+      position: absolute; top: 14px; right: 18px;
+      background: none; border: none; color: #fff;
+      font-size: 1.9rem; cursor: pointer; line-height: 1;
     }
 
-    /* ══════════════════════════════════════════
-       PROFIEL MODAL
-    ══════════════════════════════════════════ */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.75);
-      z-index: 500;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-sheet {
-      background: var(--surface);
-      border-radius: 20px 20px 0 0;
-      padding: 24px 20px 36px;
-      width: 100%;
-      max-width: 480px;
-      animation: slideUp .25s ease;
-    }
-    @keyframes slideUp { from { transform:translateY(60px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-    .modal-sheet h3 { font-size: 1rem; color: var(--gold); margin-bottom: 16px; }
-    .modal-avatar-large {
-      width: 90px; height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--gold);
-      display: block;
-      margin: 0 auto 16px;
-    }
-    .modal-avatar-placeholder-large {
-      width: 90px; height: 90px;
-      border-radius: 50%;
-      background: #0a2240;
-      border: 3px dashed var(--muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      margin: 0 auto 16px;
-    }
-
-    /* ══════════════════════════════════════════
-       UTILITY
-    ══════════════════════════════════════════ */
+    /* RUST BANNER */
     .rust-banner {
-      background: #1a2a40;
+      background: #162030;
       border-left: 3px solid var(--muted);
       border-radius: 8px;
-      padding: 10px 14px;
-      font-size: .82rem;
+      padding: 9px 13px;
+      font-size: .8rem;
       color: var(--muted);
-      margin-top: 12px;
-    }
-    .live-dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #4caf50;
-      margin-right: 5px;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity:1; }
-      50%      { opacity:.3; }
-    }
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
       margin-top: 10px;
-    }
-    .legend span {
-      font-size: .72rem;
-      padding: 3px 8px;
-      border-radius: 12px;
-      background: #ffffff12;
     }
 
     .empty-state {
-      text-align: center;
-      color: var(--muted);
-      font-size: .85rem;
-      padding: 30px 0;
+      text-align: center; color: var(--muted);
+      font-size: .83rem; padding: 28px 0;
     }
-    .empty-state .es-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .empty-state .es-icon { font-size: 1.9rem; display: block; margin-bottom: 6px; }
 
-    /* foto badge op melding-type */
-    .type-foto { color: #f5a623; }
+    #supabase-warning {
+      background: #5c2a00; color: #ffe;
+      padding: 9px 14px; font-size: .8rem; display: none;
+    }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     HEADER
-══════════════════════════════════════════ -->
 <header>
   <div>
     <h1>WWL</h1>
@@ -563,41 +358,35 @@
   <div id="clock">--:--</div>
 </header>
 
-<!-- Supabase waarschuwing -->
 <div id="supabase-warning">
-  ⚠️ Supabase nog niet ingesteld. Vul SUPABASE_URL en SUPABASE_KEY in bovenaan het script. → <a href="https://supabase.com" style="color:#ffd">supabase.com</a>
+  ⚠️ Supabase nog niet ingesteld →
+  <a href="https://supabase.com" style="color:#ffe">supabase.com</a>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SECTIE: VANDAAG
-══════════════════════════════════════════ -->
+<!-- VANDAAG -->
 <section id="s-vandaag" class="active">
   <h2>📅 Diensten vandaag</h2>
   <div id="diensten-vandaag" class="card">Laden…</div>
-
-  <h2 style="margin-top:16px"><span class="live-dot"></span>Actieve meldingen</h2>
-  <div id="mini-feed"><!-- gevuld door JS --></div>
-
+  <h2 style="margin-top:14px"><span class="live-dot"></span>Actieve meldingen</h2>
+  <div id="mini-feed"></div>
   <div class="rust-banner" id="rust-banner" style="display:none">
     🌙 Rustperiode 22:00–10:00 — geen diensten.
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     SECTIE: WEEK
-══════════════════════════════════════════ -->
+<!-- WEEK -->
 <section id="s-week">
   <h2>🗓 Volledig weekrooster</h2>
   <div class="card">
     <div class="tbl-wrap">
-      <table id="week-tbl">
+      <table>
         <thead>
           <tr>
             <th>Dag</th>
-            <th><span class="badge b-bank-och">Bank och</span><br><small>10–16u · za+zo</small></th>
-            <th><span class="badge b-kook">Kook</span><br><small>14–17u</small></th>
-            <th><span class="badge b-bank-av">Bank av</span><br><small>16–22u</small></th>
-            <th><span class="badge b-corvee">Corvee</span><br><small>17–21u</small></th>
+            <th><span class="badge b-bank-och">Bank och</span><br><small style="font-weight:400;color:#aaa">10–16u · za+zo</small></th>
+            <th><span class="badge b-kook">Kook</span><br><small style="font-weight:400;color:#aaa">14–17u</small></th>
+            <th><span class="badge b-bank-av">Bank av</span><br><small style="font-weight:400;color:#aaa">16–22u</small></th>
+            <th><span class="badge b-corvee">Corvee</span><br><small style="font-weight:400;color:#aaa">17–21u</small></th>
           </tr>
         </thead>
         <tbody id="week-tbody"></tbody>
@@ -607,28 +396,24 @@
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     SECTIE: ROTATIE
-══════════════════════════════════════════ -->
+<!-- ROTATIE -->
 <section id="s-rotatie">
   <h2>🔄 Rotatieschema – laatste 4 weken</h2>
   <div class="card">
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px">
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">
       Na 4× bank op rij: verplicht minimaal 2 weken corvee.
     </p>
     <div id="rotatie-list"></div>
-    <div class="legend" style="margin-top:14px">
-      <span>🔴 Verplicht corvee</span>
-      <span>🟠 Let op (3× bank)</span>
+    <div class="legend">
+      <span>🔴 Verplicht corvee (4× bank op rij)</span>
+      <span>🟠 Let op (3× bank op rij)</span>
       <span>✅ OK</span>
-      <span>🏠 Beheerderwoning</span>
+      <span>🏠 Beheederswoning</span>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     SECTIE: REGELS
-══════════════════════════════════════════ -->
+<!-- REGELS -->
 <section id="s-regels">
   <h2>📋 Regels & uitleg</h2>
 
@@ -636,7 +421,7 @@
     <summary>🎯 Hoe kies je je shift?</summary>
     <ul>
       <li>Wie het eerst kiest, heeft de meeste keuze. Wees er snel bij — elke week opnieuw.</li>
-      <li>Kiezen doe je via je smartphone: open het rooster, ga naar 💬 Meldingen en stuur een bericht met je naam en de gewenste shift.</li>
+      <li>Kiezen doe je via je smartphone: open het rooster, ga naar 💬 Meldingen en stuur een bericht met je naam en de gewenste shift. Iedereen ziet het meteen op het scherm in de woonkamer.</li>
       <li>Koken mag je altijd kiezen — hier is eerder tekort dan teveel.</li>
       <li>Bank en corvee: vrije keuze, tenzij je al 4 weken bank hebt gedaan.</li>
     </ul>
@@ -644,12 +429,12 @@
 
   <details>
     <summary>★ Wat betekent het sterretje?</summary>
-    <p>Een sterretje betekent dat iemand deze week bij uitzondering een 2e shift draait. Normaal doet iedereen maximaal 1 shift per week (3–6 uur).</p>
+    <p>Een sterretje betekent dat iemand deze week bij uitzondering een 2e shift draait. Normaal doet iedereen maximaal 1 shift per week (3 tot 6 uur). Ter vergelijking: nu draait iedereen nog 3 shifts van 8 uur per week. Een 2e shift in het nieuwe systeem is dus nog altijd ver onder het huidige niveau.</p>
   </details>
 
   <details>
     <summary>⚖️ Anti-ophoping regel</summary>
-    <p>Na 4 aaneengesloten weken bankshift ben je verplicht minimaal 2 weken corvee te doen. Het rotatieschema (🔄) toont wie al lang bank doet.</p>
+    <p>Na 4 aaneengesloten weken bankshift ben je verplicht minimaal 2 weken corvee te doen. Dit voorkomt dat altijd dezelfde mensen corvee doen terwijl anderen eindeloos bankzitten. Het rotatieschema (tab 🔄) toont wie al lang bank doet.</p>
   </details>
 
   <details>
@@ -665,33 +450,30 @@
   <details>
     <summary>🌙 Rustperiode & bankshift-sfeer</summary>
     <p>Rustperiode 22:00–10:00: geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.</p>
-    <p>De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan.</p>
-    <p>🚪 De deur na 22:00: buiten hangt een duidelijk bord. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang.</p>
+    <p>De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. Wat 'avond- en nachtsfeer' betekent is moeilijk in regels te vangen. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan. Wie te luid is, krijgt een seintje. Niet omdat het in het reglement staat, maar omdat het fatsoen is.</p>
+    <p>🚪 De deur na 22:00: buiten hangt een duidelijk bord met instructies. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang. Iemand die zich wil aanmelden maar toch blijft aanbellen diskwalificeert zichzelf daarmee eerder dan dat hij naar binnen komt.</p>
   </details>
-
-  <!-- PROFIELEN SECTIE (onderdeel van regels/personen) -->
-  <h2 style="margin-top:20px">👤 Bewoners & profielfoto's</h2>
-  <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">
-    Tik op een avatar om een profielfoto toe te voegen of te wijzigen.
-  </p>
-  <div class="profiles-grid" id="profiles-grid"></div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     SECTIE: MELDINGEN
-══════════════════════════════════════════ -->
+<!-- MELDINGEN -->
 <section id="s-meldingen">
-  <div class="card" style="margin-bottom:14px;font-size:.8rem;color:var(--muted)">
+  <div class="card" style="font-size:.78rem;color:var(--muted);margin-bottom:12px">
     <span class="live-dot"></span>
     Meldingen zijn live gedeeld — iedereen ziet ze direct op zijn telefoon én op het scherm in de woonkamer.
   </div>
 
-  <!-- FORMULIER -->
   <div class="card">
     <div class="form-group">
       <label>Jouw naam</label>
       <select id="m-naam">
         <option value="">— selecteer —</option>
+        <option>Aard</option><option>Bo</option><option>Cas</option>
+        <option>Demi</option><option>Elias</option><option>Fenna</option>
+        <option>Guus</option><option>Hana</option><option>Ilse</option>
+        <option>Joris</option><option>Kira</option><option>Lars</option>
+        <option>Maud</option><option>Noa</option><option>Omar</option>
+        <option>Petra</option><option>Quinten</option><option>Rosa</option>
+        <option>Siem</option><option>Tara</option>
       </select>
     </div>
 
@@ -701,61 +483,53 @@
         <option value="algemeen">💬 Algemeen</option>
         <option value="shift">📅 Shift-melding</option>
         <option value="foto">📷 Foto-melding</option>
-        <option value="schoonmaak">🧹 Schoonmaak/vervuiling</option>
+        <option value="schoonmaak">🧹 Schoonmaak / vervuiling</option>
         <option value="info">ℹ️ Info</option>
         <option value="whatsapp">📲 WhatsApp-doorstuur</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label>Bericht (optioneel bij foto)</label>
+      <label>Toelichting (optioneel — kan ook later via 'Reageer')</label>
       <textarea id="m-tekst" placeholder="Typ je bericht… of laat leeg en voeg later een reactie toe"></textarea>
     </div>
 
-    <!-- ══ CAMERA ZONE ══ -->
+    <!-- CAMERA ZONE -->
     <div class="camera-zone" id="camera-zone">
-      <div class="camera-placeholder" id="cam-placeholder">
+      <div class="cam-placeholder" id="cam-placeholder">
         <span class="cam-icon">📷</span>
         Neem een foto of kies er een uit je bibliotheek
       </div>
       <video id="cam-video" autoplay playsinline></video>
       <canvas id="cam-canvas"></canvas>
-      <img id="foto-preview" alt="Foto preview" />
+      <img id="foto-preview" alt="preview" />
 
       <div class="btn-row" id="cam-btns-idle">
-        <button class="btn btn-gold" onclick="startCamera()">📷 Camera openen</button>
-        <button class="btn btn-muted" onclick="document.getElementById('foto-file').click()">🖼 Uit bibliotheek</button>
+        <button class="btn btn-gold" onclick="startCamera()">📷 Camera</button>
+        <button class="btn btn-muted" onclick="document.getElementById('foto-file').click()">🖼 Bibliotheek</button>
         <input type="file" id="foto-file" accept="image/*" style="display:none" onchange="fotoUitBestand(event)" />
       </div>
-
       <div class="btn-row" id="cam-btns-live" style="display:none">
         <button class="btn btn-primary" onclick="fotoNemen()">📸 Neem foto</button>
-        <button class="btn btn-muted"   onclick="stopCamera()">✕ Annuleren</button>
+        <button class="btn btn-muted" onclick="stopCamera()">✕ Annuleer</button>
       </div>
-
       <div class="btn-row" id="cam-btns-preview" style="display:none">
-        <button class="btn btn-green"   onclick="fotoBevestigen()">✓ Gebruik deze foto</button>
-        <button class="btn btn-muted"   onclick="fotoOpnieuw()">↩ Opnieuw</button>
+        <button class="btn btn-green" onclick="fotoBevestigen()">✓ Gebruik deze foto</button>
+        <button class="btn btn-muted" onclick="fotoOpnieuw()">↩ Opnieuw</button>
       </div>
     </div>
-    <!-- /CAMERA ZONE -->
 
-    <div class="btn-row" style="justify-content:flex-start;gap:10px">
-      <button class="btn btn-primary" id="btn-verstuur" onclick="verstuurMelding()">
-        ➤ Versturen
-      </button>
-      <button class="btn btn-muted" onclick="verstuurWhatsapp()">📲 WhatsApp</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-primary" id="btn-verstuur" onclick="verstuurMelding()">➤ Versturen → verschijnt direct op alle schermen</button>
+      <button class="btn btn-muted" onclick="verstuurWhatsapp()">📲 Sturen via WhatsApp</button>
     </div>
   </div>
 
-  <!-- FEED -->
-  <h2 style="margin-top:20px"><span class="live-dot"></span>Actieve meldingen</h2>
+  <h2 style="margin-top:16px">Actieve meldingen</h2>
   <div id="meldingen-feed"></div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     NAVIGATIE
-══════════════════════════════════════════ -->
+<!-- NAV -->
 <nav>
   <button class="active" onclick="toon('vandaag',this)">
     <span class="icon">📅</span>Vandaag
@@ -774,44 +548,13 @@
   </button>
 </nav>
 
-<!-- ══════════════════════════════════════════
-     LIGHTBOX
-══════════════════════════════════════════ -->
+<!-- LIGHTBOX -->
 <div id="lightbox" onclick="sluitLightbox()">
   <button id="lightbox-close" onclick="sluitLightbox()">✕</button>
   <img id="lightbox-img" src="" alt="" />
   <div id="lightbox-caption"></div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     PROFIEL MODAL
-══════════════════════════════════════════ -->
-<div class="modal-overlay" id="profiel-modal" onclick="sluitProfielModal(event)">
-  <div class="modal-sheet" onclick="event.stopPropagation()">
-    <h3 id="pm-titel">Profielfoto</h3>
-    <div id="pm-avatar-wrap"></div>
-    <div class="btn-row" style="margin-top:4px">
-      <button class="btn btn-gold" onclick="document.getElementById('pm-file').click()">
-        🖼 Kies foto uit bibliotheek
-      </button>
-      <button class="btn btn-primary" onclick="profielCamera()">
-        📷 Neem foto
-      </button>
-    </div>
-    <input type="file" id="pm-file" accept="image/*" style="display:none" onchange="profielFotoUitBestand(event)" />
-    <video id="pm-video" autoplay playsinline style="width:100%;border-radius:10px;margin-top:12px;display:none;max-height:200px;object-fit:cover"></video>
-    <canvas id="pm-canvas" style="display:none"></canvas>
-    <div class="btn-row" id="pm-cam-btns" style="display:none;margin-top:8px">
-      <button class="btn btn-primary" onclick="profielFotoNemen()">📸 Neem foto</button>
-      <button class="btn btn-muted"   onclick="stopProfielCamera()">✕ Annuleren</button>
-    </div>
-    <button class="btn btn-muted" style="width:100%;margin-top:16px" onclick="sluitProfielModal()">Sluiten</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════════ -->
 <script>
 // ═══════════════════════════════════════════════
 //  SUPABASE INSTELLINGEN
@@ -820,85 +563,71 @@ const SUPABASE_URL = 'https://mczmtdyiqwvpuuobdlpc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FVv3NW9h79SuO1gxk4TtDw_LC4Hmw6N';
 // ═══════════════════════════════════════════════
 
-// ── Bewoners ──────────────────────────────────
-const BEWONERS = [
+const WEEK_DATA = [
+  { dag:'Ma', kook:'Fenna',  bankAv:'Lars',    corvee:'Hana'   },
+  { dag:'Di', kook:'Joris',  bankAv:'Maud',    corvee:'Omar'   },
+  { dag:'Wo', kook:'Kira',   bankAv:'Noa',     corvee:'Petra'  },
+  { dag:'Do', kook:'Bo',     bankAv:'Quinten', corvee:'Rosa'   },
+  { dag:'Vr', kook:'Tara',   bankAv:'Siem',    corvee:'Demi'   },
+  { dag:'Za', kook:'Aard',   bankAv:'Elias',   corvee:'Guus',  bankOch:'Ilse'  },
+  { dag:'Zo', kook:'Cas ★',  bankAv:'Hana',    corvee:'Lars',  bankOch:'Bo 🏠' },
+];
+
+const ROTATIE_DATA = [
   'Aard','Bo','Cas','Demi','Elias','Fenna','Guus','Hana',
   'Ilse','Joris','Kira','Lars','Maud','Noa','Omar',
   'Petra','Quinten','Rosa','Siem','Tara'
-];
-
-// ── Shift-data (voorbeelddata – vervang met echte data of Supabase) ──
-const DAGEN = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
-const WEEK_DATA = [
-  { dag:'Ma', kook:'Fenna',    bankAv:'Lars',    corvee:'Hana'   },
-  { dag:'Di', kook:'Joris',    bankAv:'Maud',    corvee:'Omar'   },
-  { dag:'Wo', kook:'Kira',     bankAv:'Noa',     corvee:'Petra'  },
-  { dag:'Do', kook:'Bo',       bankAv:'Quinten', corvee:'Rosa'   },
-  { dag:'Vr', kook:'Tara',     bankAv:'Siem',    corvee:'Demi'   },
-  { dag:'Za', kook:'Aard',     bankAv:'Elias',   corvee:'Guus',  bankOch:'Ilse'  },
-  { dag:'Zo', kook:'Cas ★',    bankAv:'Hana',    corvee:'Lars',  bankOch:'Bo 🏠' },
-];
-
-const ROTATIE_DATA = BEWONERS.map(naam => ({
+].map(naam => ({
   naam,
   weken: Array.from({length:4}, () => ['bank','corvee','kook','leeg'][Math.floor(Math.random()*4)]),
   beheer: naam === 'Petra'
 }));
 
-// ── State ──────────────────────────────────────
-let huidigeFoto    = null; // base64 of objectURL
-let cameraStream   = null;
-let pmStream       = null;
-let huidigProfiel  = null;
-const profielFotos = JSON.parse(localStorage.getItem('wwl_profielen') || '{}');
+let huidigeFoto  = null;
+let cameraStream = null;
 
-// ═══════════════════════════════════════════════
-//  SUPABASE INIT (simpel, zonder SDK)
-// ═══════════════════════════════════════════════
+// ── Supabase ──
 const SB = {
   async get(table) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?order=created_at.desc&limit=40`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-    });
-    return r.ok ? r.json() : [];
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?order=created_at.desc&limit=40`, {
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+      });
+      return r.ok ? r.json() : [];
+    } catch(e) { return []; }
   },
   async insert(table, data) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST',
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=representation'
-      },
-      body: JSON.stringify(data)
-    });
-    return r.ok ? r.json() : null;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify(data)
+      });
+      return r.ok ? r.json() : null;
+    } catch(e) { return null; }
   },
   async update(table, id, data) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    return r.ok;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      return r.ok;
+    } catch(e) { return false; }
   }
 };
 
-// Realtime polling (elke 8 sec)
-let pollingInterval = null;
-function startPolling() {
-  laadMeldingen();
-  pollingInterval = setInterval(laadMeldingen, 8000);
-}
-
-// ═══════════════════════════════════════════════
-//  KLOK
-// ═══════════════════════════════════════════════
+// ── Klok ──
 function updateKlok() {
   const nu = new Date();
   document.getElementById('clock').textContent =
@@ -910,9 +639,7 @@ function updateKlok() {
 setInterval(updateKlok, 1000);
 updateKlok();
 
-// ═══════════════════════════════════════════════
-//  TABS
-// ═══════════════════════════════════════════════
+// ── Tabs ──
 function toon(id, btn) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -921,173 +648,66 @@ function toon(id, btn) {
   stopCamera();
 }
 
-// ═══════════════════════════════════════════════
-//  WEEKROOSTER
-// ═══════════════════════════════════════════════
+// ── Weekrooster ──
 function bouwWeek() {
-  const tbody = document.getElementById('week-tbody');
-  tbody.innerHTML = WEEK_DATA.map(r => `
+  document.getElementById('week-tbody').innerHTML = WEEK_DATA.map(r => `
     <tr>
       <td><strong>${r.dag}</strong></td>
-      <td>${r.bankOch ? `<span class="badge b-bank-och">${r.bankOch}</span>` : '<span style="color:#555">—</span>'}</td>
+      <td>${r.bankOch ? `<span class="badge b-bank-och">${r.bankOch}</span>` : '<span style="color:#444">—</span>'}</td>
       <td><span class="badge b-kook">${r.kook}</span></td>
       <td><span class="badge b-bank-av">${r.bankAv}</span></td>
       <td><span class="badge b-corvee">${r.corvee}</span></td>
     </tr>`).join('');
 }
 
-// ── Diensten vandaag ──
 function bouwVandaag() {
   const dag = ['Zo','Ma','Di','Wo','Do','Vr','Za'][new Date().getDay()];
-  const d   = WEEK_DATA.find(r => r.dag === dag);
-  const el  = document.getElementById('diensten-vandaag');
-  if (!d) { el.textContent = 'Geen data gevonden voor vandaag.'; return; }
+  const d = WEEK_DATA.find(r => r.dag === dag);
+  const el = document.getElementById('diensten-vandaag');
+  if (!d) { el.textContent = 'Geen data voor vandaag.'; return; }
   el.innerHTML = `
-    <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Shifts voor <strong>${dag}</strong></p>
-    ${d.bankOch ? `<div style="margin-bottom:8px"><span class="badge b-bank-och">Bank ochtend</span> <strong>${d.bankOch}</strong> <small style="color:var(--muted)">10–16u</small></div>` : ''}
-    <div style="margin-bottom:8px"><span class="badge b-kook">Kook</span> <strong>${d.kook}</strong> <small style="color:var(--muted)">14–17u</small></div>
-    <div style="margin-bottom:8px"><span class="badge b-bank-av">Bank avond</span> <strong>${d.bankAv}</strong> <small style="color:var(--muted)">16–22u</small></div>
+    <p style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Shifts voor <strong>${dag}</strong></p>
+    ${d.bankOch ? `<div style="margin-bottom:7px"><span class="badge b-bank-och">Bank ochtend</span> <strong>${d.bankOch}</strong> <small style="color:var(--muted)">10–16u</small></div>` : ''}
+    <div style="margin-bottom:7px"><span class="badge b-kook">Kook</span> <strong>${d.kook}</strong> <small style="color:var(--muted)">14–17u</small></div>
+    <div style="margin-bottom:7px"><span class="badge b-bank-av">Bank avond</span> <strong>${d.bankAv}</strong> <small style="color:var(--muted)">16–22u</small></div>
     <div><span class="badge b-corvee">Corvee</span> <strong>${d.corvee}</strong> <small style="color:var(--muted)">17–21u</small></div>`;
 }
 
-// ═══════════════════════════════════════════════
-//  ROTATIE
-// ═══════════════════════════════════════════════
+// ── Rotatie ──
 function bouwRotatie() {
-  const kleurDot = {
-    bank: 'dot-bank', corvee: 'dot-corvee', kook: 'dot-kook',
-    leeg: 'dot-leeg', beheer: 'dot-beheer'
-  };
-  const label = { bank:'B', corvee:'C', kook:'K', leeg:'', beheer:'🏠' };
-
-  const list = document.getElementById('rotatie-list');
-  list.innerHTML = ROTATIE_DATA.map(r => {
-    const bankCount = r.weken.filter(w => w === 'bank').length;
-    const status = r.beheer ? '🏠' : bankCount >= 4 ? '🔴' : bankCount >= 3 ? '🟠' : '✅';
+  const kl = { bank:'dot-bank', corvee:'dot-corvee', kook:'dot-kook', leeg:'dot-leeg' };
+  const lb = { bank:'B', corvee:'C', kook:'K', leeg:'' };
+  document.getElementById('rotatie-list').innerHTML = ROTATIE_DATA.map(r => {
+    const bc = r.weken.filter(w => w==='bank').length;
+    const st = r.beheer ? '🏠' : bc>=4 ? '🔴' : bc>=3 ? '🟠' : '✅';
     const dots = r.weken.map(w => {
-      const cls = r.beheer ? 'dot-beheer' : kleurDot[w];
-      return `<div class="rot-dot ${cls}">${r.beheer ? '🏠' : label[w]}</div>`;
+      const cls = r.beheer ? 'dot-beheer' : kl[w];
+      return `<div class="rot-dot ${cls}">${r.beheer?'🏠':lb[w]}</div>`;
     }).join('');
-    const avatar = profielFotos[r.naam]
-      ? `<img src="${profielFotos[r.naam]}" class="melding-avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover">`
-      : `<div style="width:28px;height:28px;border-radius:50%;background:#0a2240;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0">${r.naam[0]}</div>`;
     return `
       <div class="rot-row">
-        ${avatar}
         <span class="rot-name">${r.naam}</span>
         <div class="rot-dots">${dots}</div>
-        <span class="rot-status">${status}</span>
+        <span class="rot-status">${st}</span>
       </div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════════
-//  PROFIELEN
-// ═══════════════════════════════════════════════
-function bouwProfielen() {
-  const grid = document.getElementById('profiles-grid');
-  const naam_select = document.getElementById('m-naam');
-
-  naam_select.innerHTML = '<option value="">— selecteer —</option>' +
-    BEWONERS.map(n => `<option value="${n}">${n}</option>`).join('');
-
-  grid.innerHTML = BEWONERS.map(naam => {
-    const foto = profielFotos[naam];
-    const avatar = foto
-      ? `<img src="${foto}" class="profile-avatar" alt="${naam}">`
-      : `<div class="profile-avatar-placeholder">👤</div>`;
-    return `
-      <div class="profile-card" onclick="openProfielModal('${naam}')">
-        ${avatar}
-        <div class="profile-name">${naam}</div>
-        <button class="upload-btn-small" title="Foto wijzigen">✎</button>
-      </div>`;
-  }).join('');
-}
-
-function openProfielModal(naam) {
-  huidigProfiel = naam;
-  document.getElementById('pm-titel').textContent = `Profielfoto van ${naam}`;
-  const wrap = document.getElementById('pm-avatar-wrap');
-  const foto = profielFotos[naam];
-  wrap.innerHTML = foto
-    ? `<img src="${foto}" class="modal-avatar-large" alt="${naam}">`
-    : `<div class="modal-avatar-placeholder-large">👤</div>`;
-  document.getElementById('profiel-modal').classList.add('open');
-}
-
-function sluitProfielModal(e) {
-  if (e && e.target !== document.getElementById('profiel-modal')) return;
-  document.getElementById('profiel-modal').classList.remove('open');
-  stopProfielCamera();
-  huidigProfiel = null;
-}
-
-function profielFotoUitBestand(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    slaProfielFotoOp(ev.target.result);
-  };
-  reader.readAsDataURL(file);
-}
-
-async function profielCamera() {
-  const video = document.getElementById('pm-video');
-  document.getElementById('pm-cam-btns').style.display = 'flex';
-  video.style.display = 'block';
-  try {
-    pmStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio:false });
-    video.srcObject = pmStream;
-  } catch(err) {
-    alert('Camera niet beschikbaar: ' + err.message);
-  }
-}
-
-function stopProfielCamera() {
-  if (pmStream) { pmStream.getTracks().forEach(t => t.stop()); pmStream = null; }
-  document.getElementById('pm-video').style.display = 'none';
-  document.getElementById('pm-cam-btns').style.display = 'none';
-}
-
-function profielFotoNemen() {
-  const video  = document.getElementById('pm-video');
-  const canvas = document.getElementById('pm-canvas');
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-  stopProfielCamera();
-  slaProfielFotoOp(dataUrl);
-}
-
-function slaProfielFotoOp(dataUrl) {
-  if (!huidigProfiel) return;
-  profielFotos[huidigProfiel] = dataUrl;
-  localStorage.setItem('wwl_profielen', JSON.stringify(profielFotos));
-  bouwProfielen();
-  bouwRotatie();
-  openProfielModal(huidigProfiel); // refresh modal
-}
-
-// ═══════════════════════════════════════════════
-//  CAMERA (meldingen)
-// ═══════════════════════════════════════════════
+// ── Camera (meldingen) ──
 async function startCamera() {
-  const video = document.getElementById('cam-video');
   document.getElementById('cam-placeholder').style.display = 'none';
   document.getElementById('cam-btns-idle').style.display   = 'none';
   document.getElementById('cam-btns-live').style.display   = 'flex';
   document.getElementById('foto-preview').style.display    = 'none';
+  const video = document.getElementById('cam-video');
   video.style.display = 'block';
   try {
     cameraStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal:'environment' } }, audio: false
     });
     video.srcObject = cameraStream;
-  } catch(err) {
-    alert('Camera niet beschikbaar: ' + err.message);
+  } catch(e) {
+    alert('Camera niet beschikbaar: ' + e.message);
     stopCamera();
   }
 }
@@ -1104,14 +724,13 @@ function stopCamera() {
 }
 
 function fotoNemen() {
-  const video  = document.getElementById('cam-video');
+  const video = document.getElementById('cam-video');
   const canvas = document.getElementById('cam-canvas');
-  canvas.width  = video.videoWidth;
+  canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
   huidigeFoto = canvas.toDataURL('image/jpeg', 0.82);
   stopCamera();
-  // toon preview
   const prev = document.getElementById('foto-preview');
   prev.src = huidigeFoto;
   prev.style.display = 'block';
@@ -1137,13 +756,10 @@ function fotoUitBestand(e) {
 }
 
 function fotoBevestigen() {
-  // foto is al opgeslagen in huidigeFoto, knop geeft bevestiging
   document.getElementById('cam-btns-preview').style.display = 'none';
   document.getElementById('m-type').value = 'foto';
-  // kleine bevestiging tonen
-  const zone = document.getElementById('camera-zone');
-  zone.style.borderColor = '#4caf50';
-  setTimeout(() => zone.style.borderColor = '', 1500);
+  document.getElementById('camera-zone').style.borderColor = '#69f0ae';
+  setTimeout(() => document.getElementById('camera-zone').style.borderColor = '', 1500);
 }
 
 function fotoOpnieuw() {
@@ -1156,150 +772,114 @@ function fotoOpnieuw() {
   document.getElementById('camera-zone').style.borderColor  = '';
 }
 
-// ═══════════════════════════════════════════════
-//  MELDINGEN VERSTUREN
-// ═══════════════════════════════════════════════
+// ── Meldingen versturen ──
 async function verstuurMelding() {
   const naam  = document.getElementById('m-naam').value.trim();
   const type  = document.getElementById('m-type').value;
   const tekst = document.getElementById('m-tekst').value.trim();
-
   if (!naam) { alert('Selecteer je naam.'); return; }
   if (!tekst && !huidigeFoto) { alert('Voeg een bericht of foto toe.'); return; }
 
   const btn = document.getElementById('btn-verstuur');
-  btn.disabled = true;
-  btn.textContent = '⏳ Versturen…';
+  btn.disabled = true; btn.textContent = '⏳ Versturen…';
 
   const data = {
-    naam,
-    type,
+    naam, type,
     tekst: tekst || null,
     foto: huidigeFoto || null,
     created_at: new Date().toISOString(),
     reacties: []
   };
 
-  try {
-    const result = await SB.insert('meldingen', data);
-    if (result) {
-      // reset formulier
-      document.getElementById('m-tekst').value = '';
-      fotoOpnieuw();
-      laadMeldingen();
-    } else {
-      // offline fallback: sla lokaal op
-      const lokaal = JSON.parse(localStorage.getItem('wwl_meldingen_lokaal') || '[]');
-      data.id = Date.now();
-      lokaal.unshift(data);
-      localStorage.setItem('wwl_meldingen_lokaal', JSON.stringify(lokaal.slice(0,40)));
-      renderMeldingen(lokaal);
-    }
-  } catch(e) {
-    console.error(e);
+  const result = await SB.insert('meldingen', data);
+  if (result) {
+    document.getElementById('m-tekst').value = '';
+    fotoOpnieuw();
+    laadMeldingen();
+  } else {
+    const lokaal = JSON.parse(localStorage.getItem('wwl_lokaal') || '[]');
+    data.id = Date.now();
+    lokaal.unshift(data);
+    localStorage.setItem('wwl_lokaal', JSON.stringify(lokaal.slice(0,40)));
+    renderMeldingen(lokaal);
   }
 
-  btn.disabled = false;
-  btn.textContent = '➤ Versturen';
+  btn.disabled = false; btn.textContent = '➤ Versturen → verschijnt direct op alle schermen';
 }
 
 function verstuurWhatsapp() {
   const naam  = document.getElementById('m-naam').value || '?';
   const type  = document.getElementById('m-type').value;
   const tekst = document.getElementById('m-tekst').value || '—';
-  const url   = `https://wa.me/?text=${encodeURIComponent(`[WWL – ${type}]\n${naam}: ${tekst}`)}`;
-  window.open(url, '_blank');
+  window.open(`https://wa.me/?text=${encodeURIComponent(`[WWL – ${type}]\n${naam}: ${tekst}`)}`, '_blank');
 }
 
-// ═══════════════════════════════════════════════
-//  MELDINGEN LADEN & RENDEREN
-// ═══════════════════════════════════════════════
+// ── Meldingen laden ──
 async function laadMeldingen() {
   let items = await SB.get('meldingen');
   if (!items || !items.length) {
-    // fallback lokaal
-    items = JSON.parse(localStorage.getItem('wwl_meldingen_lokaal') || '[]');
+    items = JSON.parse(localStorage.getItem('wwl_lokaal') || '[]');
   }
   renderMeldingen(items);
 }
 
 function renderMeldingen(items) {
-  const feed     = document.getElementById('meldingen-feed');
-  const miniFeed = document.getElementById('mini-feed');
-
+  const feed = document.getElementById('meldingen-feed');
+  const mini = document.getElementById('mini-feed');
   if (!items.length) {
     const leeg = `<div class="empty-state"><span class="es-icon">💬</span>Nog geen meldingen.</div>`;
-    feed.innerHTML = leeg;
-    miniFeed.innerHTML = leeg;
-    return;
+    feed.innerHTML = leeg; mini.innerHTML = leeg; return;
   }
-
-  const html = items.map(m => meldingHtml(m, false)).join('');
-  feed.innerHTML = html;
-
-  // mini-feed op vandaag-tab: max 3, geen foto groot
-  const mini = items.slice(0,3).map(m => meldingHtml(m, true)).join('');
-  miniFeed.innerHTML = mini;
+  feed.innerHTML = items.map(m => meldingHtml(m, false)).join('');
+  mini.innerHTML = items.slice(0,3).map(m => meldingHtml(m, true)).join('');
 }
 
 function meldingHtml(m, mini) {
-  const foto     = profielFotos[m.naam];
-  const avatarEl = foto
-    ? `<img src="${foto}" class="melding-avatar" alt="${m.naam}">`
-    : `<div class="melding-avatar" style="display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700">${(m.naam||'?')[0]}</div>`;
-
-  const tijdStr  = m.created_at
+  const tijdStr = m.created_at
     ? new Date(m.created_at).toLocaleString('nl-NL',{weekday:'short',hour:'2-digit',minute:'2-digit'})
     : 'zojuist';
+  const icoon = {algemeen:'💬',shift:'📅',foto:'📷',schoonmaak:'🧹',info:'ℹ️',whatsapp:'📲'}[m.type]||'💬';
+  const init = (m.naam||'?')[0].toUpperCase();
 
-  const typeIcoon = {
-    algemeen:'💬', shift:'📅', foto:'📷', schoonmaak:'🧹', info:'ℹ️', whatsapp:'📲'
-  }[m.type] || '💬';
-
-  const fotoBlock = m.foto && !mini ? `
-    <div class="melding-foto-wrap" onclick="openLightbox('${m.id || ''}', this)">
-      <img class="melding-foto-thumb" src="${m.foto}" alt="foto" />
-      <span class="foto-vergroten-hint">🔍 vergroot</span>
-    </div>` : m.foto && mini ? `
-    <div class="melding-foto-wrap" onclick="openLightbox('${m.id || ''}', this)">
-      <img class="melding-foto-thumb" src="${m.foto}" alt="foto" style="width:70px;height:50px"/>
-      <span class="foto-vergroten-hint">🔍</span>
+  const fotoBlok = m.foto ? `
+    <div class="melding-foto-wrap" onclick="openLightbox(this)">
+      <img class="melding-foto-thumb" src="${m.foto}" alt="foto"
+        ${mini ? 'style="width:72px;height:52px"' : ''} />
+      <span class="foto-hint">${mini ? '🔍' : '🔍 vergroot'}</span>
     </div>` : '';
 
-  const reactieBlock = !mini ? `
-    <div class="melding-actions">
+  const reactieBlok = !mini ? `
+    <div style="margin-top:6px">
       <button class="btn-tiny" onclick="toggleReactie('${m.id}')">💬 Reageer / voeg tekst toe</button>
     </div>
     <div class="reactie-form" id="rf-${m.id}">
       <input type="text" placeholder="Typ je reactie…" id="ri-${m.id}" />
-      <button class="btn btn-primary" style="padding:7px 12px;font-size:.78rem" onclick="stuurReactie('${m.id}')">↵</button>
+      <button class="btn btn-primary" style="padding:6px 11px;font-size:.76rem" onclick="stuurReactie('${m.id}')">↵</button>
     </div>` : '';
 
   const reactieLijst = (m.reacties && m.reacties.length && !mini) ? `
-    <div style="margin-top:8px;border-top:1px solid #ffffff10;padding-top:8px">
-      ${m.reacties.map(r => `<p style="font-size:.78rem;color:#aab;margin-bottom:4px">↳ ${r}</p>`).join('')}
+    <div style="margin-top:6px;border-top:1px solid #ffffff0e;padding-top:6px">
+      ${m.reacties.map(r=>`<p style="font-size:.76rem;color:#99a;margin-bottom:3px">↳ ${r}</p>`).join('')}
     </div>` : '';
 
   return `
-    <div class="melding-item" id="mi-${m.id}">
+    <div class="melding-item">
       <div class="melding-header">
-        ${avatarEl}
+        <div class="melding-avatar">${init}</div>
         <div class="melding-meta">
-          <div class="melding-name">${m.naam || '—'}</div>
-          <div class="melding-type ${m.type === 'foto' || m.type === 'schoonmaak' ? 'type-foto' : ''}">${typeIcoon} ${m.type || 'melding'}</div>
+          <div class="melding-name">${m.naam||'—'}</div>
+          <div class="melding-type">${icoon} ${m.type||'melding'}</div>
         </div>
         <div class="melding-time">${tijdStr}</div>
       </div>
       ${m.tekst ? `<div class="melding-tekst">${m.tekst}</div>` : ''}
-      ${fotoBlock}
+      ${fotoBlok}
       ${reactieLijst}
-      ${reactieBlock}
+      ${reactieBlok}
     </div>`;
 }
 
-// ═══════════════════════════════════════════════
-//  REACTIES
-// ═══════════════════════════════════════════════
+// ── Reacties ──
 function toggleReactie(id) {
   const el = document.getElementById(`rf-${id}`);
   el.classList.toggle('open');
@@ -1312,53 +892,36 @@ async function stuurReactie(id) {
   if (!tekst) return;
   const naam = document.getElementById('m-naam').value || '?';
   const reactieTekst = `${naam}: ${tekst}`;
-
-  // probeer via Supabase te updaten
   try {
     const items = await SB.get('meldingen');
-    const melding = items.find(m => String(m.id) === String(id));
-    if (melding) {
-      const nieuw = [...(melding.reacties || []), reactieTekst];
-      await SB.update('meldingen', id, { reacties: nieuw });
-    }
+    const m = items.find(x => String(x.id) === String(id));
+    if (m) await SB.update('meldingen', id, { reacties: [...(m.reacties||[]), reactieTekst] });
   } catch(e) {}
-
-  // ook lokaal bijwerken voor onmiddellijke feedback
-  const lokaal = JSON.parse(localStorage.getItem('wwl_meldingen_lokaal') || '[]');
-  const idx = lokaal.findIndex(m => String(m.id) === String(id));
+  const lokaal = JSON.parse(localStorage.getItem('wwl_lokaal') || '[]');
+  const idx = lokaal.findIndex(x => String(x.id) === String(id));
   if (idx > -1) {
-    lokaal[idx].reacties = [...(lokaal[idx].reacties || []), reactieTekst];
-    localStorage.setItem('wwl_meldingen_lokaal', JSON.stringify(lokaal));
+    lokaal[idx].reacties = [...(lokaal[idx].reacties||[]), reactieTekst];
+    localStorage.setItem('wwl_lokaal', JSON.stringify(lokaal));
   }
-
   input.value = '';
   document.getElementById(`rf-${id}`).classList.remove('open');
   laadMeldingen();
 }
 
-// ═══════════════════════════════════════════════
-//  LIGHTBOX
-// ═══════════════════════════════════════════════
-function openLightbox(id, el) {
-  const img    = el.querySelector('img');
-  const lb     = document.getElementById('lightbox');
-  const lbImg  = document.getElementById('lightbox-img');
-  const lbCap  = document.getElementById('lightbox-caption');
-  lbImg.src = img.src;
-  // zoek bijbehorende tekst
+// ── Lightbox ──
+function openLightbox(el) {
+  const img = el.querySelector('img');
+  document.getElementById('lightbox-img').src = img.src;
   const item = el.closest('.melding-item');
   const tekst = item ? item.querySelector('.melding-tekst') : null;
-  lbCap.textContent = tekst ? tekst.textContent : '';
-  lb.classList.add('open');
+  document.getElementById('lightbox-caption').textContent = tekst ? tekst.textContent : '';
+  document.getElementById('lightbox').classList.add('open');
 }
-
 function sluitLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
 
-// ═══════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════
+// ── Init ──
 function init() {
   if (!SUPABASE_URL || SUPABASE_URL === 'JOUW_SUPABASE_URL') {
     document.getElementById('supabase-warning').style.display = 'block';
@@ -1366,8 +929,8 @@ function init() {
   bouwWeek();
   bouwVandaag();
   bouwRotatie();
-  bouwProfielen();
-  startPolling();
+  laadMeldingen();
+  setInterval(laadMeldingen, 8000);
 }
 
 init();
