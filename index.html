@@ -106,11 +106,11 @@
                   border: 1px solid var(--border); margin-bottom: 16px; }
   .melding-form label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
                         letter-spacing: 0.06em; color: var(--muted); display: block; margin-bottom: 6px; }
-  .melding-form input, .melding-form textarea {
+  .melding-form input, .melding-form select, .melding-form textarea {
     width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
     font-size: 0.9rem; outline: none; margin-bottom: 14px; font-family: inherit;
     background: var(--surface2); color: var(--text); }
-  .melding-form input:focus, .melding-form textarea:focus { border-color: var(--bank); }
+  .melding-form input:focus, .melding-form select:focus, .melding-form textarea:focus { border-color: var(--bank); }
   .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
   .type-btn { padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border);
               font-size: 0.8rem; font-weight: 600; cursor: pointer; text-align: center;
@@ -142,65 +142,34 @@
   .live-dot { display: inline-block; width: 7px; height: 7px; background: #4ade80;
               border-radius: 50%; margin-right: 6px; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-  /* ── FOTO IN MELDING ── */
-  .melding-foto-wrap {
-    width: 100%; margin-top: 8px; cursor: pointer;
-  }
-  .melding-foto-thumb {
-    width: 110px; height: 80px; object-fit: cover;
-    border-radius: 10px; border: 1px solid var(--border);
-    display: block; transition: opacity 0.15s;
-  }
+  .melding-foto-wrap { width: 100%; margin-top: 8px; cursor: pointer; }
+  .melding-foto-thumb { width: 110px; height: 80px; object-fit: cover;
+    border-radius: 10px; border: 1px solid var(--border); display: block; transition: opacity 0.15s; }
   .melding-foto-thumb:hover { opacity: 0.8; }
-  .foto-hint {
-    font-size: 0.6rem; color: var(--subtle); margin-top: 3px;
-  }
-
-  /* ── CAMERA ZONE ── */
-  .camera-zone {
-    background: var(--surface2); border: 1px dashed var(--border);
-    border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 14px;
-  }
-  .camera-zone video {
-    width: 100%; border-radius: 8px; display: none;
-    max-height: 220px; object-fit: cover;
-  }
+  .foto-hint { font-size: 0.6rem; color: var(--subtle); margin-top: 3px; }
+  .camera-zone { background: var(--surface2); border: 1px dashed var(--border);
+    border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 14px; }
+  .camera-zone video { width: 100%; border-radius: 8px; display: none; max-height: 220px; object-fit: cover; }
   .camera-zone canvas { display: none; }
-  #foto-preview {
-    width: 100%; border-radius: 8px; display: none;
-    max-height: 220px; object-fit: cover; margin-bottom: 8px;
-  }
+  #foto-preview { width: 100%; border-radius: 8px; display: none; max-height: 220px; object-fit: cover; margin-bottom: 8px; }
   .cam-placeholder { padding: 20px 0; color: var(--subtle); font-size: 0.82rem; }
   .cam-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
   .cam-btn-rij { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
-  .cam-btn {
-    padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border);
+  .cam-btn { padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border);
     font-size: 0.82rem; font-weight: 600; cursor: pointer;
-    background: var(--surface2); color: var(--text); transition: all 0.15s;
-  }
+    background: var(--surface2); color: var(--text); transition: all 0.15s; }
   .cam-btn:hover { border-color: var(--bank); color: var(--bank); }
   .cam-btn-primary { background: var(--bank-border); border-color: var(--bank-border); color: white; }
   .cam-btn-primary:hover { opacity: 0.85; color: white; }
   .cam-btn-green { background: var(--kook-border); border-color: var(--kook-border); color: white; }
   .cam-btn-green:hover { opacity: 0.85; color: white; }
-
-  /* ── LIGHTBOX ── */
-  #lightbox {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.93); z-index: 9999;
-    align-items: center; justify-content: center;
-    flex-direction: column; padding: 20px;
-  }
+  #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.93);
+    z-index: 9999; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
   #lightbox.open { display: flex; }
   #lightbox img { max-width: 100%; max-height: 78vh; border-radius: 12px; }
   #lightbox-caption { margin-top: 12px; color: var(--muted); font-size: 0.82rem; text-align: center; max-width: 500px; }
-  #lightbox-close {
-    position: absolute; top: 16px; right: 20px;
-    background: none; border: none; color: white;
-    font-size: 2rem; cursor: pointer; line-height: 1;
-  }
-
+  #lightbox-close { position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
   @media (max-width: 480px) {
     .kaart-grid { grid-template-columns: 1fr; }
     .type-grid  { grid-template-columns: 1fr; }
@@ -332,13 +301,21 @@
     </div>
     <div class="melding-form">
       <label>Jouw naam</label>
-      <select id="inp-naam" size="1" <select id="inp-naam" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:0.9rem;outline:none;margin-bottom:14px;font-family:inherit;background:var(--surface2);color:var(--text)">   <option value="">— selecteer je naam —</option>   <option>Vu</option><option>Norman</option><option>Raymond</option>   <option>Stan</option><option>Henk</option><option>Edgars</option>   <option>Joël</option><option>Joey</option><option>Stefano</option>   <option>Sjoerd</option><option>Antoine</option><option>Gerry</option>   <option>Walter</option><option>Mark</option><option>Adam</option>   <option>Altib</option><option>Radwan</option><option>Jemal</option>   <option>Frans</option><option>Jordy</option><option>Abdi</option>   <option>Johnny</option> </select>>
+      <select id="inp-naam" size="1">
+        <option value="">— selecteer je naam —</option>
+        <option>Abdi</option><option>Adam</option><option>Altib</option>
+        <option>Antoine</option><option>Edgars</option><option>Frans</option>
+        <option>Gerry</option><option>Henk</option><option>Jemal</option>
+        <option>Joey</option><option>Joël</option><option>Johnny</option>
+        <option>Jordy</option><option>Mark</option><option>Norman</option>
+        <option>Radwan</option><option>Raymond</option><option>Sjoerd</option>
+        <option>Stan</option><option>Stefano</option><option>Vu</option>
+        <option>Walter</option>
+      </select>
       <label>Type melding</label>
       <div class="type-grid" id="type-grid"></div>
       <label>Toelichting (optioneel)</label>
       <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
-
-      <!-- CAMERA ZONE -->
       <label>Foto (optioneel)</label>
       <div class="camera-zone" id="camera-zone">
         <div class="cam-placeholder" id="cam-placeholder">
@@ -362,8 +339,6 @@
           <button class="cam-btn" onclick="fotoOpnieuw()">↩ Opnieuw</button>
         </div>
       </div>
-      <!-- /CAMERA ZONE -->
-
       <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen → verschijnt direct op alle schermen</button>
       <a class="wa-btn" href="#" onclick="return waSturen()">📲 Sturen via WhatsApp</a>
     </div>
@@ -373,7 +348,6 @@
 
 </div>
 
-<!-- LIGHTBOX -->
 <div id="lightbox" onclick="sluitLightbox()">
   <button id="lightbox-close" onclick="sluitLightbox()">✕</button>
   <img id="lightbox-img" src="" alt="" />
@@ -381,12 +355,8 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  SUPABASE INSTELLINGEN
-// ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://mczmtdyiqwvpuuobdlpc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FVv3NW9h79SuO1gxk4TtDw_LC4Hmw6N';
-// ═══════════════════════════════════════════════
 
 const BEHEER = ["Mark","Walter","Altib","Adam"];
 const DAGEN_NL   = ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"];
@@ -422,15 +392,11 @@ const MELDING_TYPES = [
   {id:"laat",    label:"⏰ Ik ben te laat",   kleur:"#fbbf24", bg:"#2a1a00"},
   {id:"bel",     label:"📞 Bel me even",      kleur:"#60a5fa", bg:"#0c1d3d"},
   {id:"ruil",    label:"🔄 Shift ruilen",     kleur:"#a78bfa", bg:"#2d1f5e"},
-  {id:"foto",    label:"📷 Foto melding",     kleur:"#f5a623", bg:"#2a1a00"},
   {id:"algemeen",label:"💬 Algemeen bericht", kleur:"#e2e8f0", bg:"#334155"},
 ];
 
-// ── Camera state ──
 let huidigeFoto  = null;
 let cameraStream = null;
-
-// ─── SUPABASE INIT ────────────────────────────
 let sb = null;
 let supabaseActief = false;
 
@@ -444,18 +410,14 @@ function initSupabase() {
     supabaseActief = true;
     laadMeldingen();
     luisterLive();
-  } catch(e) {
-    console.error('Supabase fout:', e);
-  }
+  } catch(e) { console.error('Supabase fout:', e); }
 }
 
 async function laadMeldingen() {
   if (!supabaseActief) return;
   const {data, error} = await sb.from('meldingen')
     .select('*').order('created_at', {ascending: false}).limit(20);
-  if (!error && data) {
-    renderMeldingenData(data);
-  }
+  if (!error && data) renderMeldingenData(data);
 }
 
 function luisterLive() {
@@ -463,11 +425,9 @@ function luisterLive() {
   sb.channel('meldingen-live')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'meldingen'}, () => {
       laadMeldingen();
-    })
-    .subscribe();
+    }).subscribe();
 }
 
-// ─── KLOK ─────────────────────────────────────
 function updateKlok() {
   const nu = new Date();
   document.getElementById('klok').textContent =
@@ -477,7 +437,6 @@ function updateKlok() {
 }
 updateKlok(); setInterval(updateKlok, 1000);
 
-// ─── TABS ─────────────────────────────────────
 function toon(id, el) {
   document.querySelectorAll('.sectie').forEach(s=>s.classList.remove('actief'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('actief'));
@@ -490,7 +449,6 @@ function toon(id, el) {
   stopCamera();
 }
 
-// ─── VANDAAG ──────────────────────────────────
 function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
 
 function renderVandaagMetMeldingen(meldingen) {
@@ -502,9 +460,9 @@ function renderVandaagMetMeldingen(meldingen) {
   const bOch = d.bankOch ? d.bankOch.replace('★','').trim() : null;
   const bAv  = d.bank    ? d.bank.replace('★','').trim()    : null;
   if(bOch) kaarten.push({rol:'Bank ochtend',naam:bOch,tijd:'10:00–16:00',cls:'bankoch'});
-  if(d.kook)   kaarten.push({rol:'Kook',   naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
-  if(bAv)  kaarten.push({rol:'Bank avond', naam:bAv, tijd:'16:00–22:00',cls:'bank'});
-  if(d.corvee) kaarten.push({rol:'Corvee', naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
+  if(d.kook)   kaarten.push({rol:'Kook',naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
+  if(bAv)  kaarten.push({rol:'Bank avond',naam:bAv,tijd:'16:00–22:00',cls:'bank'});
+  if(d.corvee) kaarten.push({rol:'Corvee',naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
   document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>`
     <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}">
       <div class="rol">${k.rol}</div>
@@ -519,7 +477,6 @@ function renderVandaag() {
   laadMeldingen();
 }
 
-// ─── WEEK ─────────────────────────────────────
 function pill(naam, type) {
   const rawNaam = naam.replace('★','').trim();
   const isB = BEHEER.includes(rawNaam);
@@ -545,7 +502,6 @@ function renderWeek() {
   }).join('');
 }
 
-// ─── ROTATIE ──────────────────────────────────
 function bankOpRij(hist) {
   let n=0;
   for(let i=hist.length-1;i>=0;i--){ if(hist[i]==='B') n++; else break; }
@@ -574,7 +530,6 @@ function renderRotatie() {
   document.getElementById('rot-tabel').innerHTML = html;
 }
 
-// ─── CAMERA ───────────────────────────────────
 async function startCamera() {
   document.getElementById('cam-placeholder').style.display = 'none';
   document.getElementById('cam-btns-idle').style.display   = 'none';
@@ -656,7 +611,6 @@ function fotoOpnieuw() {
   document.getElementById('camera-zone').style.borderColor  = '';
 }
 
-// ─── MELDINGEN ────────────────────────────────
 let gekozenType = 'algemeen';
 
 function renderTypeKnoppen() {
@@ -669,14 +623,12 @@ function kiesType(id){ gekozenType=id; renderTypeKnoppen(); }
 async function verstuurMelding() {
   const naam    = document.getElementById('inp-naam').value.trim();
   const bericht = document.getElementById('inp-bericht').value.trim();
-  if(!naam){ alert('Vul je naam in.'); return; }
+  if(!naam){ alert('Selecteer je naam.'); return; }
   if(!bericht && !huidigeFoto){ alert('Voeg een bericht of foto toe.'); return; }
-
   const t = MELDING_TYPES.find(x=>x.id===gekozenType);
   const btn = document.getElementById('verstuur-btn');
   btn.disabled = true;
   btn.textContent = 'Bezig...';
-
   if(supabaseActief) {
     const {error} = await sb.from('meldingen').insert([{
       naam, type: gekozenType, label: t.label,
@@ -687,7 +639,6 @@ async function verstuurMelding() {
     }]);
     if(error) { alert('Fout bij versturen: ' + error.message); }
   }
-
   document.getElementById('inp-naam').value    = '';
   document.getElementById('inp-bericht').value = '';
   fotoOpnieuw();
@@ -728,7 +679,6 @@ function renderMeldingenData(data) {
   renderVandaagMetMeldingen(data);
 }
 
-// ─── LIGHTBOX ─────────────────────────────────
 function openLightbox(el) {
   const img = el.querySelector('img');
   document.getElementById('lightbox-img').src = img.src;
@@ -750,7 +700,6 @@ function waSturen() {
   return false;
 }
 
-// ─── INIT ─────────────────────────────────────
 renderTypeKnoppen();
 renderVandaag();
 renderWeek();
