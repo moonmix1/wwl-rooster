@@ -1,552 +1,377 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WWL</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WWL Rooster – Woon Werk Leerplek</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #263347;
+    --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --subtle: #64748b;
+    --bank: #a78bfa; --bank-bg: #2d1f5e; --bank-border: #5b21b6;
+    --corvee: #fb923c; --corvee-bg: #431407; --corvee-border: #9a3412;
+    --kook: #4ade80; --kook-bg: #052e16; --kook-border: #166534;
+    --bankoch: #60a5fa; --bankoch-bg: #0c1d3d; --bankoch-border: #1d4ed8;
+    --warn: #f87171; --warn-bg: #3b0a0a; --oranje: #fb923c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; color: white; }
+  .header p  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  #klok  { font-size: 2rem; font-weight: 700; color: white; text-align: right; font-variant-numeric: tabular-nums; }
+  #datum { font-size: 0.75rem; color: var(--muted); text-align: right; margin-top: 2px; }
+  .setup-banner { background: #422006; border-bottom: 2px solid #f97316; padding: 12px 24px;
+                  font-size: 0.82rem; color: #fdba74; display: none; }
+  .setup-banner a { color: #fb923c; font-weight: 700; }
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border);
+          overflow-x: auto; padding: 0 8px; }
+  .tab { padding: 14px 18px; font-size: 0.85rem; font-weight: 600; color: var(--subtle);
+         cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent;
+         margin-bottom: -1px; transition: all 0.15s;
+         display: inline-flex; align-items: center; gap: 5px; }
+  .tab.actief { color: var(--bank); border-bottom-color: var(--bank); }
+  .tab:hover:not(.actief) { color: var(--muted); }
+  .content { padding: 20px; max-width: 900px; margin: 0 auto; }
+  .sectie { display: none; }
+  .sectie.actief { display: block; }
+  .sectie-titel { font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: 0.1em; color: var(--subtle); margin-bottom: 12px; }
+  .kaart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .kaart { border-radius: 14px; padding: 16px; border: 1px solid; }
+  .kaart .rol { font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 0.08em; margin-bottom: 6px; }
+  .kaart .naam { font-size: 1.5rem; font-weight: 800; color: white; }
+  .kaart .tijd { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
+  .kaart.ziek .naam { text-decoration: line-through; color: var(--warn); }
+  .kaart.ziek { border-color: var(--warn) !important; }
+  .ziek-badge { font-size: 0.7rem; font-weight: 700; color: var(--warn); margin-top: 4px; }
+  .kaart-bank    { background: var(--bank-bg);    border-color: var(--bank-border); }
+  .kaart-bankoch { background: var(--bankoch-bg); border-color: var(--bankoch-border); }
+  .kaart-corvee  { background: var(--corvee-bg);  border-color: var(--corvee-border); }
+  .kaart-kook    { background: var(--kook-bg);    border-color: var(--kook-border); }
+  .kaart-bank .rol    { color: var(--bank); }
+  .kaart-bankoch .rol { color: var(--bankoch); }
+  .kaart-corvee .rol  { color: var(--corvee); }
+  .kaart-kook .rol    { color: var(--kook); }
+  .week-tabel { width: 100%; border-collapse: collapse; }
+  .week-tabel th { background: var(--surface2); color: var(--muted); padding: 10px 14px;
+                   text-align: left; font-size: 0.7rem; font-weight: 600; border-bottom: 1px solid var(--border); }
+  .week-tabel td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .week-tabel tr.vandaag td { background: #1c2a1a; }
+  .week-tabel tr:hover td { background: var(--surface2); }
+  .dag-label { font-weight: 700; color: white; font-size: 0.85rem; }
+  .kantoor-label { font-size: 0.65rem; color: var(--subtle); font-style: italic; }
+  .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
+          padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
+  .pill-naam { display: block; }
+  .pill-sub  { display: block; font-size: 0.6rem; font-weight: 500; opacity: 0.8; margin-top: 1px; }
+  .pill-bank    { background: var(--bank-bg);    color: var(--bank);    border: 1px solid var(--bank-border); }
+  .pill-bankoch { background: var(--bankoch-bg); color: var(--bankoch); border: 1px solid var(--bankoch-border); }
+  .pill-corvee  { background: var(--corvee-bg);  color: var(--corvee);  border: 1px solid var(--corvee-border); }
+  .pill-kook    { background: var(--kook-bg);    color: var(--kook);    border: 1px solid var(--kook-border); }
+  .rot-wrap { overflow-x: auto; }
+  .rot-tabel { border-collapse: collapse; min-width: 100%; font-size: 0.75rem; }
+  .rot-tabel th { background: var(--surface2); color: var(--muted); padding: 8px 10px;
+                  text-align: center; font-size: 0.68rem; font-weight: 600;
+                  border: 1px solid var(--border); white-space: nowrap; }
+  .rot-tabel th.naam-col { text-align: left; }
+  .rot-tabel td { padding: 7px 10px; border: 1px solid var(--border); text-align: center; }
+  .rot-tabel td.naam-cel { text-align: left; font-weight: 700; color: white;
+                            white-space: nowrap; background: var(--surface); }
+  .rot-tabel tr.warn-rood   td.naam-cel { border-left: 4px solid var(--warn); }
+  .rot-tabel tr.warn-oranje td.naam-cel { border-left: 4px solid var(--oranje); }
+  .rot-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; }
+  .rot-B { background: var(--bank-bg);   color: var(--bank); }
+  .rot-C { background: var(--corvee-bg); color: var(--corvee); }
+  .rot-K { background: var(--kook-bg);   color: var(--kook); }
+  .status-ok     { color: #4ade80; font-size: 0.7rem; }
+  .status-oranje { color: var(--oranje); font-size: 0.7rem; font-weight: 700; }
+  .status-rood   { color: var(--warn);   font-size: 0.7rem; font-weight: 700; }
+  .regel-blok { background: var(--surface); border-radius: 14px; padding: 18px;
+                margin-bottom: 12px; border: 1px solid var(--border); }
+  .regel-blok h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: white; }
+  .regel-blok ul { padding-left: 18px; }
+  .regel-blok li { font-size: 0.83rem; margin-bottom: 7px; line-height: 1.6; color: var(--text); }
+  .regel-tabel { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .regel-tabel td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .regel-tabel td:first-child { font-weight: 700; color: white; }
+  .rust-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+              padding: 16px; font-size: 0.82rem; color: var(--text); line-height: 1.7; }
+  .rust-box strong { color: white; }
+  .melding-form { background: var(--surface); border-radius: 14px; padding: 18px;
+                  border: 1px solid var(--border); margin-bottom: 16px; }
+  .melding-form label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                        letter-spacing: 0.06em; color: var(--muted); display: block; margin-bottom: 6px; }
+  .melding-form input, .melding-form textarea {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 0.9rem; outline: none; margin-bottom: 14px; font-family: inherit;
+    background: var(--surface2); color: var(--text); }
+  .melding-form input:focus, .melding-form textarea:focus { border-color: var(--bank); }
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .type-btn { padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border);
+              font-size: 0.8rem; font-weight: 600; cursor: pointer; text-align: center;
+              background: var(--surface2); color: var(--muted); transition: all 0.15s; }
+  .type-btn.actief { border-color: var(--bank); background: var(--bank-bg); color: var(--bank); }
+  .verstuur-btn { width: 100%; padding: 14px; background: var(--bank-border); color: white;
+                  border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
+                  cursor: pointer; margin-bottom: 10px; transition: opacity 0.15s; }
+  .verstuur-btn:hover { opacity: 0.85; }
+  .verstuur-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 12px; background: #128C7E; color: white;
+            border: none; border-radius: 12px; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; text-decoration: none; }
+  .info-box { background: var(--kook-bg); border: 1px solid var(--kook-border);
+              border-radius: 12px; padding: 12px 14px; font-size: 0.8rem; color: var(--kook); margin-bottom: 14px; }
+  .melding-lijst { display: flex; flex-direction: column; gap: 8px; }
+  .melding-item { background: var(--surface); border-radius: 12px; padding: 12px 14px;
+                  border: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .melding-badge { padding: 3px 8px; border-radius: 99px; font-size: 0.7rem;
+                   font-weight: 700; white-space: nowrap; flex-shrink: 0;
+                   min-width: 110px; text-align: center; }
+  .melding-naam  { font-weight: 700; font-size: 0.85rem; color: white; }
+  .melding-tekst { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .melding-tijd  { font-size: 0.68rem; color: var(--subtle); margin-left: auto; flex-shrink: 0; }
+  .verwijder-btn { background: none; border: none; color: var(--border); cursor: pointer;
+                   font-size: 0.9rem; padding: 0 4px; flex-shrink: 0; }
+  .verwijder-btn:hover { color: var(--warn); }
+  .live-dot { display: inline-block; width: 7px; height: 7px; background: #4ade80;
+              border-radius: 50%; margin-right: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    :root {
-      --bg:      #0d1b2a;
-      --surface: #1b2838;
-      --card:    #22334a;
-      --accent:  #4fc3f7;
-      --gold:    #ffd54f;
-      --green:   #69f0ae;
-      --red:     #ff5252;
-      --orange:  #ffab40;
-      --purple:  #ce93d8;
-      --text:    #e8eaf6;
-      --muted:   #7986a0;
-      --radius:  14px;
-    }
+  /* ── FOTO IN MELDING ── */
+  .melding-foto-wrap {
+    width: 100%; margin-top: 8px; cursor: pointer;
+  }
+  .melding-foto-thumb {
+    width: 110px; height: 80px; object-fit: cover;
+    border-radius: 10px; border: 1px solid var(--border);
+    display: block; transition: opacity 0.15s;
+  }
+  .melding-foto-thumb:hover { opacity: 0.8; }
+  .foto-hint {
+    font-size: 0.6rem; color: var(--subtle); margin-top: 3px;
+  }
 
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 72px;
-    }
+  /* ── CAMERA ZONE ── */
+  .camera-zone {
+    background: var(--surface2); border: 1px dashed var(--border);
+    border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 14px;
+  }
+  .camera-zone video {
+    width: 100%; border-radius: 8px; display: none;
+    max-height: 220px; object-fit: cover;
+  }
+  .camera-zone canvas { display: none; }
+  #foto-preview {
+    width: 100%; border-radius: 8px; display: none;
+    max-height: 220px; object-fit: cover; margin-bottom: 8px;
+  }
+  .cam-placeholder { padding: 20px 0; color: var(--subtle); font-size: 0.82rem; }
+  .cam-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+  .cam-btn-rij { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+  .cam-btn {
+    padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border);
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all 0.15s;
+  }
+  .cam-btn:hover { border-color: var(--bank); color: var(--bank); }
+  .cam-btn-primary { background: var(--bank-border); border-color: var(--bank-border); color: white; }
+  .cam-btn-primary:hover { opacity: 0.85; color: white; }
+  .cam-btn-green { background: var(--kook-border); border-color: var(--kook-border); color: white; }
+  .cam-btn-green:hover { opacity: 0.85; color: white; }
 
-    /* HEADER */
-    header {
-      background: var(--surface);
-      padding: 14px 18px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #ffffff12;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    header h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: .06em; color: var(--gold); }
-    header p  { font-size: .7rem; color: var(--muted); margin-top: 1px; }
-    #clock    { font-size: 1.05rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.93); z-index: 9999;
+    align-items: center; justify-content: center;
+    flex-direction: column; padding: 20px;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 100%; max-height: 78vh; border-radius: 12px; }
+  #lightbox-caption { margin-top: 12px; color: var(--muted); font-size: 0.82rem; text-align: center; max-width: 500px; }
+  #lightbox-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: white;
+    font-size: 2rem; cursor: pointer; line-height: 1;
+  }
 
-    /* TABS */
-    nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      background: var(--surface);
-      border-top: 1px solid #ffffff12;
-      z-index: 200;
-    }
-    nav button {
-      flex: 1;
-      background: none;
-      border: none;
-      color: var(--muted);
-      padding: 9px 2px 7px;
-      font-size: .62rem;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    nav button span.icon { font-size: 1.25rem; }
-    nav button.active { color: var(--gold); }
-
-    /* SECTIES */
-    section { display: none; padding: 14px; }
-    section.active { display: block; }
-
-    h2 {
-      font-size: .95rem;
-      color: var(--gold);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* KAARTEN */
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-
-    /* TABEL */
-    .tbl-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
-    th { background: #162030; color: var(--gold); padding: 7px 5px; text-align: left; white-space: nowrap; }
-    td { padding: 6px 5px; border-bottom: 1px solid #ffffff0e; vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 7px;
-      border-radius: 20px;
-      font-size: .7rem;
-      font-weight: 700;
-    }
-    .b-bank-och { background: #1565c0; }
-    .b-kook     { background: #2e7d32; }
-    .b-bank-av  { background: #6a1b9a; }
-    .b-corvee   { background: #bf360c; }
-    .note { font-size: .68rem; color: var(--muted); margin-top: 8px; }
-
-    /* ROTATIE */
-    .rot-row {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 0;
-      border-bottom: 1px solid #ffffff0e;
-    }
-    .rot-row:last-child { border-bottom: none; }
-    .rot-name { width: 80px; font-size: .82rem; font-weight: 600; flex-shrink: 0; }
-    .rot-dots { display: flex; gap: 4px; flex: 1; }
-    .rot-dot {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .6rem; font-weight: 700;
-    }
-    .dot-bank   { background: #1565c0; }
-    .dot-corvee { background: #bf360c; }
-    .dot-kook   { background: #2e7d32; }
-    .dot-leeg   { background: #ffffff12; }
-    .dot-beheer { background: #444; }
-    .rot-status { font-size: 1rem; }
-
-    .legend {
-      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
-    }
-    .legend span {
-      font-size: .7rem; padding: 2px 8px;
-      border-radius: 10px; background: #ffffff10;
-    }
-
-    /* ACCORDION */
-    details {
-      background: var(--card);
-      border-radius: var(--radius);
-      margin-bottom: 8px;
-      overflow: hidden;
-    }
-    summary {
-      padding: 13px 14px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: .88rem;
-      list-style: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    summary::after { content: '▾'; color: var(--gold); }
-    details[open] summary::after { content: '▴'; }
-    details p, details li { padding: 0 14px 12px; font-size: .83rem; line-height: 1.6; color: #bcc; }
-    details ul { padding-left: 28px; }
-
-    /* FORMULIER */
-    .form-group { margin-bottom: 10px; }
-    label { font-size: .78rem; color: var(--muted); display: block; margin-bottom: 3px; }
-    input[type=text], select, textarea {
-      width: 100%;
-      background: #162030;
-      border: 1px solid #ffffff18;
-      border-radius: 8px;
-      padding: 9px 11px;
-      color: var(--text);
-      font-size: .86rem;
-      outline: none;
-    }
-    input[type=text]:focus, select:focus, textarea:focus { border-color: var(--gold); }
-    textarea { resize: vertical; min-height: 68px; }
-    select option { background: #162030; }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      font-size: .86rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn:active { opacity: .8; }
-    .btn-primary { background: var(--accent); color: #001; }
-    .btn-gold    { background: var(--gold);   color: #111; }
-    .btn-green   { background: #2e7d32;       color: #fff; }
-    .btn-muted   { background: #ffffff14;     color: var(--text); }
-    .btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    /* MELDINGEN */
-    .live-dot {
-      display: inline-block;
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #69f0ae;
-      margin-right: 4px;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
-
-    .melding-item {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 11px 13px;
-      margin-bottom: 8px;
-      animation: fadeIn .3s ease;
-    }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-
-    .melding-header {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin-bottom: 5px;
-    }
-    .melding-avatar {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: #162030;
-      border: 1px solid #ffffff18;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .85rem; font-weight: 700;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .melding-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .melding-meta { flex: 1; }
-    .melding-name { font-weight: 700; font-size: .86rem; }
-    .melding-type { font-size: .7rem; color: var(--muted); }
-    .melding-time { font-size: .66rem; color: var(--muted); }
-    .melding-tekst { font-size: .83rem; line-height: 1.5; color: #ccd; margin-bottom: 5px; }
-
-    /* FOTO IN FEED */
-    .melding-foto-wrap {
-      display: inline-block;
-      position: relative;
-      margin-top: 5px;
-      cursor: pointer;
-    }
-    .melding-foto-thumb {
-      width: 100px; height: 72px;
-      object-fit: cover;
-      border-radius: 7px;
-      border: 2px solid #ffffff18;
-      display: block;
-    }
-    .melding-foto-thumb:hover { opacity: .85; }
-    .foto-hint {
-      position: absolute;
-      bottom: 4px; right: 4px;
-      background: rgba(0,0,0,.6);
-      color: #fff;
-      font-size: .56rem;
-      padding: 2px 4px;
-      border-radius: 3px;
-    }
-
-    /* CAMERA ZONE */
-    .camera-zone {
-      background: #162030;
-      border: 2px dashed #ffffff25;
-      border-radius: var(--radius);
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .camera-zone video {
-      width: 100%; border-radius: 8px;
-      display: none; max-height: 240px; object-fit: cover;
-    }
-    .camera-zone canvas { display: none; }
-    #foto-preview {
-      width: 100%; border-radius: 8px;
-      display: none; max-height: 240px; object-fit: cover;
-    }
-    .cam-placeholder { padding: 24px 0; color: var(--muted); font-size: .82rem; }
-    .cam-placeholder .cam-icon { font-size: 2.4rem; display: block; margin-bottom: 6px; }
-    .btn-row {
-      display: flex; gap: 7px; flex-wrap: wrap;
-      justify-content: center; margin-top: 8px;
-    }
-
-    /* REACTIES */
-    .btn-tiny {
-      padding: 3px 9px; font-size: .7rem;
-      border-radius: 20px;
-      border: 1px solid #ffffff20;
-      background: #ffffff0a;
-      color: var(--muted);
-      cursor: pointer;
-    }
-    .btn-tiny:hover { background: #ffffff18; color: var(--text); }
-    .reactie-form { display: none; margin-top: 6px; gap: 5px; }
-    .reactie-form.open { display: flex; }
-    .reactie-form input { flex: 1; padding: 6px 9px; font-size: .8rem; }
-
-    /* LIGHTBOX */
-    #lightbox {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.93);
-      z-index: 9999;
-      align-items: center; justify-content: center;
-      flex-direction: column; padding: 20px;
-    }
-    #lightbox.open { display: flex; }
-    #lightbox img { max-width: 100%; max-height: 78vh; border-radius: 9px; }
-    #lightbox-caption { margin-top: 10px; color: #bbb; font-size: .83rem; text-align: center; max-width: 460px; }
-    #lightbox-close {
-      position: absolute; top: 14px; right: 18px;
-      background: none; border: none; color: #fff;
-      font-size: 1.9rem; cursor: pointer; line-height: 1;
-    }
-
-    /* RUST BANNER */
-    .rust-banner {
-      background: #162030;
-      border-left: 3px solid var(--muted);
-      border-radius: 8px;
-      padding: 9px 13px;
-      font-size: .8rem;
-      color: var(--muted);
-      margin-top: 10px;
-    }
-
-    .empty-state {
-      text-align: center; color: var(--muted);
-      font-size: .83rem; padding: 28px 0;
-    }
-    .empty-state .es-icon { font-size: 1.9rem; display: block; margin-bottom: 6px; }
-
-    #supabase-warning {
-      background: #5c2a00; color: #ffe;
-      padding: 9px 14px; font-size: .8rem; display: none;
-    }
-  </style>
+  @media (max-width: 480px) {
+    .kaart-grid { grid-template-columns: 1fr; }
+    .type-grid  { grid-template-columns: 1fr; }
+    .header h1  { font-size: 1.4rem; }
+    #klok       { font-size: 1.4rem; }
+  }
+</style>
 </head>
 <body>
 
-<header>
+<div class="header">
   <div>
     <h1>WWL</h1>
     <p>Woon, Werk en Leerplek · Nijmegen</p>
   </div>
-  <div id="clock">--:--</div>
-</header>
-
-<div id="supabase-warning">
-  ⚠️ Supabase nog niet ingesteld →
-  <a href="https://supabase.com" style="color:#ffe">supabase.com</a>
+  <div>
+    <div id="klok">--:--</div>
+    <div id="datum"></div>
+  </div>
 </div>
 
-<!-- VANDAAG -->
-<section id="s-vandaag" class="active">
-  <h2>📅 Diensten vandaag</h2>
-  <div id="diensten-vandaag" class="card">Laden…</div>
-  <h2 style="margin-top:14px"><span class="live-dot"></span>Actieve meldingen</h2>
-  <div id="mini-feed"></div>
-  <div class="rust-banner" id="rust-banner" style="display:none">
-    🌙 Rustperiode 22:00–10:00 — geen diensten.
-  </div>
-</section>
+<div class="setup-banner" id="setup-banner">
+  ⚠️ <strong>Supabase nog niet ingesteld.</strong>
+  Vul <code>SUPABASE_URL</code> en <code>SUPABASE_KEY</code> in bovenaan het script.
+  <a href="https://supabase.com" target="_blank">→ supabase.com</a>
+</div>
 
-<!-- WEEK -->
-<section id="s-week">
-  <h2>🗓 Volledig weekrooster</h2>
-  <div class="card">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Dag</th>
-            <th><span class="badge b-bank-och">Bank och</span><br><small style="font-weight:400;color:#aaa">10–16u · za+zo</small></th>
-            <th><span class="badge b-kook">Kook</span><br><small style="font-weight:400;color:#aaa">14–17u</small></th>
-            <th><span class="badge b-bank-av">Bank av</span><br><small style="font-weight:400;color:#aaa">16–22u</small></th>
-            <th><span class="badge b-corvee">Corvee</span><br><small style="font-weight:400;color:#aaa">17–21u</small></th>
-          </tr>
-        </thead>
-        <tbody id="week-tbody"></tbody>
+<div class="tabs">
+  <div class="tab actief" onclick="toon('vandaag',this)">📅 Vandaag</div>
+  <div class="tab" onclick="toon('weekrooster',this)">🗓 Week</div>
+  <div class="tab" onclick="toon('rotatie',this)">🔄 Rotatie</div>
+  <div class="tab" onclick="toon('regels',this)">📋 Regels</div>
+  <div class="tab" onclick="toon('meldingen',this)">💬 Meldingen</div>
+</div>
+
+<div class="content">
+
+  <div id="s-vandaag" class="sectie actief">
+    <div class="sectie-titel" id="vandaag-label">Diensten vandaag</div>
+    <div class="kaart-grid" id="vandaag-kaarten"></div>
+    <div class="sectie-titel">
+      <span class="live-dot"></span>Actieve meldingen (live)
+    </div>
+    <div id="vandaag-meldingen" class="melding-lijst"></div>
+    <div class="rust-box" style="margin-top:14px">
+      🌙 <strong>Rustperiode 22:00–10:00</strong> — geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.
+    </div>
+  </div>
+
+  <div id="s-weekrooster" class="sectie">
+    <div class="sectie-titel">Volledig weekrooster</div>
+    <div style="overflow-x:auto">
+      <table class="week-tabel">
+        <thead><tr>
+          <th>Dag</th>
+          <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
+          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
+          <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
+          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">17–21u</span></th>
+        </tr></thead>
+        <tbody id="week-body"></tbody>
       </table>
     </div>
-    <p class="note">★ = uitzondering: 2e shift in dezelfde week &nbsp;|&nbsp; 🏠 = beheederswoning</p>
-  </div>
-</section>
-
-<!-- ROTATIE -->
-<section id="s-rotatie">
-  <h2>🔄 Rotatieschema – laatste 4 weken</h2>
-  <div class="card">
-    <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">
-      Na 4× bank op rij: verplicht minimaal 2 weken corvee.
+    <p style="font-size:0.7rem;color:var(--subtle);margin-top:10px">
+      ★ = uitzondering: 2e shift in dezelfde week (normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
     </p>
-    <div id="rotatie-list"></div>
-    <div class="legend">
+  </div>
+
+  <div id="s-rotatie" class="sectie">
+    <div class="sectie-titel">Rotatieschema – laatste 4 weken</div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:14px">Na 4× bank op rij: verplicht minimaal 2 weken corvee.</p>
+    <div class="rot-wrap"><table class="rot-tabel" id="rot-tabel"></table></div>
+    <div style="display:flex;gap:16px;margin-top:12px;font-size:0.72rem;flex-wrap:wrap;color:var(--muted)">
       <span>🔴 Verplicht corvee (4× bank op rij)</span>
       <span>🟠 Let op (3× bank op rij)</span>
       <span>✅ OK</span>
       <span>🏠 Beheederswoning</span>
     </div>
   </div>
-</section>
 
-<!-- REGELS -->
-<section id="s-regels">
-  <h2>📋 Regels & uitleg</h2>
-
-  <details open>
-    <summary>🎯 Hoe kies je je shift?</summary>
-    <ul>
-      <li>Wie het eerst kiest, heeft de meeste keuze. Wees er snel bij — elke week opnieuw.</li>
-      <li>Kiezen doe je via je smartphone: open het rooster, ga naar 💬 Meldingen en stuur een bericht met je naam en de gewenste shift. Iedereen ziet het meteen op het scherm in de woonkamer.</li>
-      <li>Koken mag je altijd kiezen — hier is eerder tekort dan teveel.</li>
-      <li>Bank en corvee: vrije keuze, tenzij je al 4 weken bank hebt gedaan.</li>
-    </ul>
-  </details>
-
-  <details>
-    <summary>★ Wat betekent het sterretje?</summary>
-    <p>Een sterretje betekent dat iemand deze week bij uitzondering een 2e shift draait. Normaal doet iedereen maximaal 1 shift per week (3 tot 6 uur). Ter vergelijking: nu draait iedereen nog 3 shifts van 8 uur per week. Een 2e shift in het nieuwe systeem is dus nog altijd ver onder het huidige niveau.</p>
-  </details>
-
-  <details>
-    <summary>⚖️ Anti-ophoping regel</summary>
-    <p>Na 4 aaneengesloten weken bankshift ben je verplicht minimaal 2 weken corvee te doen. Dit voorkomt dat altijd dezelfde mensen corvee doen terwijl anderen eindeloos bankzitten. Het rotatieschema (tab 🔄) toont wie al lang bank doet.</p>
-  </details>
-
-  <details>
-    <summary>📊 Shift-overzicht</summary>
-    <ul>
-      <li>🔵 <strong>Bank ochtend</strong> · 10–16u · 6 uur · Passief · Za + Zo</li>
-      <li>🟢 <strong>Kook</strong> · 14–17u · 3 uur · Actief · Dagelijks</li>
-      <li>🟣 <strong>Bank avond</strong> · 16–22u · 6 uur · Passief · Dagelijks</li>
-      <li>🟠 <strong>Corvee</strong> · 17–21u · 4 uur · Actief · Dagelijks</li>
-    </ul>
-  </details>
-
-  <details>
-    <summary>🌙 Rustperiode & bankshift-sfeer</summary>
-    <p>Rustperiode 22:00–10:00: geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.</p>
-    <p>De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. Wat 'avond- en nachtsfeer' betekent is moeilijk in regels te vangen. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan. Wie te luid is, krijgt een seintje. Niet omdat het in het reglement staat, maar omdat het fatsoen is.</p>
-    <p>🚪 De deur na 22:00: buiten hangt een duidelijk bord met instructies. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang. Iemand die zich wil aanmelden maar toch blijft aanbellen diskwalificeert zichzelf daarmee eerder dan dat hij naar binnen komt.</p>
-  </details>
-</section>
-
-<!-- MELDINGEN -->
-<section id="s-meldingen">
-  <div class="card" style="font-size:.78rem;color:var(--muted);margin-bottom:12px">
-    <span class="live-dot"></span>
-    Meldingen zijn live gedeeld — iedereen ziet ze direct op zijn telefoon én op het scherm in de woonkamer.
+  <div id="s-regels" class="sectie">
+    <div class="regel-blok">
+      <h3>🎯 Hoe kies je je shift?</h3>
+      <ul>
+        <li><strong>Wie het eerst kiest, heeft de meeste keuze.</strong> Wees er snel bij — elke week opnieuw.</li>
+        <li>Kiezen doe je via je smartphone: open het rooster, ga naar 💬 Meldingen en stuur een bericht met je naam en de gewenste shift. Iedereen ziet het meteen op het scherm in de woonkamer.</li>
+        <li>Koken mag je altijd kiezen — hier is eerder tekort dan teveel.</li>
+        <li>Bank en corvee: vrije keuze, tenzij je al 4 weken bank hebt gedaan.</li>
+      </ul>
+    </div>
+    <div class="regel-blok">
+      <h3>★ Wat betekent het sterretje?</h3>
+      <ul>
+        <li>Een sterretje betekent dat iemand deze week <strong>bij uitzondering een 2e shift</strong> draait.</li>
+        <li>Normaal doet iedereen <strong>maximaal 1 shift per week</strong> (3 tot 6 uur).</li>
+        <li>Ter vergelijking: nu draait iedereen nog 3 shifts van 8 uur per week. Een 2e shift in het nieuwe systeem is dus nog altijd ver onder het huidige niveau.</li>
+      </ul>
+    </div>
+    <div class="regel-blok">
+      <h3>⚖️ Anti-ophoping regel</h3>
+      <ul>
+        <li>Na <strong>4 aaneengesloten weken bankshift</strong> ben je verplicht minimaal <strong>2 weken corvee</strong> te doen.</li>
+        <li>Dit voorkomt dat altijd dezelfde mensen corvee doen terwijl anderen eindeloos bankzitten.</li>
+        <li>Het rotatieschema (tab 🔄) toont wie al lang bank doet.</li>
+      </ul>
+    </div>
+    <div class="regel-blok">
+      <h3>📊 Shift-overzicht</h3>
+      <table class="regel-tabel">
+        <tr><td>🔵 Bank ochtend</td><td>10–16u</td><td>6 uur</td><td>Passief</td><td>Za + Zo</td></tr>
+        <tr><td>🟢 Kook</td><td>14–17u</td><td>3 uur</td><td>Actief</td><td>Dagelijks</td></tr>
+        <tr><td>🟣 Bank avond</td><td>16–22u</td><td>6 uur</td><td>Passief</td><td>Dagelijks</td></tr>
+        <tr><td>🟠 Corvee</td><td>17–21u</td><td>4 uur</td><td>Actief</td><td>Dagelijks</td></tr>
+      </table>
+    </div>
+    <div class="rust-box">
+      🌙 <strong>Rustperiode 22:00–10:00:</strong> geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.
+      <br><br>
+      De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. Wat 'avond- en nachtsfeer' betekent is moeilijk in regels te vangen. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan. Wie te luid is, krijgt een seintje. Niet omdat het in het reglement staat, maar omdat het fatsoen is.
+      <br><br>
+      🚪 <strong>De deur na 22:00:</strong> buiten hangt een duidelijk bord met instructies. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang. Iemand die zich wil aanmelden maar toch blijft aanbellen diskwalificeert zichzelf daarmee eerder dan dat hij naar binnen komt.
+    </div>
   </div>
 
-  <div class="card">
-    <div class="form-group">
+  <div id="s-meldingen" class="sectie">
+    <div class="info-box">
+      <span class="live-dot"></span>
+      Meldingen zijn <strong>live gedeeld</strong> — iedereen ziet ze direct op zijn telefoon én op het scherm in de woonkamer.
+    </div>
+    <div class="melding-form">
       <label>Jouw naam</label>
-      <select id="m-naam">
-        <option value="">— selecteer —</option>
-        <option>Aard</option><option>Bo</option><option>Cas</option>
-        <option>Demi</option><option>Elias</option><option>Fenna</option>
-        <option>Guus</option><option>Hana</option><option>Ilse</option>
-        <option>Joris</option><option>Kira</option><option>Lars</option>
-        <option>Maud</option><option>Noa</option><option>Omar</option>
-        <option>Petra</option><option>Quinten</option><option>Rosa</option>
-        <option>Siem</option><option>Tara</option>
-      </select>
-    </div>
-
-    <div class="form-group">
+      <input type="text" id="inp-naam" placeholder="bijv. Henk">
       <label>Type melding</label>
-      <select id="m-type">
-        <option value="algemeen">💬 Algemeen</option>
-        <option value="shift">📅 Shift-melding</option>
-        <option value="foto">📷 Foto-melding</option>
-        <option value="schoonmaak">🧹 Schoonmaak / vervuiling</option>
-        <option value="info">ℹ️ Info</option>
-        <option value="whatsapp">📲 WhatsApp-doorstuur</option>
-      </select>
-    </div>
+      <div class="type-grid" id="type-grid"></div>
+      <label>Toelichting (optioneel)</label>
+      <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
 
-    <div class="form-group">
-      <label>Toelichting (optioneel — kan ook later via 'Reageer')</label>
-      <textarea id="m-tekst" placeholder="Typ je bericht… of laat leeg en voeg later een reactie toe"></textarea>
-    </div>
+      <!-- CAMERA ZONE -->
+      <label>Foto (optioneel)</label>
+      <div class="camera-zone" id="camera-zone">
+        <div class="cam-placeholder" id="cam-placeholder">
+          <span class="cam-icon">📷</span>
+          Neem een foto of kies er een uit je bibliotheek
+        </div>
+        <video id="cam-video" autoplay playsinline></video>
+        <canvas id="cam-canvas"></canvas>
+        <img id="foto-preview" alt="preview" />
+        <div class="cam-btn-rij" id="cam-btns-idle">
+          <button class="cam-btn cam-btn-primary" onclick="startCamera()">📷 Camera openen</button>
+          <button class="cam-btn" onclick="document.getElementById('foto-file').click()">🖼 Uit bibliotheek</button>
+          <input type="file" id="foto-file" accept="image/*" style="display:none" onchange="fotoUitBestand(event)" />
+        </div>
+        <div class="cam-btn-rij" id="cam-btns-live" style="display:none">
+          <button class="cam-btn cam-btn-primary" onclick="fotoNemen()">📸 Neem foto</button>
+          <button class="cam-btn" onclick="stopCamera()">✕ Annuleer</button>
+        </div>
+        <div class="cam-btn-rij" id="cam-btns-preview" style="display:none">
+          <button class="cam-btn cam-btn-green" onclick="fotoBevestigen()">✓ Gebruik deze foto</button>
+          <button class="cam-btn" onclick="fotoOpnieuw()">↩ Opnieuw</button>
+        </div>
+      </div>
+      <!-- /CAMERA ZONE -->
 
-    <!-- CAMERA ZONE -->
-    <div class="camera-zone" id="camera-zone">
-      <div class="cam-placeholder" id="cam-placeholder">
-        <span class="cam-icon">📷</span>
-        Neem een foto of kies er een uit je bibliotheek
-      </div>
-      <video id="cam-video" autoplay playsinline></video>
-      <canvas id="cam-canvas"></canvas>
-      <img id="foto-preview" alt="preview" />
-
-      <div class="btn-row" id="cam-btns-idle">
-        <button class="btn btn-gold" onclick="startCamera()">📷 Camera</button>
-        <button class="btn btn-muted" onclick="document.getElementById('foto-file').click()">🖼 Bibliotheek</button>
-        <input type="file" id="foto-file" accept="image/*" style="display:none" onchange="fotoUitBestand(event)" />
-      </div>
-      <div class="btn-row" id="cam-btns-live" style="display:none">
-        <button class="btn btn-primary" onclick="fotoNemen()">📸 Neem foto</button>
-        <button class="btn btn-muted" onclick="stopCamera()">✕ Annuleer</button>
-      </div>
-      <div class="btn-row" id="cam-btns-preview" style="display:none">
-        <button class="btn btn-green" onclick="fotoBevestigen()">✓ Gebruik deze foto</button>
-        <button class="btn btn-muted" onclick="fotoOpnieuw()">↩ Opnieuw</button>
-      </div>
+      <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen → verschijnt direct op alle schermen</button>
+      <a class="wa-btn" href="#" onclick="return waSturen()">📲 Sturen via WhatsApp</a>
     </div>
-
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn btn-primary" id="btn-verstuur" onclick="verstuurMelding()">➤ Versturen → verschijnt direct op alle schermen</button>
-      <button class="btn btn-muted" onclick="verstuurWhatsapp()">📲 Sturen via WhatsApp</button>
-    </div>
+    <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen</div>
+    <div id="mel-lijst" class="melding-lijst"></div>
   </div>
 
-  <h2 style="margin-top:16px">Actieve meldingen</h2>
-  <div id="meldingen-feed"></div>
-</section>
-
-<!-- NAV -->
-<nav>
-  <button class="active" onclick="toon('vandaag',this)">
-    <span class="icon">📅</span>Vandaag
-  </button>
-  <button onclick="toon('week',this)">
-    <span class="icon">🗓</span>Week
-  </button>
-  <button onclick="toon('rotatie',this)">
-    <span class="icon">🔄</span>Rotatie
-  </button>
-  <button onclick="toon('regels',this)">
-    <span class="icon">📋</span>Regels
-  </button>
-  <button onclick="toon('meldingen',this)">
-    <span class="icon">💬</span>Meldingen
-  </button>
-</nav>
+</div>
 
 <!-- LIGHTBOX -->
 <div id="lightbox" onclick="sluitLightbox()">
@@ -563,137 +388,193 @@ const SUPABASE_URL = 'https://mczmtdyiqwvpuuobdlpc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FVv3NW9h79SuO1gxk4TtDw_LC4Hmw6N';
 // ═══════════════════════════════════════════════
 
-const WEEK_DATA = [
-  { dag:'Ma', kook:'Fenna',  bankAv:'Lars',    corvee:'Hana'   },
-  { dag:'Di', kook:'Joris',  bankAv:'Maud',    corvee:'Omar'   },
-  { dag:'Wo', kook:'Kira',   bankAv:'Noa',     corvee:'Petra'  },
-  { dag:'Do', kook:'Bo',     bankAv:'Quinten', corvee:'Rosa'   },
-  { dag:'Vr', kook:'Tara',   bankAv:'Siem',    corvee:'Demi'   },
-  { dag:'Za', kook:'Aard',   bankAv:'Elias',   corvee:'Guus',  bankOch:'Ilse'  },
-  { dag:'Zo', kook:'Cas ★',  bankAv:'Hana',    corvee:'Lars',  bankOch:'Bo 🏠' },
+const BEHEER = ["Mark","Walter","Altib","Adam"];
+const DAGEN_NL   = ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"];
+const MAANDEN_NL = ["januari","februari","maart","april","mei","juni","juli","augustus",
+                    "september","oktober","november","december"];
+
+const ROOSTER = {
+  Maandag:   { bank:"Vu",         corvee:"Norman",   kook:"Walter"   },
+  Dinsdag:   { bank:"Jemal",      corvee:"Raymond",  kook:"Mark"     },
+  Woensdag:  { bank:"Stefano",    corvee:"Stan",     kook:"Adam"     },
+  Donderdag: { bank:"Antoine",    corvee:"Henk",     kook:"Altib"    },
+  Vrijdag:   { bank:"Gerry",      corvee:"Edgars",   kook:"Joël"     },
+  Zaterdag:  { bankOch:"Joey",    bank:"Sjoerd",     corvee:"Jordy",  kook:"Abdi"    },
+  Zondag:    { bankOch:"Norman★", bank:"Johnny",     corvee:"Radwan", kook:"Walter★" },
+};
+
+const ROTATIE = {
+  Norman:  {hist:["C","K","B","C"]}, Raymond: {hist:["B","C","K","C"]},
+  Stan:    {hist:["K","B","C","C"]}, Henk:    {hist:["C","K","B","C"]},
+  Edgars:  {hist:["B","C","K","C"]}, Joël:   {hist:["K","B","B","B"]},
+  Joey:    {hist:["B","B","B","B"]}, Stefano: {hist:["B","C","B","B"]},
+  Sjoerd:  {hist:["C","B","C","B"]}, Antoine: {hist:["B","C","B","C"]},
+  Gerry:   {hist:["C","B","C","B"]}, Vu:      {hist:["B","C","B","C"]},
+  Walter:  {hist:["K","K","C","K"]}, Mark:    {hist:["K","C","K","K"]},
+  Adam:    {hist:["K","K","B","K"]}, Altib:   {hist:["C","K","K","K"]},
+  Radwan:  {hist:["K","C","K","K"]}, Jemal:   {hist:["B","C","K","B"]},
+  Frans:   {hist:["C","B","C","K"]}, Jordy:   {hist:["B","K","C","C"]},
+  Abdi:    {hist:["C","C","B","C"]}, Johnny:  {hist:["K","K","K","K"]},
+};
+
+const MELDING_TYPES = [
+  {id:"ziek",    label:"🤒 Ik ben ziek",     kleur:"#f87171", bg:"#3b0a0a"},
+  {id:"laat",    label:"⏰ Ik ben te laat",   kleur:"#fbbf24", bg:"#2a1a00"},
+  {id:"bel",     label:"📞 Bel me even",      kleur:"#60a5fa", bg:"#0c1d3d"},
+  {id:"ruil",    label:"🔄 Shift ruilen",     kleur:"#a78bfa", bg:"#2d1f5e"},
+  {id:"foto",    label:"📷 Foto melding",     kleur:"#f5a623", bg:"#2a1a00"},
+  {id:"algemeen",label:"💬 Algemeen bericht", kleur:"#e2e8f0", bg:"#334155"},
 ];
 
-const ROTATIE_DATA = [
-  'Aard','Bo','Cas','Demi','Elias','Fenna','Guus','Hana',
-  'Ilse','Joris','Kira','Lars','Maud','Noa','Omar',
-  'Petra','Quinten','Rosa','Siem','Tara'
-].map(naam => ({
-  naam,
-  weken: Array.from({length:4}, () => ['bank','corvee','kook','leeg'][Math.floor(Math.random()*4)]),
-  beheer: naam === 'Petra'
-}));
-
+// ── Camera state ──
 let huidigeFoto  = null;
 let cameraStream = null;
 
-// ── Supabase ──
-const SB = {
-  async get(table) {
-    try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?order=created_at.desc&limit=40`, {
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-      });
-      return r.ok ? r.json() : [];
-    } catch(e) { return []; }
-  },
-  async insert(table, data) {
-    try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-        method: 'POST',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation'
-        },
-        body: JSON.stringify(data)
-      });
-      return r.ok ? r.json() : null;
-    } catch(e) { return null; }
-  },
-  async update(table, id, data) {
-    try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      return r.ok;
-    } catch(e) { return false; }
-  }
-};
+// ─── SUPABASE INIT ────────────────────────────
+let sb = null;
+let supabaseActief = false;
 
-// ── Klok ──
+function initSupabase() {
+  if (SUPABASE_URL === 'JOUW_SUPABASE_URL') {
+    document.getElementById('setup-banner').style.display = 'block';
+    return;
+  }
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    supabaseActief = true;
+    laadMeldingen();
+    luisterLive();
+  } catch(e) {
+    console.error('Supabase fout:', e);
+  }
+}
+
+async function laadMeldingen() {
+  if (!supabaseActief) return;
+  const {data, error} = await sb.from('meldingen')
+    .select('*').order('created_at', {ascending: false}).limit(20);
+  if (!error && data) {
+    renderMeldingenData(data);
+  }
+}
+
+function luisterLive() {
+  if (!supabaseActief) return;
+  sb.channel('meldingen-live')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'meldingen'}, () => {
+      laadMeldingen();
+    })
+    .subscribe();
+}
+
+// ─── KLOK ─────────────────────────────────────
 function updateKlok() {
   const nu = new Date();
-  document.getElementById('clock').textContent =
-    nu.toLocaleTimeString('nl-NL', { hour:'2-digit', minute:'2-digit' });
-  const h = nu.getHours();
-  document.getElementById('rust-banner').style.display =
-    (h >= 22 || h < 10) ? 'block' : 'none';
+  document.getElementById('klok').textContent =
+    nu.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('datum').textContent =
+    DAGEN_NL[nu.getDay()] + ' ' + nu.getDate() + ' ' + MAANDEN_NL[nu.getMonth()];
 }
-setInterval(updateKlok, 1000);
-updateKlok();
+updateKlok(); setInterval(updateKlok, 1000);
 
-// ── Tabs ──
-function toon(id, btn) {
-  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('s-' + id).classList.add('active');
-  btn.classList.add('active');
+// ─── TABS ─────────────────────────────────────
+function toon(id, el) {
+  document.querySelectorAll('.sectie').forEach(s=>s.classList.remove('actief'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('actief'));
+  document.getElementById('s-'+id).classList.add('actief');
+  el.classList.add('actief');
+  if(id==='vandaag')     renderVandaag();
+  if(id==='weekrooster') renderWeek();
+  if(id==='rotatie')     renderRotatie();
+  if(id==='meldingen')   laadMeldingen();
   stopCamera();
 }
 
-// ── Weekrooster ──
-function bouwWeek() {
-  document.getElementById('week-tbody').innerHTML = WEEK_DATA.map(r => `
-    <tr>
-      <td><strong>${r.dag}</strong></td>
-      <td>${r.bankOch ? `<span class="badge b-bank-och">${r.bankOch}</span>` : '<span style="color:#444">—</span>'}</td>
-      <td><span class="badge b-kook">${r.kook}</span></td>
-      <td><span class="badge b-bank-av">${r.bankAv}</span></td>
-      <td><span class="badge b-corvee">${r.corvee}</span></td>
-    </tr>`).join('');
+// ─── VANDAAG ──────────────────────────────────
+function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
+
+function renderVandaagMetMeldingen(meldingen) {
+  const dag = dagNaam();
+  const d = ROOSTER[dag]||{};
+  const ziek = meldingen.filter(m=>m.type==='ziek').map(m=>m.naam.toLowerCase());
+  document.getElementById('vandaag-label').textContent = `Diensten vandaag — ${dag}`;
+  const kaarten = [];
+  const bOch = d.bankOch ? d.bankOch.replace('★','').trim() : null;
+  const bAv  = d.bank    ? d.bank.replace('★','').trim()    : null;
+  if(bOch) kaarten.push({rol:'Bank ochtend',naam:bOch,tijd:'10:00–16:00',cls:'bankoch'});
+  if(d.kook)   kaarten.push({rol:'Kook',   naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
+  if(bAv)  kaarten.push({rol:'Bank avond', naam:bAv, tijd:'16:00–22:00',cls:'bank'});
+  if(d.corvee) kaarten.push({rol:'Corvee', naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
+  document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>`
+    <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}">
+      <div class="rol">${k.rol}</div>
+      <div class="naam">${k.naam}</div>
+      ${ziek.includes(k.naam.toLowerCase())?'<div class="ziek-badge">⚠ Ziek gemeld</div>':''}
+      <div class="tijd">${k.tijd}</div>
+    </div>`).join('');
 }
 
-function bouwVandaag() {
-  const dag = ['Zo','Ma','Di','Wo','Do','Vr','Za'][new Date().getDay()];
-  const d = WEEK_DATA.find(r => r.dag === dag);
-  const el = document.getElementById('diensten-vandaag');
-  if (!d) { el.textContent = 'Geen data voor vandaag.'; return; }
-  el.innerHTML = `
-    <p style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Shifts voor <strong>${dag}</strong></p>
-    ${d.bankOch ? `<div style="margin-bottom:7px"><span class="badge b-bank-och">Bank ochtend</span> <strong>${d.bankOch}</strong> <small style="color:var(--muted)">10–16u</small></div>` : ''}
-    <div style="margin-bottom:7px"><span class="badge b-kook">Kook</span> <strong>${d.kook}</strong> <small style="color:var(--muted)">14–17u</small></div>
-    <div style="margin-bottom:7px"><span class="badge b-bank-av">Bank avond</span> <strong>${d.bankAv}</strong> <small style="color:var(--muted)">16–22u</small></div>
-    <div><span class="badge b-corvee">Corvee</span> <strong>${d.corvee}</strong> <small style="color:var(--muted)">17–21u</small></div>`;
+function renderVandaag() {
+  renderVandaagMetMeldingen([]);
+  laadMeldingen();
 }
 
-// ── Rotatie ──
-function bouwRotatie() {
-  const kl = { bank:'dot-bank', corvee:'dot-corvee', kook:'dot-kook', leeg:'dot-leeg' };
-  const lb = { bank:'B', corvee:'C', kook:'K', leeg:'' };
-  document.getElementById('rotatie-list').innerHTML = ROTATIE_DATA.map(r => {
-    const bc = r.weken.filter(w => w==='bank').length;
-    const st = r.beheer ? '🏠' : bc>=4 ? '🔴' : bc>=3 ? '🟠' : '✅';
-    const dots = r.weken.map(w => {
-      const cls = r.beheer ? 'dot-beheer' : kl[w];
-      return `<div class="rot-dot ${cls}">${r.beheer?'🏠':lb[w]}</div>`;
-    }).join('');
-    return `
-      <div class="rot-row">
-        <span class="rot-name">${r.naam}</span>
-        <div class="rot-dots">${dots}</div>
-        <span class="rot-status">${st}</span>
-      </div>`;
+// ─── WEEK ─────────────────────────────────────
+function pill(naam, type) {
+  const rawNaam = naam.replace('★','').trim();
+  const isB = BEHEER.includes(rawNaam);
+  const isExtra = naam.includes('★');
+  return `<span class="pill pill-${type}">
+    <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
+    ${isB?'<span class="pill-sub">🏠 beheederswoning</span>':''}
+  </span>`;
+}
+
+function renderWeek() {
+  const vandaag = dagNaam();
+  const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
+  document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
+    const d = ROOSTER[dag]||{};
+    return `<tr class="${dag===vandaag?'vandaag':''}">
+      <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
+      <td>${d.bankOch?pill(d.bankOch,'bankoch'):'<span class="kantoor-label">kantoor aanwezig</span>'}</td>
+      <td>${d.kook?pill(d.kook,'kook'):'—'}</td>
+      <td>${d.bank?pill(d.bank,'bank'):'—'}</td>
+      <td>${d.corvee?pill(d.corvee,'corvee'):'—'}</td>
+    </tr>`;
   }).join('');
 }
 
-// ── Camera (meldingen) ──
+// ─── ROTATIE ──────────────────────────────────
+function bankOpRij(hist) {
+  let n=0;
+  for(let i=hist.length-1;i>=0;i--){ if(hist[i]==='B') n++; else break; }
+  return n;
+}
+
+function renderRotatie() {
+  const namen = Object.keys(ROTATIE);
+  const weken = ['3 wkn geleden','2 wkn geleden','Vorige week','Deze week'];
+  let html = '<thead><tr><th class="naam-col">Naam</th>';
+  weken.forEach(w=>{ html+=`<th>${w}</th>`; });
+  html += '<th>Status</th></tr></thead><tbody>';
+  namen.forEach(naam=>{
+    const hist = ROTATIE[naam].hist;
+    const n = bankOpRij(hist);
+    const rood=n>=4, oranje=n===3;
+    html += `<tr class="${rood?'warn-rood':oranje?'warn-oranje':''}">
+      <td class="naam-cel">${naam}${BEHEER.includes(naam)?' 🏠':''}</td>
+      ${hist.map(t=>`<td><span class="rot-pill rot-${t}">${t==='B'?'Bank':t==='C'?'Corvee':'Kook'}</span></td>`).join('')}
+      <td class="${rood?'status-rood':oranje?'status-oranje':'status-ok'}">
+        ${rood?'⚠ Verplicht corvee':oranje?'⚡ Let op (3×)':'✅ OK'}
+      </td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('rot-tabel').innerHTML = html;
+}
+
+// ─── CAMERA ───────────────────────────────────
 async function startCamera() {
   document.getElementById('cam-placeholder').style.display = 'none';
   document.getElementById('cam-btns-idle').style.display   = 'none';
@@ -714,28 +595,31 @@ async function startCamera() {
 
 function stopCamera() {
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  document.getElementById('cam-video').style.display        = 'none';
+  const v = document.getElementById('cam-video');
+  if (!v) return;
+  v.style.display = 'none';
   document.getElementById('cam-btns-live').style.display    = 'none';
   document.getElementById('cam-btns-preview').style.display = 'none';
   document.getElementById('cam-btns-idle').style.display    = 'flex';
   document.getElementById('cam-placeholder').style.display  = 'block';
-  document.getElementById('foto-preview').style.display     = 'none';
-  huidigeFoto = null;
+  if (!huidigeFoto) document.getElementById('foto-preview').style.display = 'none';
 }
 
 function fotoNemen() {
-  const video = document.getElementById('cam-video');
+  const video  = document.getElementById('cam-video');
   const canvas = document.getElementById('cam-canvas');
-  canvas.width = video.videoWidth;
+  canvas.width  = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
   huidigeFoto = canvas.toDataURL('image/jpeg', 0.82);
-  stopCamera();
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  document.getElementById('cam-video').style.display        = 'none';
+  document.getElementById('cam-btns-live').style.display    = 'none';
+  document.getElementById('cam-btns-idle').style.display    = 'none';
+  document.getElementById('cam-placeholder').style.display  = 'none';
   const prev = document.getElementById('foto-preview');
   prev.src = huidigeFoto;
   prev.style.display = 'block';
-  document.getElementById('cam-placeholder').style.display  = 'none';
-  document.getElementById('cam-btns-idle').style.display    = 'none';
   document.getElementById('cam-btns-preview').style.display = 'flex';
 }
 
@@ -745,11 +629,11 @@ function fotoUitBestand(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     huidigeFoto = ev.target.result;
+    document.getElementById('cam-placeholder').style.display  = 'none';
+    document.getElementById('cam-btns-idle').style.display    = 'none';
     const prev = document.getElementById('foto-preview');
     prev.src = huidigeFoto;
     prev.style.display = 'block';
-    document.getElementById('cam-placeholder').style.display  = 'none';
-    document.getElementById('cam-btns-idle').style.display    = 'none';
     document.getElementById('cam-btns-preview').style.display = 'flex';
   };
   reader.readAsDataURL(file);
@@ -757,9 +641,9 @@ function fotoUitBestand(e) {
 
 function fotoBevestigen() {
   document.getElementById('cam-btns-preview').style.display = 'none';
-  document.getElementById('m-type').value = 'foto';
-  document.getElementById('camera-zone').style.borderColor = '#69f0ae';
-  setTimeout(() => document.getElementById('camera-zone').style.borderColor = '', 1500);
+  document.getElementById('camera-zone').style.borderColor  = '#166534';
+  gekozenType = 'foto';
+  renderTypeKnoppen();
 }
 
 function fotoOpnieuw() {
@@ -772,143 +656,79 @@ function fotoOpnieuw() {
   document.getElementById('camera-zone').style.borderColor  = '';
 }
 
-// ── Meldingen versturen ──
+// ─── MELDINGEN ────────────────────────────────
+let gekozenType = 'algemeen';
+
+function renderTypeKnoppen() {
+  document.getElementById('type-grid').innerHTML = MELDING_TYPES.map(t=>`
+    <button class="type-btn ${t.id===gekozenType?'actief':''}"
+      onclick="kiesType('${t.id}')">${t.label}</button>`).join('');
+}
+function kiesType(id){ gekozenType=id; renderTypeKnoppen(); }
+
 async function verstuurMelding() {
-  const naam  = document.getElementById('m-naam').value.trim();
-  const type  = document.getElementById('m-type').value;
-  const tekst = document.getElementById('m-tekst').value.trim();
-  if (!naam) { alert('Selecteer je naam.'); return; }
-  if (!tekst && !huidigeFoto) { alert('Voeg een bericht of foto toe.'); return; }
+  const naam    = document.getElementById('inp-naam').value.trim();
+  const bericht = document.getElementById('inp-bericht').value.trim();
+  if(!naam){ alert('Vul je naam in.'); return; }
+  if(!bericht && !huidigeFoto){ alert('Voeg een bericht of foto toe.'); return; }
 
-  const btn = document.getElementById('btn-verstuur');
-  btn.disabled = true; btn.textContent = '⏳ Versturen…';
+  const t = MELDING_TYPES.find(x=>x.id===gekozenType);
+  const btn = document.getElementById('verstuur-btn');
+  btn.disabled = true;
+  btn.textContent = 'Bezig...';
 
-  const data = {
-    naam, type,
-    tekst: tekst || null,
-    foto: huidigeFoto || null,
-    created_at: new Date().toISOString(),
-    reacties: []
-  };
-
-  const result = await SB.insert('meldingen', data);
-  if (result) {
-    document.getElementById('m-tekst').value = '';
-    fotoOpnieuw();
-    laadMeldingen();
-  } else {
-    const lokaal = JSON.parse(localStorage.getItem('wwl_lokaal') || '[]');
-    data.id = Date.now();
-    lokaal.unshift(data);
-    localStorage.setItem('wwl_lokaal', JSON.stringify(lokaal.slice(0,40)));
-    renderMeldingen(lokaal);
+  if(supabaseActief) {
+    const {error} = await sb.from('meldingen').insert([{
+      naam, type: gekozenType, label: t.label,
+      bericht: bericht || null,
+      foto: huidigeFoto || null,
+      kleur: t.kleur, bg: t.bg,
+      tijd: new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})
+    }]);
+    if(error) { alert('Fout bij versturen: ' + error.message); }
   }
 
-  btn.disabled = false; btn.textContent = '➤ Versturen → verschijnt direct op alle schermen';
+  document.getElementById('inp-naam').value    = '';
+  document.getElementById('inp-bericht').value = '';
+  fotoOpnieuw();
+  btn.disabled = false;
+  btn.textContent = 'Versturen → verschijnt direct op alle schermen';
 }
 
-function verstuurWhatsapp() {
-  const naam  = document.getElementById('m-naam').value || '?';
-  const type  = document.getElementById('m-type').value;
-  const tekst = document.getElementById('m-tekst').value || '—';
-  window.open(`https://wa.me/?text=${encodeURIComponent(`[WWL – ${type}]\n${naam}: ${tekst}`)}`, '_blank');
-}
-
-// ── Meldingen laden ──
-async function laadMeldingen() {
-  let items = await SB.get('meldingen');
-  if (!items || !items.length) {
-    items = JSON.parse(localStorage.getItem('wwl_lokaal') || '[]');
+async function verwijderMelding(id) {
+  if(supabaseActief) {
+    await sb.from('meldingen').delete().eq('id', id);
   }
-  renderMeldingen(items);
 }
 
-function renderMeldingen(items) {
-  const feed = document.getElementById('meldingen-feed');
-  const mini = document.getElementById('mini-feed');
-  if (!items.length) {
-    const leeg = `<div class="empty-state"><span class="es-icon">💬</span>Nog geen meldingen.</div>`;
-    feed.innerHTML = leeg; mini.innerHTML = leeg; return;
-  }
-  feed.innerHTML = items.map(m => meldingHtml(m, false)).join('');
-  mini.innerHTML = items.slice(0,3).map(m => meldingHtml(m, true)).join('');
-}
-
-function meldingHtml(m, mini) {
-  const tijdStr = m.created_at
-    ? new Date(m.created_at).toLocaleString('nl-NL',{weekday:'short',hour:'2-digit',minute:'2-digit'})
-    : 'zojuist';
-  const icoon = {algemeen:'💬',shift:'📅',foto:'📷',schoonmaak:'🧹',info:'ℹ️',whatsapp:'📲'}[m.type]||'💬';
-  const init = (m.naam||'?')[0].toUpperCase();
-
+function meldingHTML(m) {
   const fotoBlok = m.foto ? `
     <div class="melding-foto-wrap" onclick="openLightbox(this)">
-      <img class="melding-foto-thumb" src="${m.foto}" alt="foto"
-        ${mini ? 'style="width:72px;height:52px"' : ''} />
-      <span class="foto-hint">${mini ? '🔍' : '🔍 vergroot'}</span>
+      <img class="melding-foto-thumb" src="${m.foto}" alt="foto" />
+      <div class="foto-hint">🔍 Tik om te vergroten</div>
     </div>` : '';
-
-  const reactieBlok = !mini ? `
-    <div style="margin-top:6px">
-      <button class="btn-tiny" onclick="toggleReactie('${m.id}')">💬 Reageer / voeg tekst toe</button>
-    </div>
-    <div class="reactie-form" id="rf-${m.id}">
-      <input type="text" placeholder="Typ je reactie…" id="ri-${m.id}" />
-      <button class="btn btn-primary" style="padding:6px 11px;font-size:.76rem" onclick="stuurReactie('${m.id}')">↵</button>
-    </div>` : '';
-
-  const reactieLijst = (m.reacties && m.reacties.length && !mini) ? `
-    <div style="margin-top:6px;border-top:1px solid #ffffff0e;padding-top:6px">
-      ${m.reacties.map(r=>`<p style="font-size:.76rem;color:#99a;margin-bottom:3px">↳ ${r}</p>`).join('')}
-    </div>` : '';
-
-  return `
-    <div class="melding-item">
-      <div class="melding-header">
-        <div class="melding-avatar">${init}</div>
-        <div class="melding-meta">
-          <div class="melding-name">${m.naam||'—'}</div>
-          <div class="melding-type">${icoon} ${m.type||'melding'}</div>
-        </div>
-        <div class="melding-time">${tijdStr}</div>
-      </div>
-      ${m.tekst ? `<div class="melding-tekst">${m.tekst}</div>` : ''}
+  return `<div class="melding-item">
+    <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
+    <div style="flex:1;min-width:0">
+      <div class="melding-naam">${m.naam}</div>
+      ${m.bericht?`<div class="melding-tekst">${m.bericht}</div>`:''}
       ${fotoBlok}
-      ${reactieLijst}
-      ${reactieBlok}
-    </div>`;
+    </div>
+    <span class="melding-tijd">${m.tijd}</span>
+    <button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>
+  </div>`;
 }
 
-// ── Reacties ──
-function toggleReactie(id) {
-  const el = document.getElementById(`rf-${id}`);
-  el.classList.toggle('open');
-  if (el.classList.contains('open')) document.getElementById(`ri-${id}`).focus();
+function renderMeldingenData(data) {
+  const html = data.length
+    ? data.map(meldingHTML).join('')
+    : '<p style="font-size:0.8rem;color:var(--subtle)">Geen meldingen op dit moment.</p>';
+  document.getElementById('mel-lijst').innerHTML = html;
+  document.getElementById('vandaag-meldingen').innerHTML = html;
+  renderVandaagMetMeldingen(data);
 }
 
-async function stuurReactie(id) {
-  const input = document.getElementById(`ri-${id}`);
-  const tekst = input.value.trim();
-  if (!tekst) return;
-  const naam = document.getElementById('m-naam').value || '?';
-  const reactieTekst = `${naam}: ${tekst}`;
-  try {
-    const items = await SB.get('meldingen');
-    const m = items.find(x => String(x.id) === String(id));
-    if (m) await SB.update('meldingen', id, { reacties: [...(m.reacties||[]), reactieTekst] });
-  } catch(e) {}
-  const lokaal = JSON.parse(localStorage.getItem('wwl_lokaal') || '[]');
-  const idx = lokaal.findIndex(x => String(x.id) === String(id));
-  if (idx > -1) {
-    lokaal[idx].reacties = [...(lokaal[idx].reacties||[]), reactieTekst];
-    localStorage.setItem('wwl_lokaal', JSON.stringify(lokaal));
-  }
-  input.value = '';
-  document.getElementById(`rf-${id}`).classList.remove('open');
-  laadMeldingen();
-}
-
-// ── Lightbox ──
+// ─── LIGHTBOX ─────────────────────────────────
 function openLightbox(el) {
   const img = el.querySelector('img');
   document.getElementById('lightbox-img').src = img.src;
@@ -921,19 +741,21 @@ function sluitLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
 
-// ── Init ──
-function init() {
-  if (!SUPABASE_URL || SUPABASE_URL === 'JOUW_SUPABASE_URL') {
-    document.getElementById('supabase-warning').style.display = 'block';
-  }
-  bouwWeek();
-  bouwVandaag();
-  bouwRotatie();
-  laadMeldingen();
-  setInterval(laadMeldingen, 8000);
+function waSturen() {
+  const naam    = document.getElementById('inp-naam').value.trim()||'(naam)';
+  const bericht = document.getElementById('inp-bericht').value.trim();
+  const t = MELDING_TYPES.find(x=>x.id===gekozenType);
+  const tekst = `WWL melding\n${t.label} — ${naam}${bericht?'\n"'+bericht+'"':''}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(tekst),'_blank');
+  return false;
 }
 
-init();
+// ─── INIT ─────────────────────────────────────
+renderTypeKnoppen();
+renderVandaag();
+renderWeek();
+renderRotatie();
+initSupabase();
 </script>
 </body>
 </html>
