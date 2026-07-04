@@ -216,6 +216,84 @@
                     border: 1px solid var(--border); border-radius: 8px;
                     font-size: 0.8rem; cursor: pointer; }
 
+  /* ── GEAVANCEERD KNOP & PANEEL ── */
+  .header { flex-wrap: wrap; row-gap: 10px; }
+  #geavanceerd-btn {
+    background: linear-gradient(180deg, #d97706, #b45309);
+    color: #f5e6c8;
+    border: 1px solid #92400e;
+    border-radius: 8px;
+    padding: 4px 32px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(180,83,9,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  #geavanceerd-btn:hover {
+    background: linear-gradient(180deg, #ea8e0d, #c2670a);
+    box-shadow: 0 3px 12px rgba(180,83,9,0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  #geavanceerd-btn.actief {
+    background: linear-gradient(180deg, #f59e0b, #b45309);
+    box-shadow: 0 0 0 2px #fcd34d55, 0 2px 8px rgba(180,83,9,0.5);
+  }
+
+  #geavanceerd-paneel {
+    display: none;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+  #geavanceerd-paneel.open { display: block; }
+  .gp-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .gp-item {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%;
+    background: #162032;
+    border: 2px solid #2d4a7a;
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .gp-item:hover { border-color: #f59e0b; background: #1c2c47; }
+  .gp-item.gp-binnenkort { opacity: 0.55; }
+  .gp-item.gp-binnenkort:hover { border-color: #2d4a7a; background: #162032; opacity: 0.7; }
+  .gp-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .gp-tekst { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .gp-titel { font-size: 0.92rem; font-weight: 800; color: white; }
+  .gp-sub { font-size: 0.74rem; color: var(--muted); }
+
+  #gp-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 9998; align-items: flex-start; justify-content: center;
+    padding: 24px 16px; overflow-y: auto;
+  }
+  #gp-overlay.open { display: flex; }
+  .gp-modal {
+    background: var(--surface); border: 2px solid #2d4a7a; border-radius: 16px;
+    max-width: 640px; width: 100%; padding: 24px; position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6); margin-top: 20px;
+  }
+  .gp-modal-close {
+    position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: var(--muted);
+    font-size: 1rem; padding: 4px 10px; cursor: pointer;
+  }
+  .gp-modal-close:hover { color: var(--warn); border-color: var(--warn); }
+  .gp-modal h2 { font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 8px; padding-right: 30px; }
+  .gp-modal-intro { font-size: 0.85rem; color: #b0c4de; line-height: 1.6; margin-bottom: 18px; }
+  .gp-modal-intro strong { color: white; }
+
   @media (max-width: 480px) {
     .kaart-grid { grid-template-columns: 1fr; }
     .type-grid  { grid-template-columns: 1fr; }
@@ -228,8 +306,71 @@
 
 <div class="header">
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
+  <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd</button>
   <div><div id="klok">--:--</div><div id="datum"></div></div>
 </div>
+
+<div id="geavanceerd-paneel">
+  <div class="gp-inner">
+    <button class="gp-item" onclick="openGP('prikbord')">
+      <span class="gp-icon">📌</span>
+      <span class="gp-tekst">
+        <span class="gp-titel">Prikbord</span>
+        <span class="gp-sub">Te koop · te ruil · gezocht</span>
+      </span>
+    </button>
+    <button class="gp-item" onclick="openGP('ideeen')">
+      <span class="gp-icon">💡</span>
+      <span class="gp-tekst">
+        <span class="gp-titel">Ideeën &amp; wensen voor WWL</span>
+        <span class="gp-sub">Slimme, goedkope verbeteringen</span>
+      </span>
+    </button>
+    <button class="gp-item" onclick="openGP('dringend')">
+      <span class="gp-icon">🛒</span>
+      <span class="gp-tekst">
+        <span class="gp-titel">Dringend nodig</span>
+        <span class="gp-sub">Bijna op: koffiefilters, wc-papier, stofzuigerzakken</span>
+      </span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">🧰</span>
+      <span class="gp-tekst"><span class="gp-titel">Klussen &amp; onderhoud</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">📅</span>
+      <span class="gp-tekst"><span class="gp-titel">Activiteiten</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">📖</span>
+      <span class="gp-tekst"><span class="gp-titel">Huisregels (volledig)</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">📞</span>
+      <span class="gp-tekst"><span class="gp-titel">Belangrijke contacten</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">🗂️</span>
+      <span class="gp-tekst"><span class="gp-titel">Documenten</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">🎉</span>
+      <span class="gp-tekst"><span class="gp-titel">Verjaardagen</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
+      <span class="gp-icon">⚙️</span>
+      <span class="gp-tekst"><span class="gp-titel">Instellingen</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
+    </button>
+  </div>
+</div>
+
+<div id="gp-overlay" onclick="sluitGPModal()">
+  <div class="gp-modal" onclick="event.stopPropagation()">
+    <button class="gp-modal-close" onclick="sluitGPModal()">✕</button>
+    <div id="gp-modal-inhoud"></div>
+  </div>
+</div>
+
 
 <div class="setup-banner" id="setup-banner">
   ⚠️ <strong>Supabase nog niet ingesteld.</strong>
@@ -818,6 +959,51 @@ function renderPoll() {
   });
   html += `</div><p class="poll-totaal">${gestemd?totaal+' stem'+(totaal===1?'':'men')+' uitgebracht':'Tik op een optie om anoniem te stemmen'}</p>`;
   el.innerHTML = html;
+}
+
+// ── GEAVANCEERD PANEEL ──
+function toggleGeavanceerd() {
+  const paneel = document.getElementById('geavanceerd-paneel');
+  const btn = document.getElementById('geavanceerd-btn');
+  paneel.classList.toggle('open');
+  btn.classList.toggle('actief');
+}
+
+const GP_INHOUD = {
+  prikbord: {
+    titel: '📌 Prikbord',
+    intro: `Hier zet je wat je <strong>te koop aanbiedt</strong>, wilt <strong>ruilen</strong>, of juist <strong>zoekt</strong>. Van een oude fiets die iemand anders nog kan gebruiken tot een setje gereedschap dat je mist. Klein of groot, alles mag hier gedeeld worden — zolang het respectvol en eerlijk blijft.`,
+    footer: 'Deze functie wordt binnenkort gekoppeld aan het meldingensysteem.'
+  },
+  ideeen: {
+    titel: '💡 Ideeën & wensen voor WWL',
+    intro: `Geen klachtenbus, maar een plek voor mensen die iets willen <strong>verbeteren</strong> — vaak met kleine moeite of weinig geld. Denk aan: een muur die met wat goedkope verf en een middagje werk er weer fris uitziet. Een kennis die iets gratis of heel goedkoop kan repareren. Of de frituurpan vervangen door een airfryer — minder stank, minder rommel, een afzuigkap die niet meer vol oud vet zit, en gezonder eten. Klein idee, groot verschil — deel het hier.`,
+    footer: 'Deze functie wordt binnenkort gekoppeld aan het meldingensysteem.'
+  },
+  dringend: {
+    titel: '🛒 Dringend nodig',
+    intro: `Sommige dingen raken sneller op dan gedacht: <strong>koffiefilters</strong>, <strong>wc-papier</strong>, <strong>stofzuigerzakken</strong> — spullen die niemand apart in de gaten houdt totdat ze er plotseling niet meer zijn. Meld het hier zodra iets bijna op is, zodat het op tijd wordt aangevuld voordat het een probleem wordt.`,
+    footer: 'Deze functie wordt binnenkort gekoppeld aan het meldingensysteem.'
+  },
+  placeholder: {
+    titel: '🚧 Binnenkort beschikbaar',
+    intro: `Dit onderdeel is nog in ontwikkeling.`,
+    footer: ''
+  }
+};
+
+function openGP(key) {
+  const data = GP_INHOUD[key] || GP_INHOUD.placeholder;
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>${data.titel}</h2>
+    <p class="gp-modal-intro">${data.intro}</p>
+    ${data.footer ? `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>` : ''}
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+function sluitGPModal() {
+  document.getElementById('gp-overlay').classList.remove('open');
 }
 
 // ── INIT ──
