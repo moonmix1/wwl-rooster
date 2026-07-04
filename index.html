@@ -246,25 +246,38 @@
     display: none;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 16px;
+    padding: 16px 0;
   }
   #geavanceerd-paneel.open { display: block; }
-  .gp-inner {
-    max-width: 900px; margin: 0 auto;
-    display: flex; flex-direction: column; gap: 10px;
+  .gp-pages {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
   }
+  .gp-page {
+    flex: 0 0 100%; scroll-snap-align: start;
+    max-width: 900px; margin: 0 auto; padding: 0 16px;
+    display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;
+  }
+  .gp-dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+  .gp-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .gp-dot.actief { background: #f59e0b; width: 22px; border-radius: 4px; }
   .gp-item {
-    display: flex; align-items: center; gap: 14px;
+    display: flex; align-items: center; gap: 10px;
     width: 100%;
     background: #162032;
     border: 2px solid #2d4a7a;
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 14px 12px 14px 16px;
     cursor: pointer;
     text-align: left;
     transition: all 0.15s;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   }
+  .gp-item-klik { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;
+                  background: none; border: none; cursor: pointer; text-align: left; padding: 0; }
   .gp-item:hover { border-color: #f59e0b; background: #1c2c47; }
   .gp-item.gp-binnenkort { opacity: 0.55; }
   .gp-item.gp-binnenkort:hover { border-color: #2d4a7a; background: #162032; opacity: 0.7; }
@@ -272,6 +285,33 @@
   .gp-tekst { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .gp-titel { font-size: 0.92rem; font-weight: 800; color: white; }
   .gp-sub { font-size: 0.74rem; color: var(--muted); }
+  .gp-beheer-rij { max-width: 900px; margin: 0 auto 12px; padding: 0 16px; display: flex; justify-content: flex-end; }
+  #gp-beheer-btn {
+    background: #1e293b; border: 1.5px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  #gp-beheer-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+  #gp-beheer-btn.gp-beheer-actief { background: #422006; border-color: #f59e0b; color: #fcd34d; }
+  .gp-order-btns { display: none; flex-direction: column; gap: 2px; flex-shrink: 0; }
+  .gp-beheer-modus .gp-order-btns { display: flex; }
+  .gp-move-btn {
+    display: none; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: var(--muted); border-radius: 5px; padding: 3px 6px; font-size: 0.65rem;
+    cursor: pointer; margin-top: 4px; white-space: nowrap;
+  }
+  .gp-beheer-modus .gp-move-btn { display: block; }
+  .gp-move-btn:hover { color: #f59e0b; border-color: #f59e0b; }
+  .gp-order-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: var(--muted); border-radius: 5px; width: 24px; height: 20px;
+    font-size: 0.7rem; cursor: pointer; line-height: 1; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .gp-order-btn:hover { color: #f59e0b; border-color: #f59e0b; }
+  .gp-order-btn:disabled { opacity: 0.25; cursor: default; }
+  .gp-order-btn:disabled:hover { color: var(--muted); border-color: rgba(255,255,255,0.12); }
+
 
   #gp-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
@@ -311,62 +351,23 @@
 </div>
 
 <div id="geavanceerd-paneel">
-  <div class="gp-inner">
-    <button class="gp-item" onclick="openGP('prikbord')">
-      <span class="gp-icon">📌</span>
-      <span class="gp-tekst">
-        <span class="gp-titel">Prikbord</span>
-        <span class="gp-sub">Te koop · te ruil · gezocht</span>
-      </span>
-    </button>
-    <button class="gp-item" onclick="openGP('ideeen')">
-      <span class="gp-icon">💡</span>
-      <span class="gp-tekst">
-        <span class="gp-titel">Ideeën &amp; wensen voor WWL</span>
-        <span class="gp-sub">Slimme, goedkope verbeteringen</span>
-      </span>
-    </button>
-    <button class="gp-item" onclick="openGP('dringend')">
-      <span class="gp-icon">🛒</span>
-      <span class="gp-tekst">
-        <span class="gp-titel">Dringend nodig</span>
-        <span class="gp-sub">Bijna op: koffiefilters, wc-papier, stofzuigerzakken</span>
-      </span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">🧰</span>
-      <span class="gp-tekst"><span class="gp-titel">Klussen &amp; onderhoud</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">📅</span>
-      <span class="gp-tekst"><span class="gp-titel">Activiteiten</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">📖</span>
-      <span class="gp-tekst"><span class="gp-titel">Huisregels (volledig)</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">📞</span>
-      <span class="gp-tekst"><span class="gp-titel">Belangrijke contacten</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">🗂️</span>
-      <span class="gp-tekst"><span class="gp-titel">Documenten</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">🎉</span>
-      <span class="gp-tekst"><span class="gp-titel">Verjaardagen</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
-    <button class="gp-item gp-binnenkort" onclick="openGP('placeholder')">
-      <span class="gp-icon">⚙️</span>
-      <span class="gp-tekst"><span class="gp-titel">Instellingen</span><span class="gp-sub">Binnenkort beschikbaar</span></span>
-    </button>
+  <div class="gp-beheer-rij">
+    <button id="gp-beheer-btn" onclick="gpBeheerToggle()">🔒 Beheerder</button>
+  </div>
+  <div class="gp-pages" id="gp-pages">
+    <div class="gp-page" id="gp-page-1"></div>
+    <div class="gp-page" id="gp-page-2"></div>
+  </div>
+  <div class="gp-dots">
+    <span class="gp-dot actief" data-p="0" onclick="gpNaarPagina(0)"></span>
+    <span class="gp-dot" data-p="1" onclick="gpNaarPagina(1)"></span>
   </div>
 </div>
 
 <div id="gp-overlay" onclick="sluitGPModal()">
   <div class="gp-modal" onclick="event.stopPropagation()">
     <button class="gp-modal-close" onclick="sluitGPModal()">✕</button>
+
     <div id="gp-modal-inhoud"></div>
   </div>
 </div>
@@ -967,6 +968,10 @@ function toggleGeavanceerd() {
   const btn = document.getElementById('geavanceerd-btn');
   paneel.classList.toggle('open');
   btn.classList.toggle('actief');
+  if (paneel.classList.contains('open')) {
+    gpBeheerUpdateUI();
+    renderGPPaginas();
+  }
 }
 
 const GP_INHOUD = {
@@ -991,6 +996,123 @@ const GP_INHOUD = {
     footer: ''
   }
 };
+
+// Standaard volgorde per pagina — de gebruiker kan dit wijzigen met de pijltjes
+const GP_STANDAARD = {
+  1: [
+    { key:'prikbord',  icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true },
+    { key:'ideeen',    icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true },
+    { key:'dringend',  icon:'🛒', titel:'Dringend nodig', sub:'Bijna op: koffiefilters, wc-papier, stofzuigerzakken', actief:true },
+    { key:'klussen',   icon:'🧰', titel:'Klussen &amp; onderhoud', sub:'Binnenkort beschikbaar', actief:false },
+    { key:'verjaardag',icon:'🎉', titel:'Verjaardagen', sub:'Binnenkort beschikbaar', actief:false },
+    { key:'instellingen',icon:'⚙️', titel:'Instellingen', sub:'Binnenkort beschikbaar', actief:false },
+  ],
+  2: [
+    { key:'activiteiten', icon:'📅', titel:'Activiteiten', sub:'Binnenkort beschikbaar', actief:false },
+    { key:'huisregels',   icon:'📖', titel:'Huisregels (volledig)', sub:'Binnenkort beschikbaar', actief:false },
+    { key:'contacten',    icon:'📞', titel:'Belangrijke contacten', sub:'Binnenkort beschikbaar', actief:false },
+    { key:'documenten',   icon:'🗂️', titel:'Documenten', sub:'Binnenkort beschikbaar', actief:false },
+  ]
+};
+
+const GP_ORDER_KEY = 'wwl-gp-volgorde';
+
+function getGPVolgorde() {
+  try {
+    const opgeslagen = JSON.parse(localStorage.getItem(GP_ORDER_KEY) || 'null');
+    if (opgeslagen && opgeslagen[1] && opgeslagen[2]) return opgeslagen;
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(GP_STANDAARD));
+}
+function setGPVolgorde(v) { localStorage.setItem(GP_ORDER_KEY, JSON.stringify(v)); }
+
+function renderGPPaginas() {
+  const volgorde = getGPVolgorde();
+  [1,2].forEach(paginaNr => {
+    const lijst = volgorde[paginaNr];
+    const andereNr = paginaNr === 1 ? 2 : 1;
+    const el = document.getElementById('gp-page-' + paginaNr);
+    el.innerHTML = lijst.map((item, i) => `
+      <div class="gp-item ${item.actief?'':'gp-binnenkort'}">
+        <button class="gp-item-klik" onclick="openGP('${item.actief?item.key:'placeholder'}')">
+          <span class="gp-icon">${item.icon}</span>
+          <span class="gp-tekst">
+            <span class="gp-titel">${item.titel}</span>
+            <span class="gp-sub">${item.sub}</span>
+          </span>
+        </button>
+        <div class="gp-order-btns">
+          <button class="gp-order-btn" onclick="gpVerplaats(${paginaNr},${i},-1)" ${i===0?'disabled':''}>▲</button>
+          <button class="gp-order-btn" onclick="gpVerplaats(${paginaNr},${i},1)" ${i===lijst.length-1?'disabled':''}>▼</button>
+          <button class="gp-move-btn" onclick="gpNaarAnderePagina(${paginaNr},${i})">→ pag. ${andereNr}</button>
+        </div>
+      </div>`).join('');
+  });
+}
+
+function gpVerplaats(paginaNr, index, richting) {
+  const volgorde = getGPVolgorde();
+  const lijst = volgorde[paginaNr];
+  const nieuwIndex = index + richting;
+  if (nieuwIndex < 0 || nieuwIndex >= lijst.length) return;
+  [lijst[index], lijst[nieuwIndex]] = [lijst[nieuwIndex], lijst[index]];
+  setGPVolgorde(volgorde);
+  renderGPPaginas();
+}
+
+function gpNaarAnderePagina(paginaNr, index) {
+  const volgorde = getGPVolgorde();
+  const andereNr = paginaNr === 1 ? 2 : 1;
+  const [item] = volgorde[paginaNr].splice(index, 1);
+  volgorde[andereNr].push(item);
+  setGPVolgorde(volgorde);
+  renderGPPaginas();
+}
+
+// ── BEHEERDER-VERGRENDELING ──
+// Pincode hier aanpassen indien gewenst:
+const GP_BEHEER_PIN = '1234';
+const GP_BEHEER_SESSIE_KEY = 'wwl-gp-beheer';
+
+function gpBeheerActief() { return sessionStorage.getItem(GP_BEHEER_SESSIE_KEY) === '1'; }
+
+function gpBeheerToggle() {
+  if (gpBeheerActief()) {
+    sessionStorage.removeItem(GP_BEHEER_SESSIE_KEY);
+    gpBeheerUpdateUI();
+    return;
+  }
+  const invoer = prompt('Pincode beheerder:');
+  if (invoer === GP_BEHEER_PIN) {
+    sessionStorage.setItem(GP_BEHEER_SESSIE_KEY, '1');
+    gpBeheerUpdateUI();
+  } else if (invoer !== null) {
+    alert('Onjuiste pincode.');
+  }
+}
+
+function gpBeheerUpdateUI() {
+  const paneel = document.getElementById('geavanceerd-paneel');
+  const btn = document.getElementById('gp-beheer-btn');
+  const actief = gpBeheerActief();
+  paneel.classList.toggle('gp-beheer-modus', actief);
+  btn.classList.toggle('gp-beheer-actief', actief);
+  btn.textContent = actief ? '🔓 Beheerder actief' : '🔒 Beheerder';
+}
+
+function gpNaarPagina(index) {
+  const wrap = document.getElementById('gp-pages');
+  wrap.scrollTo({ left: wrap.clientWidth * index, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const wrap = document.getElementById('gp-pages');
+  if (!wrap) return;
+  wrap.addEventListener('scroll', () => {
+    const idx = Math.round(wrap.scrollLeft / wrap.clientWidth);
+    document.querySelectorAll('.gp-dot').forEach((d,i) => d.classList.toggle('actief', i===idx));
+  });
+});
 
 function openGP(key) {
   const data = GP_INHOUD[key] || GP_INHOUD.placeholder;
