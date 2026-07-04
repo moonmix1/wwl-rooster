@@ -611,6 +611,8 @@ function initSupabase() {
     supabaseActief = true;
     laadMeldingen();
     luisterLive();
+    laadPoll();
+    luisterPollLive();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -646,7 +648,7 @@ function toon(id, el) {
   if(id==='vandaag')     renderVandaag();
   if(id==='weekrooster') renderWeek();
   if(id==='rotatie')     renderRotatie();
-  if(id==='meldingen')   { laadMeldingen(); renderPoll(); }
+  if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
   stopCamera();
 }
 
@@ -799,8 +801,6 @@ function fotoUitBestand(e) {
 function fotoBevestigen() {
   document.getElementById('cam-btns-preview').style.display = 'none';
   document.getElementById('camera-zone').style.borderColor  = '#166534';
-  gekozenType = 'foto';
-  renderTypeKnoppen();
 }
 
 function fotoOpnieuw() {
@@ -828,7 +828,7 @@ async function verstuurMelding() {
   const bericht = document.getElementById('inp-bericht').value.trim();
   if(!naam){ alert('Selecteer je naam.'); return; }
   if(!bericht && !huidigeFoto){ alert('Voeg een bericht of foto toe.'); return; }
-  const t = MELDING_TYPES.find(x=>x.id===gekozenType);
+  const t = MELDING_TYPES.find(x=>x.id===gekozenType) || MELDING_TYPES.find(x=>x.id==='algemeen');
   const btn = document.getElementById('verstuur-btn');
   btn.disabled = true; btn.textContent = 'Bezig...';
   if(supabaseActief) {
@@ -900,53 +900,70 @@ function waSturen() {
   return false;
 }
 
-// ── POLL ──
-const POLL_KEY = 'wwl-poll';
-const STEM_KEY = 'wwl-stem';
+// ── POLL (live via Supabase, één actieve poll met vaste id=1) ──
+const POLL_ID = 1;
+const STEM_KEY_PREFIX = 'wwl-stem-';
 
-function getPoll() {
-  try { return JSON.parse(localStorage.getItem(POLL_KEY)||'null'); } catch(e) { return null; }
+function heeftGestemd(pollId) { return !!localStorage.getItem(STEM_KEY_PREFIX + pollId); }
+function markeerGestemd(pollId) { localStorage.setItem(STEM_KEY_PREFIX + pollId, '1'); }
+
+let huidigePoll = null;
+
+async function laadPoll() {
+  if (!supabaseActief) { renderPoll(); return; }
+  const {data, error} = await sb.from('polls').select('*').eq('id', POLL_ID).maybeSingle();
+  if (!error) {
+    huidigePoll = (data && data.actief) ? data : null;
+    renderPoll();
+  }
 }
-function setPoll(poll) { localStorage.setItem(POLL_KEY, JSON.stringify(poll)); }
-function heeftGestemd() { return !!localStorage.getItem(STEM_KEY); }
-function markeerGestemd() { localStorage.setItem(STEM_KEY, '1'); }
 
-function startPoll() {
+function luisterPollLive() {
+  if (!supabaseActief) return;
+  sb.channel('polls-live')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'polls'}, () => {
+      laadPoll();
+    }).subscribe();
+}
+
+async function startPoll() {
   const vraag = document.getElementById('poll-vraag-inp').value.trim();
   const opts = ['poll-opt1','poll-opt2','poll-opt3','poll-opt4']
     .map(id => document.getElementById(id).value.trim()).filter(o => o);
   if (!vraag || opts.length < 2) { alert('Vul minimaal een vraag en 2 opties in.'); return; }
-  setPoll({ vraag, opties: opts, stemmen: opts.map(() => 0) });
-  localStorage.removeItem(STEM_KEY);
-  renderPoll();
+  if (!supabaseActief) { alert('Supabase is niet actief, poll kan niet live gedeeld worden.'); return; }
+  const nieuwePoll = { id: POLL_ID, vraag, opties: opts, stemmen: opts.map(() => 0), actief: true };
+  const {error} = await sb.from('polls').upsert(nieuwePoll);
+  if (error) { alert('Fout bij starten poll: ' + error.message); return; }
+  localStorage.removeItem(STEM_KEY_PREFIX + POLL_ID);
+  laadPoll();
 }
 
-function sluitPoll() {
-  localStorage.removeItem(POLL_KEY);
-  localStorage.removeItem(STEM_KEY);
-  renderPoll();
+async function sluitPoll() {
+  if (!supabaseActief) return;
+  await sb.from('polls').update({ actief: false }).eq('id', POLL_ID);
+  laadPoll();
 }
 
-function stem(index) {
-  if (heeftGestemd()) return;
-  const poll = getPoll();
-  if (!poll) return;
-  poll.stemmen[index]++;
-  setPoll(poll);
-  markeerGestemd();
-  renderPoll();
+async function stem(index) {
+  if (!huidigePoll || heeftGestemd(huidigePoll.id)) return;
+  if (!supabaseActief) return;
+  const nieuweStemmen = [...huidigePoll.stemmen];
+  nieuweStemmen[index]++;
+  const {error} = await sb.from('polls').update({ stemmen: nieuweStemmen }).eq('id', POLL_ID);
+  if (!error) { markeerGestemd(huidigePoll.id); laadPoll(); }
 }
 
 function renderPoll() {
-  const poll = getPoll();
   const el = document.getElementById('poll-weergave');
   if (!el) return;
+  const poll = huidigePoll;
   if (!poll) {
     el.innerHTML = '<p class="poll-vraag" style="color:var(--subtle);font-style:italic">Geen actieve poll op dit moment.</p>';
     return;
   }
   const totaal = poll.stemmen.reduce((a,b) => a+b, 0);
-  const gestemd = heeftGestemd();
+  const gestemd = heeftGestemd(poll.id);
   let html = `<p class="poll-vraag">${poll.vraag}</p><div class="poll-opties">`;
   poll.opties.forEach((opt, i) => {
     const pct = totaal > 0 ? Math.round(poll.stemmen[i]/totaal*100) : 0;
