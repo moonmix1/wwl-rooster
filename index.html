@@ -862,31 +862,68 @@ function renderVandaag() {
   laadMeldingen();
 }
 
-function pill(naam, type) {
+function pill(naam, type, dag, rolKey) {
   const rawNaam = naam.replace('★','').trim();
   const isB = BEHEER.includes(rawNaam);
   const isExtra = naam.includes('★');
   const kleur = naamMatchKleuren[rawNaam];
-  const stijl = kleur ? ` style="box-shadow:0 0 0 3px ${kleur};"` : '';
-  return `<span class="pill pill-${type}"${stijl}>
+  const bewerkbaar = gpBeheerActief() && dag && rolKey;
+  let stijl = '';
+  if (kleur) stijl += `box-shadow:0 0 0 3px ${kleur};`;
+  if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
+  const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` onclick="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
+  return `<span class="pill pill-${type}"${attrs}>
     <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
     ${isB?'<span class="pill-sub">🏠 beheederswoning</span>':''}
+    ${bewerkbaar?' <span style="font-size:0.65rem;opacity:0.8">✏️</span>':''}
   </span>`;
 }
 
 function renderWeek() {
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
+  const beheer = gpBeheerActief();
   document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
     const d = huidigRooster[dag]||{};
     return `<tr class="${dag===vandaag?'vandaag':''}">
       <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
-      <td>${d.bankOch?pill(d.bankOch,'bankoch'):'<span class="kantoor-label">kantoor aanwezig</span>'}</td>
-      <td>${d.kook?pill(d.kook,'kook'):'—'}</td>
-      <td>${d.bank?pill(d.bank,'bank'):'—'}</td>
-      <td>${d.corvee?pill(d.corvee,'corvee'):'—'}</td>
+      <td>${d.bankOch?pill(d.bankOch,'bankoch',dag,'bankOch'):(beheer?`<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="bewerkRoosterCel('${dag}','bankOch')">+ toewijzen</button>`:'<span class="kantoor-label">kantoor aanwezig</span>')}</td>
+      <td>${d.kook?pill(d.kook,'kook',dag,'kook'):'—'}</td>
+      <td>${d.bank?pill(d.bank,'bank',dag,'bank'):'—'}</td>
+      <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee'):'—'}</td>
     </tr>`;
   }).join('');
+}
+
+const ROOSTER_ROL_NAMEN = { bankOch:'Bank ochtend', bank:'Bank avond', kook:'Kook', corvee:'Corvee' };
+
+function bewerkRoosterCel(dag, rolKey) {
+  const huidige = huidigRooster[dag][rolKey] ? huidigRooster[dag][rolKey].replace('★','').trim() : '';
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>✏️ ${ROOSTER_ROL_NAMEN[rolKey] || rolKey} — ${dag}</h2>
+    <p class="gp-modal-intro">Kies wie deze dienst overneemt. Dit wijzigt alleen de huidige week.</p>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Naam</label>
+      <select id="rooster-edit-naam">${naamOpties()}</select>
+      <button class="verstuur-btn" onclick="bevestigRoosterWijziging('${dag}','${rolKey}')">Opslaan →</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+  const sel = document.getElementById('rooster-edit-naam');
+  if (sel && huidige) sel.value = huidige;
+}
+
+async function bevestigRoosterWijziging(dag, rolKey) {
+  const nieuweNaam = document.getElementById('rooster-edit-naam').value;
+  if (!nieuweNaam) { alert('Kies een naam.'); return; }
+  huidigRooster[dag][rolKey] = nieuweNaam;
+  sluitGPModal();
+  renderWeek();
+  renderVandaag();
+  if (!supabaseActief) return;
+  const weekStart = weekStartVan(new Date());
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
+  if (error) alert('Opslaan mislukt: ' + error.message);
 }
 
 function bankOpRij(hist) {
@@ -1407,6 +1444,7 @@ function gpBeheerUpdateUI() {
   paneel.classList.toggle('gp-beheer-modus', actief);
   btn.classList.toggle('gp-beheer-actief', actief);
   btn.textContent = actief ? '🔓 Beheerder actief' : '🔒 Beheerder';
+  herRenderRoosterTabs();
 }
 
 function gpNaarPagina(index) {
@@ -1628,4 +1666,3 @@ initSupabase();
 </script>
 </body>
 </html>
-
