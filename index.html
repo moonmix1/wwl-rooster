@@ -995,17 +995,17 @@ const GP_INHOUD = {
   prikbord: {
     titel: '📌 Prikbord',
     intro: `Hier zet je wat je <strong>te koop aanbiedt</strong>, wilt <strong>ruilen</strong>, of juist <strong>zoekt</strong>. Van een oude fiets die iemand anders nog kan gebruiken tot een setje gereedschap dat je mist. Klein of groot, alles mag hier gedeeld worden — zolang het respectvol en eerlijk blijft.`,
-    footer: 'Deze functie wordt binnenkort gekoppeld aan het meldingensysteem.'
+    footer: ''
   },
   ideeen: {
     titel: '💡 Ideeën & wensen voor WWL',
     intro: `Geen klachtenbus, maar een plek voor mensen die iets willen <strong>verbeteren</strong> — vaak met kleine moeite of weinig geld. Denk aan: een muur die met wat goedkope verf en een middagje werk er weer fris uitziet. Een kennis die iets gratis of heel goedkoop kan repareren. Of de frituurpan vervangen door een airfryer — minder stank, minder rommel, een afzuigkap die niet meer vol oud vet zit, en gezonder eten. Klein idee, groot verschil — deel het hier.`,
-    footer: 'Deze functie wordt binnenkort gekoppeld aan het meldingensysteem.'
+    footer: ''
   },
   dringend: {
     titel: '🛒 Dringend nodig',
     intro: `Sommige dingen raken sneller op dan gedacht: <strong>koffiefilters</strong>, <strong>wc-papier</strong>, <strong>stofzuigerzakken</strong> — spullen die niemand apart in de gaten houdt totdat ze er plotseling niet meer zijn. Meld het hier zodra iets bijna op is, zodat het op tijd wordt aangevuld voordat het een probleem wordt.`,
-    footer: 'Deze functie wordt binnenkort gekoppeld aan het meldingensysteem.'
+    footer: ''
   },
   placeholder: {
     titel: '🚧 Binnenkort beschikbaar',
@@ -1131,18 +1131,89 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+const NAMEN_LIJST = ["Abdi","Adam","Altib","Antoine","Edgars","Frans","Gerry","Henk","Jemal",
+  "Joey","Joël","Johnny","Jordy","Mark","Norman","Radwan","Raymond","Sjoerd","Stan","Stefano","Vu","Walter"];
+
+function naamOpties() {
+  return '<option value="">— selecteer je naam —</option>' +
+    NAMEN_LIJST.map(n => `<option>${n}</option>`).join('');
+}
+
+let extraChannel = null;
+const EXTRA_CATEGORIEEN = ['prikbord','ideeen','dringend'];
+
+async function laadExtraItems(categorie) {
+  const el = document.getElementById('extra-lijst-' + categorie);
+  if (!el) return;
+  if (!supabaseActief) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Supabase niet actief.</p>'; return; }
+  const {data, error} = await sb.from('extra_items')
+    .select('*').eq('categorie', categorie).order('created_at', {ascending:false}).limit(50);
+  if (error) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--warn)">Fout bij laden: ' + error.message + '</p>'; return; }
+  el.innerHTML = (data && data.length) ? data.map(item => `
+    <div class="melding-item">
+      <div style="flex:1;min-width:0">
+        <div class="melding-naam">${item.naam}</div>
+        <div class="melding-tekst">${item.tekst}</div>
+      </div>
+      <span class="melding-tijd">${new Date(item.created_at).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})}</span>
+      <button class="verwijder-btn" onclick="verwijderExtraItem(${item.id}, '${categorie}')">✕</button>
+    </div>`).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
+}
+
+async function voegExtraItemToe(categorie) {
+  const naamEl  = document.getElementById('extra-naam-' + categorie);
+  const tekstEl = document.getElementById('extra-tekst-' + categorie);
+  const naam  = naamEl.value.trim();
+  const tekst = tekstEl.value.trim();
+  if (!naam)  { alert('Selecteer je naam.'); return; }
+  if (!tekst) { alert('Vul een bericht in.'); return; }
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+  const {error} = await sb.from('extra_items').insert([{ categorie, naam, tekst }]);
+  if (error) { alert('Fout bij plaatsen: ' + error.message); return; }
+  tekstEl.value = '';
+  laadExtraItems(categorie);
+}
+
+async function verwijderExtraItem(id, categorie) {
+  if (!supabaseActief) return;
+  await sb.from('extra_items').delete().eq('id', id);
+  laadExtraItems(categorie);
+}
+
+function luisterExtraLive(categorie) {
+  if (!supabaseActief) return;
+  if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
+  extraChannel = sb.channel('extra-live-' + categorie)
+    .on('postgres_changes', {event:'*', schema:'public', table:'extra_items', filter:`categorie=eq.${categorie}`}, () => {
+      laadExtraItems(categorie);
+    }).subscribe();
+}
+
 function openGP(key) {
   const data = GP_INHOUD[key] || GP_INHOUD.placeholder;
+  const interactief = EXTRA_CATEGORIEEN.includes(key);
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>${data.titel}</h2>
     <p class="gp-modal-intro">${data.intro}</p>
-    ${data.footer ? `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>` : ''}
+    ${interactief ? `
+      <div class="melding-form" style="margin-top:4px">
+        <label>Jouw naam</label>
+        <select id="extra-naam-${key}">${naamOpties()}</select>
+        <label>Bericht</label>
+        <textarea id="extra-tekst-${key}" rows="2" placeholder="Typ hier je bericht..."></textarea>
+        <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
+      </div>
+      <div class="sectie-titel"><span class="live-dot"></span>Geplaatst</div>
+      <div id="extra-lijst-${key}" class="melding-lijst"></div>
+    ` : (data.footer ? `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>` : '')}
   `;
   document.getElementById('gp-overlay').classList.add('open');
+  if (interactief) { laadExtraItems(key); luisterExtraLive(key); }
 }
 
 function sluitGPModal() {
   document.getElementById('gp-overlay').classList.remove('open');
+  if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
 }
 
 // ── INIT ──
