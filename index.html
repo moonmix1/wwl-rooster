@@ -433,6 +433,19 @@
   </div>
 
   <div id="s-regels" class="sectie">
+    <div id="regels-beheer-knop" style="display:none;margin-bottom:14px">
+      <button class="cam-btn cam-btn-primary" onclick="regelsBewerkModusAan()">✏️ Tekst bewerken</button>
+    </div>
+    <div id="regels-bewerk-paneel" style="display:none;margin-bottom:16px">
+      <div class="melding-form">
+        <label>HTML-inhoud van dit tabblad</label>
+        <textarea id="regels-bewerk-tekst" rows="16" style="font-family:monospace;font-size:0.78rem"></textarea>
+        <button class="verstuur-btn" onclick="regelsOpslaan()">Opslaan →</button>
+        <button class="poll-sluit-btn" onclick="regelsBewerkModusUit()">Annuleren</button>
+      </div>
+    </div>
+    <div id="regels-weergave">
+    <div id="regels-inhoud">
     <div class="regel-blok">
       <h3>🎯 Hoe kies je je shift?</h3>
       <ul>
@@ -473,6 +486,8 @@
       De bankshift-persoon is geen portier of bewaker, maar een aanwezige die de toon zet. Wat 'avond- en nachtsfeer' betekent is moeilijk in regels te vangen. In een groep van twintig mensen die elkaar kennen spreek je elkaar gewoon aan. Wie te luid is, krijgt een seintje. Niet omdat het in het reglement staat, maar omdat het fatsoen is.
       <br><br>
       🚪 <strong>De deur na 22:00:</strong> buiten hangt een duidelijk bord met instructies. Spoedgevallen gaan telefonisch. Eigen bewoners hebben via het smartlock zelfstandig toegang. Iemand die zich wil aanmelden maar toch blijft aanbellen diskwalificeert zichzelf daarmee eerder dan dat hij naar binnen komt.
+    </div>
+    </div>
     </div>
   </div>
 
@@ -756,6 +771,8 @@ function initSupabase() {
     laadBewoners();
     luisterBewonersLive();
     zorgVoorHuidigeWeek();
+    laadRegelsTekst();
+    luisterRegelsTekstLive();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -792,6 +809,7 @@ function toon(id, el) {
   if(id==='weekrooster') renderWeek();
   if(id==='rotatie')     renderRotatie();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
+  if(id==='regels')      renderRegelsBeheerKnop();
   stopCamera();
 }
 
@@ -924,6 +942,49 @@ async function bevestigRoosterWijziging(dag, rolKey) {
   const weekStart = weekStartVan(new Date());
   const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
   if (error) alert('Opslaan mislukt: ' + error.message);
+}
+
+// ── REGELS BEWERKEN (beheerder) ──
+function renderRegelsBeheerKnop() {
+  const knop = document.getElementById('regels-beheer-knop');
+  if (knop) knop.style.display = gpBeheerActief() ? 'block' : 'none';
+}
+
+function regelsBewerkModusAan() {
+  document.getElementById('regels-weergave').style.display = 'none';
+  document.getElementById('regels-bewerk-paneel').style.display = 'block';
+  document.getElementById('regels-bewerk-tekst').value = document.getElementById('regels-inhoud').innerHTML.trim();
+}
+
+function regelsBewerkModusUit() {
+  document.getElementById('regels-weergave').style.display = 'block';
+  document.getElementById('regels-bewerk-paneel').style.display = 'none';
+}
+
+async function regelsOpslaan() {
+  const nieuweHtml = document.getElementById('regels-bewerk-tekst').value;
+  document.getElementById('regels-inhoud').innerHTML = nieuweHtml;
+  regelsBewerkModusUit();
+  if (!supabaseActief) { alert('Supabase niet actief — wijziging is alleen lokaal zichtbaar.'); return; }
+  const {error} = await sb.from('pagina_tekst').upsert({ sleutel: 'regels', inhoud: nieuweHtml });
+  if (error) alert('Opslaan mislukt: ' + error.message);
+}
+
+async function laadRegelsTekst() {
+  if (!supabaseActief) return;
+  const {data, error} = await sb.from('pagina_tekst').select('*').eq('sleutel','regels').maybeSingle();
+  if (!error && data && data.inhoud) {
+    const bewerkModusActief = document.getElementById('regels-bewerk-paneel').style.display === 'block';
+    if (!bewerkModusActief) document.getElementById('regels-inhoud').innerHTML = data.inhoud;
+  }
+}
+
+function luisterRegelsTekstLive() {
+  if (!supabaseActief) return;
+  sb.channel('pagina-tekst-live')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'pagina_tekst'}, () => {
+      laadRegelsTekst();
+    }).subscribe();
 }
 
 function bankOpRij(hist) {
@@ -1420,17 +1481,17 @@ function gpVerplaats(index, richting) {
 const GP_BEHEER_PIN = '1234';
 const GP_BEHEER_SESSIE_KEY = 'wwl-gp-beheer';
 
-function gpBeheerActief() { return sessionStorage.getItem(GP_BEHEER_SESSIE_KEY) === '1'; }
+function gpBeheerActief() { return localStorage.getItem(GP_BEHEER_SESSIE_KEY) === '1'; }
 
 function gpBeheerToggle() {
   if (gpBeheerActief()) {
-    sessionStorage.removeItem(GP_BEHEER_SESSIE_KEY);
+    localStorage.removeItem(GP_BEHEER_SESSIE_KEY);
     gpBeheerUpdateUI();
     return;
   }
   const invoer = prompt('Pincode beheerder:');
   if (invoer === GP_BEHEER_PIN) {
-    sessionStorage.setItem(GP_BEHEER_SESSIE_KEY, '1');
+    localStorage.setItem(GP_BEHEER_SESSIE_KEY, '1');
     gpBeheerUpdateUI();
   } else if (invoer !== null) {
     alert('Onjuiste pincode.');
@@ -1445,6 +1506,7 @@ function gpBeheerUpdateUI() {
   btn.classList.toggle('gp-beheer-actief', actief);
   btn.textContent = actief ? '🔓 Beheerder actief' : '🔒 Beheerder';
   herRenderRoosterTabs();
+  renderRegelsBeheerKnop();
 }
 
 function gpNaarPagina(index) {
