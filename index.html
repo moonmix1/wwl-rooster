@@ -259,6 +259,10 @@
     display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;
   }
   .gp-dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+  .gp-pagina-label {
+    text-align: center; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--subtle); margin-bottom: 10px;
+  }
   .gp-dot {
     width: 8px; height: 8px; border-radius: 50%; background: var(--border);
     cursor: pointer; transition: all 0.2s;
@@ -354,14 +358,9 @@
   <div class="gp-beheer-rij">
     <button id="gp-beheer-btn" onclick="gpBeheerToggle()">🔒 Beheerder</button>
   </div>
-  <div class="gp-pages" id="gp-pages">
-    <div class="gp-page" id="gp-page-1"></div>
-    <div class="gp-page" id="gp-page-2"></div>
-  </div>
-  <div class="gp-dots">
-    <span class="gp-dot actief" data-p="0" onclick="gpNaarPagina(0)"></span>
-    <span class="gp-dot" data-p="1" onclick="gpNaarPagina(1)"></span>
-  </div>
+  <div class="gp-pagina-label" id="gp-pagina-label"></div>
+  <div class="gp-pages" id="gp-pages"></div>
+  <div class="gp-dots" id="gp-dots"></div>
 </div>
 
 <div id="gp-overlay" onclick="sluitGPModal()">
@@ -502,17 +501,7 @@
 
     <div class="melding-form">
       <label>Jouw naam</label>
-      <select id="inp-naam" size="1">
-        <option value="">— selecteer je naam —</option>
-        <option>Abdi</option><option>Adam</option><option>Altib</option>
-        <option>Antoine</option><option>Edgars</option><option>Frans</option>
-        <option>Gerry</option><option>Henk</option><option>Jemal</option>
-        <option>Joey</option><option>Joël</option><option>Johnny</option>
-        <option>Jordy</option><option>Mark</option><option>Norman</option>
-        <option>Radwan</option><option>Raymond</option><option>Sjoerd</option>
-        <option>Stan</option><option>Stefano</option><option>Vu</option>
-        <option>Walter</option>
-      </select>
+      <select id="inp-naam" size="1"></select>
       <label>Type melding</label>
       <div class="type-grid" id="type-grid"></div>
       <label>Toelichting (optioneel)</label>
@@ -545,7 +534,7 @@ const MAANDEN_NL = ["januari","februari","maart","april","mei","juni","juli","au
 const ROOSTER = {
   Maandag:   { bank:"Vu",         corvee:"Norman",   kook:"Walter"   },
   Dinsdag:   { bank:"Jemal",      corvee:"Raymond",  kook:"Mark"     },
-  Woensdag:  { bank:"Stefano",    corvee:"Stan",     kook:"Adam"     },
+  Woensdag:  { bank:"Max",        corvee:"Stan",     kook:"Adam"     },
   Donderdag: { bank:"Antoine",    corvee:"Henk",     kook:"Altib"    },
   Vrijdag:   { bank:"Gerry",      corvee:"Edgars",   kook:"Joël"     },
   Zaterdag:  { bankOch:"Joey",    bank:"Sjoerd",     corvee:"Jordy",  kook:"Abdi"    },
@@ -556,7 +545,7 @@ const ROTATIE = {
   Norman:  {hist:["C","K","B","C"]}, Raymond: {hist:["B","C","K","C"]},
   Stan:    {hist:["K","B","C","C"]}, Henk:    {hist:["C","K","B","C"]},
   Edgars:  {hist:["B","C","K","C"]}, Joël:   {hist:["K","B","B","B"]},
-  Joey:    {hist:["B","B","B","B"]}, Stefano: {hist:["B","C","B","B"]},
+  Joey:    {hist:["B","B","B","B"]}, Max:     {hist:["B","C","B","B"]},
   Sjoerd:  {hist:["C","B","C","B"]}, Antoine: {hist:["B","C","B","C"]},
   Gerry:   {hist:["C","B","C","B"]}, Vu:      {hist:["B","C","B","C"]},
   Walter:  {hist:["K","K","C","K"]}, Mark:    {hist:["K","C","K","K"]},
@@ -594,6 +583,8 @@ function initSupabase() {
     luisterPollLive();
     laadGPVolgorde();
     luisterGPVolgordeLive();
+    laadBewoners();
+    luisterBewonersLive();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -1025,6 +1016,46 @@ const GP_INHOUD = {
     intro: `Sommige dingen raken sneller op dan gedacht: <strong>koffiefilters</strong>, <strong>wc-papier</strong>, <strong>stofzuigerzakken</strong> — spullen die niemand apart in de gaten houdt totdat ze er plotseling niet meer zijn. Meld het hier zodra iets bijna op is, zodat het op tijd wordt aangevuld voordat het een probleem wordt.`,
     footer: ''
   },
+  klussen: {
+    titel: '🧰 Klussen & onderhoud',
+    intro: `Meld hier iets dat kapot is, los zit, of aandacht nodig heeft — van een piepende deur tot een lekkende kraan. Zet erbij waar het is en wat er precies aan de hand is, het liefst met een foto.`,
+    footer: ''
+  },
+  verjaardag: {
+    titel: '🎉 Verjaardagen',
+    intro: `Zet hier je verjaardag neer (bijv. "12 augustus"), zodat de rest van het huis 'm niet vergeet.`,
+    footer: ''
+  },
+  activiteiten: {
+    titel: '📅 Activiteiten',
+    intro: `Organiseer je iets — een filmavond, een potje voetbal, een gezamenlijk etentje? Zet het hier neer zodat iedereen het kan zien.`,
+    footer: ''
+  },
+  contacten: {
+    titel: '📞 Belangrijke contacten',
+    intro: `Verzamel hier nuttige telefoonnummers en contacten voor het huis — huisarts, loodgieter, beheerder, noem maar op.`,
+    footer: ''
+  },
+  documenten: {
+    titel: '🗂️ Documenten',
+    intro: `Deel hier een foto van een belangrijk document (zoals een brief, formulier of reglement) met een korte omschrijving erbij.`,
+    footer: ''
+  },
+  huisregels: {
+    titel: '📖 Huisregels (volledig)',
+    intro: `<strong>Shift kiezen:</strong> wie het eerst kiest heeft de meeste keuze — dat doe je via 💬 Meldingen met je naam en gewenste shift. Koken mag je altijd kiezen. Bank en corvee zijn vrije keuze, tenzij je al 4 weken bank hebt gedaan.<br><br>
+<strong>Sterretje (★):</strong> een uitzonderlijke 2e shift in dezelfde week. Normaal max. 1 shift per week (3–6 uur) — nog altijd ver onder het huidige niveau van 3 shifts van 8 uur.<br><br>
+<strong>Anti-ophoping:</strong> na 4 weken bank op rij ben je verplicht minimaal 2 weken corvee te doen, zodat het werk eerlijk verdeeld blijft. Zie tab 🔄 Rotatie voor de actuele status.<br><br>
+<strong>Shift-overzicht:</strong> Bank ochtend 10–16u (za+zo) · Kook 14–17u · Bank avond 16–22u · Corvee 17–21u.<br><br>
+<strong>Rustperiode 22:00–10:00:</strong> geen diensten. Rust, respect en fatsoen zijn vanzelfsprekend in een groep van twintig mensen die elkaar kennen.<br><br>
+<strong>De deur na 22:00:</strong> buiten hangt een bord met instructies. Spoedgevallen gaan telefonisch. Bewoners hebben via het smartlock zelfstandig toegang.`,
+    footer: ''
+  },
+  instellingen: {
+    titel: '⚙️ Instellingen — bewonerslijst',
+    intro: `Hier beheert de beheerder de lijst van bewoners die overal in de app als naam gekozen kan worden.`,
+    footer: ''
+  },
   placeholder: {
     titel: '🚧 Binnenkort beschikbaar',
     intro: `Dit onderdeel is nog in ontwikkeling.`,
@@ -1032,33 +1063,37 @@ const GP_INHOUD = {
   }
 };
 
-// Standaard volgorde per pagina — de gebruiker kan dit wijzigen met de pijltjes
-const GP_STANDAARD = {
-  1: [
-    { key:'dringend',  icon:'🛒', titel:'Dringend nodig', sub:'Bijna op: koffiefilters, wc-papier, stofzuigerzakken', actief:true },
-    { key:'ideeen',    icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true },
-    { key:'prikbord',  icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true },
-    { key:'klussen',   icon:'🧰', titel:'Klussen &amp; onderhoud', sub:'Binnenkort beschikbaar', actief:false },
-    { key:'verjaardag',icon:'🎉', titel:'Verjaardagen', sub:'Binnenkort beschikbaar', actief:false },
-    { key:'instellingen',icon:'⚙️', titel:'Instellingen', sub:'Binnenkort beschikbaar', actief:false },
-  ],
-  2: [
-    { key:'activiteiten', icon:'📅', titel:'Activiteiten', sub:'Binnenkort beschikbaar', actief:false },
-    { key:'huisregels',   icon:'📖', titel:'Huisregels (volledig)', sub:'Binnenkort beschikbaar', actief:false },
-    { key:'contacten',    icon:'📞', titel:'Belangrijke contacten', sub:'Binnenkort beschikbaar', actief:false },
-    { key:'documenten',   icon:'🗂️', titel:'Documenten', sub:'Binnenkort beschikbaar', actief:false },
-  ]
-};
+// Standaard volgorde — één platte lijst, automatisch verdeeld over pagina's van GP_PAGINA_GROOTTE items
+const GP_PAGINA_GROOTTE = 5;
+
+const GP_STANDAARD = [
+  { key:'dringend',     icon:'🛒', titel:'Dringend nodig', sub:'Bijna op: koffiefilters, wc-papier, stofzuigerzakken', actief:true },
+  { key:'ideeen',       icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true },
+  { key:'prikbord',     icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true },
+  { key:'klussen',      icon:'🧰', titel:'Klussen &amp; onderhoud', sub:'Meld kapotte of kapotte dingen', actief:true },
+  { key:'verjaardag',   icon:'🎉', titel:'Verjaardagen', sub:'Zet je verjaardag erbij', actief:true },
+  { key:'activiteiten', icon:'📅', titel:'Activiteiten', sub:'Wat is er te doen in huis?', actief:true },
+  { key:'contacten',    icon:'📞', titel:'Belangrijke contacten', sub:'Huisarts, loodgieter, beheerder', actief:true },
+  { key:'documenten',   icon:'🗂️', titel:'Documenten', sub:'Deel een foto van een document', actief:true },
+  { key:'huisregels',   icon:'📖', titel:'Huisregels (volledig)', sub:'Alle regels op een rij', actief:true },
+  { key:'instellingen', icon:'⚙️', titel:'Instellingen', sub:'Bewonerslijst beheren', actief:true },
+];
 
 const GP_VOLGORDE_ID = 1;
 let gpVolgordeCache = JSON.parse(JSON.stringify(GP_STANDAARD));
 let gpVolgordeChannel = null;
+let gpTotaalPaginas = 1;
 
 async function laadGPVolgorde() {
   if (!supabaseActief) return;
   const {data, error} = await sb.from('gp_volgorde').select('*').eq('id', GP_VOLGORDE_ID).maybeSingle();
-  if (!error && data && data.pagina1 && data.pagina2) {
-    gpVolgordeCache = { 1: data.pagina1, 2: data.pagina2 };
+  if (!error && data) {
+    if (data.items) {
+      gpVolgordeCache = data.items;
+    } else if (data.pagina1 || data.pagina2) {
+      gpVolgordeCache = [...(data.pagina1||[]), ...(data.pagina2||[])];
+      opslaanGPVolgorde(gpVolgordeCache);
+    }
   }
   const paneel = document.getElementById('geavanceerd-paneel');
   if (paneel && paneel.classList.contains('open')) renderGPPaginas();
@@ -1072,54 +1107,60 @@ function luisterGPVolgordeLive() {
     }).subscribe();
 }
 
-async function opslaanGPVolgorde(v) {
-  gpVolgordeCache = v;
+async function opslaanGPVolgorde(items) {
+  gpVolgordeCache = items;
   if (!supabaseActief) return;
-  await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, pagina1: v[1], pagina2: v[2] });
+  await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, items });
 }
 
 function getGPVolgorde() { return gpVolgordeCache; }
 
+function gpUpdatePaginaLabel(idx, totaal) {
+  const el = document.getElementById('gp-pagina-label');
+  if (el) el.textContent = totaal > 1 ? `Pagina ${idx+1} van ${totaal}` : '';
+}
+
 function renderGPPaginas() {
-  const volgorde = getGPVolgorde();
-  [1,2].forEach(paginaNr => {
-    const lijst = volgorde[paginaNr];
-    const andereNr = paginaNr === 1 ? 2 : 1;
-    const el = document.getElementById('gp-page-' + paginaNr);
-    el.innerHTML = lijst.map((item, i) => `
-      <div class="gp-item ${item.actief?'':'gp-binnenkort'}">
-        <button class="gp-item-klik" onclick="openGP('${item.actief?item.key:'placeholder'}')">
-          <span class="gp-icon">${item.icon}</span>
-          <span class="gp-tekst">
-            <span class="gp-titel">${item.titel}</span>
-            <span class="gp-sub">${item.sub}</span>
-          </span>
-        </button>
-        <div class="gp-order-btns">
-          <button class="gp-order-btn" onclick="gpVerplaats(${paginaNr},${i},-1)" ${i===0?'disabled':''}>▲</button>
-          <button class="gp-order-btn" onclick="gpVerplaats(${paginaNr},${i},1)" ${i===lijst.length-1?'disabled':''}>▼</button>
-          <button class="gp-move-btn" onclick="gpNaarAnderePagina(${paginaNr},${i})">→ pag. ${andereNr}</button>
-        </div>
-      </div>`).join('');
-  });
+  const items = getGPVolgorde();
+  const paginas = [];
+  for (let i = 0; i < items.length; i += GP_PAGINA_GROOTTE) paginas.push(items.slice(i, i + GP_PAGINA_GROOTTE));
+  if (paginas.length === 0) paginas.push([]);
+  gpTotaalPaginas = paginas.length;
+
+  document.getElementById('gp-pages').innerHTML = paginas.map((lijst, paginaIdx) => `
+    <div class="gp-page">
+      ${lijst.map((item, i) => {
+        const globalIndex = paginaIdx * GP_PAGINA_GROOTTE + i;
+        return `
+        <div class="gp-item ${item.actief?'':'gp-binnenkort'}">
+          <button class="gp-item-klik" onclick="openGP('${item.actief?item.key:'placeholder'}')">
+            <span class="gp-icon">${item.icon}</span>
+            <span class="gp-tekst">
+              <span class="gp-titel">${item.titel}</span>
+              <span class="gp-sub">${item.sub}</span>
+            </span>
+          </button>
+          <div class="gp-order-btns">
+            <button class="gp-order-btn" onclick="gpVerplaats(${globalIndex},-1)" ${globalIndex===0?'disabled':''}>▲</button>
+            <button class="gp-order-btn" onclick="gpVerplaats(${globalIndex},1)" ${globalIndex===items.length-1?'disabled':''}>▼</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+
+  document.getElementById('gp-dots').innerHTML = paginas.map((_, i) =>
+    `<span class="gp-dot ${i===0?'actief':''}" data-p="${i}" onclick="gpNaarPagina(${i})"></span>`
+  ).join('');
+
+  gpUpdatePaginaLabel(0, gpTotaalPaginas);
 }
 
-function gpVerplaats(paginaNr, index, richting) {
-  const volgorde = getGPVolgorde();
-  const lijst = volgorde[paginaNr];
+function gpVerplaats(index, richting) {
+  const items = getGPVolgorde();
   const nieuwIndex = index + richting;
-  if (nieuwIndex < 0 || nieuwIndex >= lijst.length) return;
-  [lijst[index], lijst[nieuwIndex]] = [lijst[nieuwIndex], lijst[index]];
-  opslaanGPVolgorde(volgorde);
-  renderGPPaginas();
-}
-
-function gpNaarAnderePagina(paginaNr, index) {
-  const volgorde = getGPVolgorde();
-  const andereNr = paginaNr === 1 ? 2 : 1;
-  const [item] = volgorde[paginaNr].splice(index, 1);
-  volgorde[andereNr].push(item);
-  opslaanGPVolgorde(volgorde);
+  if (nieuwIndex < 0 || nieuwIndex >= items.length) return;
+  [items[index], items[nieuwIndex]] = [items[nieuwIndex], items[index]];
+  opslaanGPVolgorde(items);
   renderGPPaginas();
 }
 
@@ -1165,19 +1206,78 @@ document.addEventListener('DOMContentLoaded', () => {
   wrap.addEventListener('scroll', () => {
     const idx = Math.round(wrap.scrollLeft / wrap.clientWidth);
     document.querySelectorAll('.gp-dot').forEach((d,i) => d.classList.toggle('actief', i===idx));
+    gpUpdatePaginaLabel(idx, gpTotaalPaginas);
   });
 });
 
 const NAMEN_LIJST = ["Abdi","Adam","Altib","Antoine","Edgars","Frans","Gerry","Henk","Jemal",
-  "Joey","Joël","Johnny","Jordy","Mark","Norman","Radwan","Raymond","Sjoerd","Stan","Stefano","Vu","Walter"];
+  "Joey","Joël","Johnny","Jordy","Mark","Max","Norman","Radwan","Raymond","Sjoerd","Stan","Vu","Walter"];
+
+let bewonersCache = [...NAMEN_LIJST];
 
 function naamOpties() {
   return '<option value="">— selecteer je naam —</option>' +
-    NAMEN_LIJST.map(n => `<option>${n}</option>`).join('');
+    bewonersCache.map(n => `<option>${n}</option>`).join('');
+}
+
+function vulNaamSelectMelding() {
+  const sel = document.getElementById('inp-naam');
+  if (sel) sel.innerHTML = naamOpties();
+}
+
+async function laadBewoners() {
+  if (!supabaseActief) { vulNaamSelectMelding(); return; }
+  const {data, error} = await sb.from('bewoners').select('naam').order('naam', {ascending:true});
+  if (!error && data && data.length) {
+    bewonersCache = data.map(r => r.naam);
+  }
+  vulNaamSelectMelding();
+  const overlay = document.getElementById('gp-overlay');
+  if (overlay && overlay.classList.contains('open') && document.getElementById('bewoners-lijst')) {
+    openGP('instellingen');
+  }
+}
+
+function luisterBewonersLive() {
+  if (!supabaseActief) return;
+  sb.channel('bewoners-live')
+    .on('postgres_changes', {event:'*', schema:'public', table:'bewoners'}, () => {
+      laadBewoners();
+    }).subscribe();
+}
+
+async function bewonerToevoegen() {
+  const inp = document.getElementById('bewoner-nieuwe-naam');
+  const naam = inp.value.trim();
+  if (!naam) { alert('Vul een naam in.'); return; }
+  if (bewonersCache.some(n => n.toLowerCase() === naam.toLowerCase())) { alert('Deze naam staat er al in.'); return; }
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+  const {error} = await sb.from('bewoners').insert([{ naam }]);
+  if (error) { alert('Fout bij toevoegen: ' + error.message); return; }
+  inp.value = '';
+  laadBewoners();
+}
+
+async function bewonerVerwijderen(naam) {
+  if (!supabaseActief) return;
+  if (!confirm(`Weet je zeker dat je "${naam}" wilt verwijderen?`)) return;
+  await sb.from('bewoners').delete().eq('naam', naam);
+  laadBewoners();
 }
 
 let extraChannel = null;
-const EXTRA_CATEGORIEEN = ['prikbord','ideeen','dringend'];
+const EXTRA_CATEGORIEEN = ['prikbord','ideeen','dringend','klussen','verjaardag','activiteiten','contacten','documenten'];
+
+const EXTRA_PLACEHOLDERS = {
+  prikbord:     "bijv. 'Fiets te koop, 20 euro'",
+  ideeen:       "bijv. 'Airfryer kopen in plaats van frituurpan'",
+  dringend:     "bijv. 'Koffiefilters bijna op'",
+  klussen:      "bijv. 'Deur van kast in de gang hangt scheef'",
+  verjaardag:   "bijv. '12 augustus'",
+  activiteiten: "bijv. 'Zaterdag 20:00 filmavond in de woonkamer'",
+  contacten:    "bijv. 'Huisarts: 024-1234567'",
+  documenten:   "bijv. 'Huisreglement 2026, zie foto'",
+};
 
 async function laadExtraItems(categorie) {
   const el = document.getElementById('extra-lijst-' + categorie);
@@ -1236,24 +1336,56 @@ function luisterExtraLive(categorie) {
     }).subscribe();
 }
 
+function renderBewonersModalInhoud() {
+  const beheerder = gpBeheerActief();
+  const lijstHtml = bewonersCache.length
+    ? bewonersCache.map(naam => `
+      <div class="melding-item">
+        <div style="flex:1;min-width:0"><div class="melding-naam">${naam}</div></div>
+        ${beheerder ? `<button class="verwijder-btn" onclick="bewonerVerwijderen('${naam.replace(/'/g,"\\'")}')">✕</button>` : ''}
+      </div>`).join('')
+    : '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen bewoners toegevoegd.</p>';
+
+  return `
+    ${beheerder ? `
+      <div class="melding-form" style="margin-top:4px">
+        <label>Naam toevoegen</label>
+        <input type="text" id="bewoner-nieuwe-naam" placeholder="Voornaam">
+        <button class="verstuur-btn" onclick="bewonerToevoegen()">Toevoegen →</button>
+      </div>` : `
+      <p style="font-size:0.78rem;color:var(--subtle);font-style:italic;margin-bottom:14px">
+        Alleen de beheerder kan namen toevoegen of verwijderen. Tik op 🔒 Beheerder hierboven om in te loggen.
+      </p>`}
+    <div class="sectie-titel"><span class="live-dot"></span>Huidige bewoners (${bewonersCache.length})</div>
+    <div id="bewoners-lijst" class="melding-lijst">${lijstHtml}</div>
+  `;
+}
+
 function openGP(key) {
   const data = GP_INHOUD[key] || GP_INHOUD.placeholder;
   const interactief = EXTRA_CATEGORIEEN.includes(key);
-  document.getElementById('gp-modal-inhoud').innerHTML = `
-    <h2>${data.titel}</h2>
-    <p class="gp-modal-intro">${data.intro}</p>
-    ${interactief ? `
+  let extraHtml = '';
+  if (interactief) {
+    extraHtml = `
       <div class="melding-form" style="margin-top:4px">
         <label>Jouw naam</label>
         <select id="extra-naam-${key}">${naamOpties()}</select>
         <label>Bericht</label>
-        <textarea id="extra-tekst-${key}" rows="2" placeholder="Typ hier je bericht..."></textarea>
+        <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
         ${cameraZoneHTML(key)}
         <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
       </div>
       <div class="sectie-titel"><span class="live-dot"></span>Geplaatst</div>
-      <div id="extra-lijst-${key}" class="melding-lijst"></div>
-    ` : (data.footer ? `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>` : '')}
+      <div id="extra-lijst-${key}" class="melding-lijst"></div>`;
+  } else if (key === 'instellingen') {
+    extraHtml = renderBewonersModalInhoud();
+  } else if (data.footer) {
+    extraHtml = `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>`;
+  }
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>${data.titel}</h2>
+    <p class="gp-modal-intro">${data.intro}</p>
+    ${extraHtml}
   `;
   document.getElementById('gp-overlay').classList.add('open');
   if (interactief) { laadExtraItems(key); luisterExtraLive(key); }
@@ -1269,6 +1401,7 @@ function sluitGPModal() {
 
 // ── INIT ──
 document.getElementById('melding-camera-plek').innerHTML = cameraZoneHTML('melding');
+vulNaamSelectMelding();
 renderTypeKnoppen();
 renderVandaag();
 renderWeek();
