@@ -592,6 +592,8 @@ function initSupabase() {
     luisterLive();
     laadPoll();
     luisterPollLive();
+    laadGPVolgorde();
+    luisterGPVolgordeLive();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -1002,6 +1004,7 @@ function toggleGeavanceerd() {
   btn.classList.toggle('actief');
   if (paneel.classList.contains('open')) {
     gpBeheerUpdateUI();
+    laadGPVolgorde();
     renderGPPaginas();
   }
 }
@@ -1032,9 +1035,9 @@ const GP_INHOUD = {
 // Standaard volgorde per pagina — de gebruiker kan dit wijzigen met de pijltjes
 const GP_STANDAARD = {
   1: [
-    { key:'prikbord',  icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true },
-    { key:'ideeen',    icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true },
     { key:'dringend',  icon:'🛒', titel:'Dringend nodig', sub:'Bijna op: koffiefilters, wc-papier, stofzuigerzakken', actief:true },
+    { key:'ideeen',    icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true },
+    { key:'prikbord',  icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true },
     { key:'klussen',   icon:'🧰', titel:'Klussen &amp; onderhoud', sub:'Binnenkort beschikbaar', actief:false },
     { key:'verjaardag',icon:'🎉', titel:'Verjaardagen', sub:'Binnenkort beschikbaar', actief:false },
     { key:'instellingen',icon:'⚙️', titel:'Instellingen', sub:'Binnenkort beschikbaar', actief:false },
@@ -1047,16 +1050,35 @@ const GP_STANDAARD = {
   ]
 };
 
-const GP_ORDER_KEY = 'wwl-gp-volgorde';
+const GP_VOLGORDE_ID = 1;
+let gpVolgordeCache = JSON.parse(JSON.stringify(GP_STANDAARD));
+let gpVolgordeChannel = null;
 
-function getGPVolgorde() {
-  try {
-    const opgeslagen = JSON.parse(localStorage.getItem(GP_ORDER_KEY) || 'null');
-    if (opgeslagen && opgeslagen[1] && opgeslagen[2]) return opgeslagen;
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(GP_STANDAARD));
+async function laadGPVolgorde() {
+  if (!supabaseActief) return;
+  const {data, error} = await sb.from('gp_volgorde').select('*').eq('id', GP_VOLGORDE_ID).maybeSingle();
+  if (!error && data && data.pagina1 && data.pagina2) {
+    gpVolgordeCache = { 1: data.pagina1, 2: data.pagina2 };
+  }
+  const paneel = document.getElementById('geavanceerd-paneel');
+  if (paneel && paneel.classList.contains('open')) renderGPPaginas();
 }
-function setGPVolgorde(v) { localStorage.setItem(GP_ORDER_KEY, JSON.stringify(v)); }
+
+function luisterGPVolgordeLive() {
+  if (!supabaseActief) return;
+  gpVolgordeChannel = sb.channel('gp-volgorde-live')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'gp_volgorde'}, () => {
+      laadGPVolgorde();
+    }).subscribe();
+}
+
+async function opslaanGPVolgorde(v) {
+  gpVolgordeCache = v;
+  if (!supabaseActief) return;
+  await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, pagina1: v[1], pagina2: v[2] });
+}
+
+function getGPVolgorde() { return gpVolgordeCache; }
 
 function renderGPPaginas() {
   const volgorde = getGPVolgorde();
@@ -1088,7 +1110,7 @@ function gpVerplaats(paginaNr, index, richting) {
   const nieuwIndex = index + richting;
   if (nieuwIndex < 0 || nieuwIndex >= lijst.length) return;
   [lijst[index], lijst[nieuwIndex]] = [lijst[nieuwIndex], lijst[index]];
-  setGPVolgorde(volgorde);
+  opslaanGPVolgorde(volgorde);
   renderGPPaginas();
 }
 
@@ -1097,7 +1119,7 @@ function gpNaarAnderePagina(paginaNr, index) {
   const andereNr = paginaNr === 1 ? 2 : 1;
   const [item] = volgorde[paginaNr].splice(index, 1);
   volgorde[andereNr].push(item);
-  setGPVolgorde(volgorde);
+  opslaanGPVolgorde(volgorde);
   renderGPPaginas();
 }
 
