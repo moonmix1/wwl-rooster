@@ -260,8 +260,9 @@
   }
   .gp-dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
   .gp-pagina-label {
-    text-align: center; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--subtle); margin-bottom: 10px;
+    text-align: center; font-size: 0.95rem; font-weight: 900; letter-spacing: 0.06em;
+    text-transform: uppercase; color: #f59e0b; margin-bottom: 12px;
+    text-shadow: 0 0 12px rgba(245,158,11,0.35);
   }
   .gp-dot {
     width: 8px; height: 8px; border-radius: 50%; background: var(--border);
@@ -400,6 +401,7 @@
 
   <div id="s-weekrooster" class="sectie">
     <div class="sectie-titel">Volledig weekrooster</div>
+    <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
     <div style="overflow-x:auto">
       <table class="week-tabel">
         <thead><tr>
@@ -419,6 +421,7 @@
 
   <div id="s-rotatie" class="sectie">
     <div class="sectie-titel">Rotatieschema – laatste 4 weken</div>
+    <input type="text" id="naam-zoek-rotatie" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
     <p style="font-size:0.75rem;color:var(--muted);margin-bottom:14px">Na 4× bank op rij: verplicht minimaal 2 weken corvee.</p>
     <div class="rot-wrap"><table class="rot-tabel" id="rot-tabel"></table></div>
     <div style="display:flex;gap:16px;margin-top:12px;font-size:0.72rem;flex-wrap:wrap;color:var(--muted)">
@@ -531,9 +534,9 @@ const DAGEN_NL   = ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag
 const MAANDEN_NL = ["januari","februari","maart","april","mei","juni","juli","augustus",
                     "september","oktober","november","december"];
 
-const ROOSTER = {
+const ROOSTER_SEED = {
   Maandag:   { bank:"Vu",         corvee:"Norman",   kook:"Walter"   },
-  Dinsdag:   { bank:"Jemal",      corvee:"Raymond",  kook:"Mark"     },
+  Dinsdag:   { bank:"Jemal",      corvee:"Nassir",   kook:"Mark"     },
   Woensdag:  { bank:"Max",        corvee:"Stan",     kook:"Adam"     },
   Donderdag: { bank:"Antoine",    corvee:"Henk",     kook:"Altib"    },
   Vrijdag:   { bank:"Gerry",      corvee:"Edgars",   kook:"Joël"     },
@@ -541,8 +544,8 @@ const ROOSTER = {
   Zondag:    { bankOch:"Norman★", bank:"Johnny",     corvee:"Radwan", kook:"Walter★" },
 };
 
-const ROTATIE = {
-  Norman:  {hist:["C","K","B","C"]}, Raymond: {hist:["B","C","K","C"]},
+const ROTATIE_SEED = {
+  Norman:  {hist:["C","K","B","C"]}, Nassir:  {hist:["B","C","K","C"]},
   Stan:    {hist:["K","B","C","C"]}, Henk:    {hist:["C","K","B","C"]},
   Edgars:  {hist:["B","C","K","C"]}, Joël:   {hist:["K","B","B","B"]},
   Joey:    {hist:["B","B","B","B"]}, Max:     {hist:["B","C","B","B"]},
@@ -554,6 +557,173 @@ const ROTATIE = {
   Frans:   {hist:["C","B","C","K"]}, Jordy:   {hist:["B","K","C","C"]},
   Abdi:    {hist:["C","C","B","C"]}, Johnny:  {hist:["K","K","K","K"]},
 };
+
+let huidigRooster = JSON.parse(JSON.stringify(ROOSTER_SEED));
+let huidigeRotatieStatus = {};
+Object.keys(ROTATIE_SEED).forEach(naam => {
+  const hist = ROTATIE_SEED[naam].hist;
+  let opeenvolgendeBank = 0;
+  for (let i = hist.length - 1; i >= 0; i--) { if (hist[i] === 'B') opeenvolgendeBank++; else break; }
+  huidigeRotatieStatus[naam] = { geschiedenis: [...hist], opeenvolgendeBank, corveeVerplichtResterend: 0 };
+});
+
+// ── AUTOMATISCHE WEEKGENERATIE ──
+// Elke nieuwe week wordt zoveel mogelijk overgenomen van de vorige. Uitzondering: wie 4 weken op
+// rij bank heeft gedaan, gaat verplicht 2 weken corvee. De persoon die op corvee (alfabetisch
+// eerste) staat, neemt dan diens bankplek over — een volledige, nette 1-op-1 wissel.
+function weekStartVan(datum) {
+  const d = new Date(datum);
+  const dag = d.getDay(); // 0=zondag..6=zaterdag
+  const offset = (dag === 0) ? 6 : dag - 1;
+  d.setDate(d.getDate() - offset);
+  d.setHours(0,0,0,0);
+  return d.toISOString().slice(0,10);
+}
+
+function vindRolVanPersoon(dagen, naam) {
+  for (const dag of Object.keys(dagen)) {
+    const d = dagen[dag];
+    for (const rolKey of ['bankOch','bank','kook','corvee']) {
+      if (d[rolKey] && d[rolKey].replace('★','').trim() === naam) {
+        return { dag, rolKey, type: (rolKey==='corvee') ? 'C' : (rolKey==='kook') ? 'K' : 'B' };
+      }
+    }
+  }
+  return null;
+}
+
+function genereerNieuweWeek(vorigeDagen, statusMap) {
+  const nieuweDagen  = JSON.parse(JSON.stringify(vorigeDagen));
+  const nieuweStatus = JSON.parse(JSON.stringify(statusMap));
+  const gebruikt = new Set();
+
+  Object.keys(nieuweStatus).forEach(naam => {
+    const status = nieuweStatus[naam];
+    if (status.opeenvolgendeBank >= 4 && status.corveeVerplichtResterend === 0 && !gebruikt.has(naam)) {
+      const plek = vindRolVanPersoon(nieuweDagen, naam);
+      if (!plek || plek.type !== 'B') return;
+
+      const kandidaten = [];
+      Object.keys(nieuweDagen).forEach(dag => {
+        const d = nieuweDagen[dag];
+        if (d.corvee) {
+          const kNaam = d.corvee.replace('★','').trim();
+          if (kNaam !== naam && !gebruikt.has(kNaam) &&
+              (!nieuweStatus[kNaam] || nieuweStatus[kNaam].corveeVerplichtResterend === 0)) {
+            kandidaten.push({ naam: kNaam, dag });
+          }
+        }
+      });
+      kandidaten.sort((a,b) => a.naam.localeCompare(b.naam));
+      const kandidaat = kandidaten[0];
+      if (!kandidaat) return;
+
+      nieuweDagen[plek.dag][plek.rolKey] = kandidaat.naam;
+      nieuweDagen[kandidaat.dag]['corvee'] = naam;
+      nieuweStatus[naam].corveeVerplichtResterend = 2;
+      nieuweStatus[naam].opeenvolgendeBank = 0;
+      gebruikt.add(naam);
+      gebruikt.add(kandidaat.naam);
+    }
+  });
+
+  Object.keys(nieuweStatus).forEach(naam => {
+    const plek = vindRolVanPersoon(nieuweDagen, naam);
+    if (!plek) return;
+    const status = nieuweStatus[naam];
+    if (plek.type === 'B') {
+      status.opeenvolgendeBank = (status.opeenvolgendeBank || 0) + 1;
+    } else {
+      status.opeenvolgendeBank = 0;
+      if (plek.type === 'C' && status.corveeVerplichtResterend > 0) {
+        status.corveeVerplichtResterend = Math.max(0, status.corveeVerplichtResterend - 1);
+      }
+    }
+    status.geschiedenis = [...(status.geschiedenis || []), plek.type].slice(-4);
+  });
+
+  return { nieuweDagen, nieuweStatus };
+}
+
+async function opslaanRotatieStatus(statusMap) {
+  if (!supabaseActief) return;
+  const rijen = Object.keys(statusMap).map(naam => ({
+    naam,
+    geschiedenis: statusMap[naam].geschiedenis,
+    opeenvolgende_bank: statusMap[naam].opeenvolgendeBank,
+    corvee_verplicht_resterend: statusMap[naam].corveeVerplichtResterend,
+  }));
+  await sb.from('rotatie_status').upsert(rijen);
+}
+
+async function laadRotatieStatusVanuitSupabase() {
+  const {data} = await sb.from('rotatie_status').select('*');
+  if (data && data.length) {
+    const map = {};
+    data.forEach(r => {
+      map[r.naam] = {
+        geschiedenis: r.geschiedenis || [],
+        opeenvolgendeBank: r.opeenvolgende_bank || 0,
+        corveeVerplichtResterend: r.corvee_verplicht_resterend || 0,
+      };
+    });
+    huidigeRotatieStatus = map;
+  }
+}
+
+async function laadRotatieStatusMapVoorGeneratie() {
+  const {data} = await sb.from('rotatie_status').select('*');
+  if (data && data.length) {
+    const map = {};
+    data.forEach(r => {
+      map[r.naam] = {
+        geschiedenis: r.geschiedenis || [],
+        opeenvolgendeBank: r.opeenvolgende_bank || 0,
+        corveeVerplichtResterend: r.corvee_verplicht_resterend || 0,
+      };
+    });
+    return map;
+  }
+  await opslaanRotatieStatus(huidigeRotatieStatus);
+  return JSON.parse(JSON.stringify(huidigeRotatieStatus));
+}
+
+function herRenderRoosterTabs() {
+  if (document.getElementById('s-vandaag')?.classList.contains('actief')) renderVandaag();
+  if (document.getElementById('s-weekrooster')?.classList.contains('actief')) renderWeek();
+  if (document.getElementById('s-rotatie')?.classList.contains('actief')) renderRotatie();
+}
+
+async function zorgVoorHuidigeWeek() {
+  if (!supabaseActief) return;
+  const weekStart = weekStartVan(new Date());
+
+  const {data: huidigeRij} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
+  if (huidigeRij) {
+    huidigRooster = huidigeRij.dagen;
+    await laadRotatieStatusVanuitSupabase();
+    herRenderRoosterTabs();
+    return;
+  }
+
+  const {data: vorigeRij} = await sb.from('rooster_weken')
+    .select('*').lt('week_start', weekStart).order('week_start', {ascending:false}).limit(1).maybeSingle();
+  const vorigeDagen = vorigeRij ? vorigeRij.dagen : ROOSTER_SEED;
+  const statusMap = await laadRotatieStatusMapVoorGeneratie();
+  const { nieuweDagen, nieuweStatus } = genereerNieuweWeek(vorigeDagen, statusMap);
+
+  const { error: insertError } = await sb.from('rooster_weken').insert([{ week_start: weekStart, dagen: nieuweDagen }]);
+  if (!insertError) {
+    huidigRooster = nieuweDagen;
+    huidigeRotatieStatus = nieuweStatus;
+    await opslaanRotatieStatus(nieuweStatus);
+  } else {
+    const {data: canoniek} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
+    huidigRooster = canoniek ? canoniek.dagen : nieuweDagen;
+    await laadRotatieStatusVanuitSupabase();
+  }
+  herRenderRoosterTabs();
+}
 
 const MELDING_TYPES = [
   {id:"ziek",    label:"🤒 Ik ben ziek",     kleur:"#f87171", bg:"#3b0a0a"},
@@ -585,6 +755,7 @@ function initSupabase() {
     luisterGPVolgordeLive();
     laadBewoners();
     luisterBewonersLive();
+    zorgVoorHuidigeWeek();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -626,9 +797,44 @@ function toon(id, el) {
 
 function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
 
+// ── NAAM ZOEKEN & OPLICHTEN (Week + Rotatie) ──
+let naamZoekTerm = '';
+let naamMatchKleuren = {};
+const NAAM_HIGHLIGHT_KLEUREN = ['#facc15','#4ade80','#60a5fa','#f472b6','#fb923c','#a78bfa','#2dd4bf','#f87171','#e2e8f0'];
+
+function alleBekendeNamen() {
+  const set = new Set();
+  Object.values(huidigRooster).forEach(d => {
+    [d.bankOch, d.bank, d.kook, d.corvee].forEach(n => { if (n) set.add(n.replace('★','').trim()); });
+  });
+  Object.keys(huidigeRotatieStatus).forEach(n => set.add(n));
+  return Array.from(set);
+}
+
+function berekenNaamMatches(term) {
+  if (!term) return {};
+  const t = term.toLowerCase();
+  const matches = alleBekendeNamen().filter(n => n.toLowerCase().startsWith(t));
+  const kaart = {};
+  matches.forEach((naam, i) => { kaart[naam] = NAAM_HIGHLIGHT_KLEUREN[i % NAAM_HIGHLIGHT_KLEUREN.length]; });
+  return kaart;
+}
+
+function naamZoekVerander(waarde) {
+  naamZoekTerm = waarde;
+  ['naam-zoek-week','naam-zoek-rotatie'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value !== waarde) el.value = waarde;
+  });
+  naamMatchKleuren = berekenNaamMatches(waarde);
+  renderVandaag();
+  renderWeek();
+  renderRotatie();
+}
+
 function renderVandaagMetMeldingen(meldingen) {
   const dag = dagNaam();
-  const d = ROOSTER[dag]||{};
+  const d = huidigRooster[dag]||{};
   const ziek = meldingen.filter(m=>m.type==='ziek').map(m=>m.naam.toLowerCase());
   document.getElementById('vandaag-label').textContent = `Diensten vandaag — ${dag}`;
   const kaarten = [];
@@ -638,13 +844,17 @@ function renderVandaagMetMeldingen(meldingen) {
   if(d.kook)   kaarten.push({rol:'Kook',naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
   if(bAv)  kaarten.push({rol:'Bank avond',naam:bAv,tijd:'16:00–22:00',cls:'bank'});
   if(d.corvee) kaarten.push({rol:'Corvee',naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
-  document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>`
-    <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}">
+  document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>{
+    const kleur = naamMatchKleuren[k.naam];
+    const stijl = kleur ? ` style="box-shadow:0 0 0 3px ${kleur};"` : '';
+    return `
+    <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}"${stijl}>
       <div class="rol">${k.rol}</div>
       <div class="naam">${k.naam}</div>
       ${ziek.includes(k.naam.toLowerCase())?'<div class="ziek-badge">⚠ Ziek gemeld</div>':''}
       <div class="tijd">${k.tijd}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderVandaag() {
@@ -656,7 +866,9 @@ function pill(naam, type) {
   const rawNaam = naam.replace('★','').trim();
   const isB = BEHEER.includes(rawNaam);
   const isExtra = naam.includes('★');
-  return `<span class="pill pill-${type}">
+  const kleur = naamMatchKleuren[rawNaam];
+  const stijl = kleur ? ` style="box-shadow:0 0 0 3px ${kleur};"` : '';
+  return `<span class="pill pill-${type}"${stijl}>
     <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
     ${isB?'<span class="pill-sub">🏠 beheederswoning</span>':''}
   </span>`;
@@ -666,7 +878,7 @@ function renderWeek() {
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
-    const d = ROOSTER[dag]||{};
+    const d = huidigRooster[dag]||{};
     return `<tr class="${dag===vandaag?'vandaag':''}">
       <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
       <td>${d.bankOch?pill(d.bankOch,'bankoch'):'<span class="kantoor-label">kantoor aanwezig</span>'}</td>
@@ -684,17 +896,19 @@ function bankOpRij(hist) {
 }
 
 function renderRotatie() {
-  const namen = Object.keys(ROTATIE);
+  const namen = Object.keys(huidigeRotatieStatus);
   const weken = ['3 wkn geleden','2 wkn geleden','Vorige week','Deze week'];
   let html = '<thead><tr><th class="naam-col">Naam</th>';
   weken.forEach(w=>{ html+=`<th>${w}</th>`; });
   html += '<th>Status</th></tr></thead><tbody>';
   namen.forEach(naam=>{
-    const hist = ROTATIE[naam].hist;
+    const hist = huidigeRotatieStatus[naam].geschiedenis;
     const n = bankOpRij(hist);
     const rood=n>=4, oranje=n===3;
+    const kleur = naamMatchKleuren[naam];
+    const stijl = kleur ? ` style="box-shadow:inset 0 0 0 2px ${kleur};"` : '';
     html += `<tr class="${rood?'warn-rood':oranje?'warn-oranje':''}">
-      <td class="naam-cel">${naam}${BEHEER.includes(naam)?' 🏠':''}</td>
+      <td class="naam-cel"${stijl}>${naam}${BEHEER.includes(naam)?' 🏠':''}</td>
       ${hist.map(t=>`<td><span class="rot-pill rot-${t}">${t==='B'?'Bank':t==='C'?'Corvee':'Kook'}</span></td>`).join('')}
       <td class="${rood?'status-rood':oranje?'status-oranje':'status-ok'}">
         ${rood?'⚠ Verplicht corvee':oranje?'⚡ Let op (3×)':'✅ OK'}
@@ -1211,7 +1425,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const NAMEN_LIJST = ["Abdi","Adam","Altib","Antoine","Edgars","Frans","Gerry","Henk","Jemal",
-  "Joey","Joël","Johnny","Jordy","Mark","Max","Norman","Radwan","Raymond","Sjoerd","Stan","Vu","Walter"];
+  "Joey","Joël","Johnny","Jordy","Mark","Max","Nassir","Norman","Radwan","Sjoerd","Stan","Vu","Walter"];
 
 let bewonersCache = [...NAMEN_LIJST];
 
@@ -1367,16 +1581,19 @@ function openGP(key) {
   let extraHtml = '';
   if (interactief) {
     extraHtml = `
-      <div class="melding-form" style="margin-top:4px">
-        <label>Jouw naam</label>
-        <select id="extra-naam-${key}">${naamOpties()}</select>
-        <label>Bericht</label>
-        <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
-        ${cameraZoneHTML(key)}
-        <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
-      </div>
       <div class="sectie-titel"><span class="live-dot"></span>Geplaatst</div>
-      <div id="extra-lijst-${key}" class="melding-lijst"></div>`;
+      <div id="extra-lijst-${key}" class="melding-lijst"></div>
+      <details style="margin-top:16px">
+        <summary style="font-size:0.85rem;color:#818cf8;cursor:pointer;font-weight:800">+ Nieuw bericht plaatsen</summary>
+        <div class="melding-form" style="margin-top:12px">
+          <label>Jouw naam</label>
+          <select id="extra-naam-${key}">${naamOpties()}</select>
+          <label>Bericht</label>
+          <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
+          ${cameraZoneHTML(key)}
+          <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
+        </div>
+      </details>`;
   } else if (key === 'instellingen') {
     extraHtml = renderBewonersModalInhoud();
   } else if (data.footer) {
@@ -1411,3 +1628,4 @@ initSupabase();
 </script>
 </body>
 </html>
+
