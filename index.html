@@ -551,7 +551,8 @@
 const SUPABASE_URL = 'https://mczmtdyiqwvpuuobdlpc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FVv3NW9h79SuO1gxk4TtDw_LC4Hmw6N';
 
-const BEHEER = ["Mark","Walter","Altib","Adam"];
+const BEHEER_STANDAARD = ["Mark","Walter","Altib","Adam"];
+let bewonersBeheerSet = new Set(BEHEER_STANDAARD);
 const DAGEN_NL   = ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"];
 const MAANDEN_NL = ["januari","februari","maart","april","mei","juni","juli","augustus",
                     "september","oktober","november","december"];
@@ -892,7 +893,7 @@ function renderVandaag() {
 
 function pill(naam, type, dag, rolKey) {
   const rawNaam = naam.replace('★','').trim();
-  const isB = BEHEER.includes(rawNaam);
+  const isB = bewonersBeheerSet.has(rawNaam);
   const isExtra = naam.includes('★');
   const kleur = naamMatchKleuren[rawNaam];
   const bewerkbaar = gpBeheerActief() && dag && rolKey;
@@ -1071,7 +1072,7 @@ function renderRotatie() {
     const kleur = naamMatchKleuren[naam];
     const stijl = kleur ? ` style="box-shadow:inset 0 0 0 2px ${kleur};"` : '';
     html += `<tr class="${rood?'warn-rood':oranje?'warn-oranje':''}">
-      <td class="naam-cel"${stijl}>${naam}${BEHEER.includes(naam)?' 🏠':''}</td>
+      <td class="naam-cel"${stijl}>${naam}${bewonersBeheerSet.has(naam)?' 🏠':''}</td>
       ${hist.map(t=>`<td><span class="rot-pill rot-${t}">${t==='B'?'Bank':t==='C'?'Corvee':'Kook'}</span></td>`).join('')}
       <td class="${rood?'status-rood':oranje?'status-oranje':'status-ok'}">
         ${rood?'⚠ Verplicht corvee':oranje?'⚡ Let op (3×)':'✅ OK'}
@@ -1721,11 +1722,13 @@ function vulNaamSelectMelding() {
 
 async function laadBewoners() {
   if (!supabaseActief) { vulNaamSelectMelding(); return; }
-  const {data, error} = await sb.from('bewoners').select('naam').order('naam', {ascending:true});
+  const {data, error} = await sb.from('bewoners').select('naam, beheerderswoning').order('naam', {ascending:true});
   if (!error && data && data.length) {
     bewonersCache = data.map(r => r.naam);
+    bewonersBeheerSet = new Set(data.filter(r => r.beheerderswoning).map(r => r.naam));
   }
   vulNaamSelectMelding();
+  herRenderRoosterTabs();
   const overlay = document.getElementById('gp-overlay');
   if (overlay && overlay.classList.contains('open') && document.getElementById('bewoners-lijst')) {
     openGP('instellingen');
@@ -1845,11 +1848,15 @@ function luisterExtraLive(categorie) {
 function renderBewonersModalInhoud() {
   const beheerder = gpBeheerActief();
   const lijstHtml = bewonersCache.length
-    ? bewonersCache.map(naam => `
+    ? bewonersCache.map(naam => {
+        const heeftHuisje = bewonersBeheerSet.has(naam);
+        return `
       <div class="melding-item">
-        <div style="flex:1;min-width:0"><div class="melding-naam">${naam}</div></div>
+        <div style="flex:1;min-width:0"><div class="melding-naam">${naam}${heeftHuisje?' 🏠':''}</div></div>
+        ${beheerder ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="toggleBeheerderswoning('${naam.replace(/'/g,"\\'")}')">${heeftHuisje?'🏠 Verwijderen':'+ 🏠 Toewijzen'}</button>` : ''}
         ${beheerder ? `<button class="verwijder-btn" onclick="bewonerVerwijderen('${naam.replace(/'/g,"\\'")}')">✕</button>` : ''}
-      </div>`).join('')
+      </div>`;
+      }).join('')
     : '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen bewoners toegevoegd.</p>';
 
   return `
@@ -1858,13 +1865,22 @@ function renderBewonersModalInhoud() {
         <label>Naam toevoegen</label>
         <input type="text" id="bewoner-nieuwe-naam" placeholder="Voornaam">
         <button class="verstuur-btn" onclick="bewonerToevoegen()">Toevoegen →</button>
-      </div>` : `
+      </div>
+      <p style="font-size:0.75rem;color:var(--subtle);margin:-8px 0 14px">🏠 = beheederswoning-badge, zichtbaar bij het weekrooster en de rotatie.</p>` : `
       <p style="font-size:0.78rem;color:var(--subtle);font-style:italic;margin-bottom:14px">
         Alleen de beheerder kan namen toevoegen of verwijderen. Tik op 🔒 Beheerder hierboven om in te loggen.
       </p>`}
     <div class="sectie-titel"><span class="live-dot"></span>Huidige bewoners (${bewonersCache.length})</div>
-    <div id="bewoners-lijst" class="melding-lijst">${lijstHtml}</div>
+    <div id="bewoners-lijst" class="melding-lijst" style="gap:8px">${lijstHtml}</div>
   `;
+}
+
+async function toggleBeheerderswoning(naam) {
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+  const nieuweStatus = !bewonersBeheerSet.has(naam);
+  const {error} = await sb.from('bewoners').update({ beheerderswoning: nieuweStatus }).eq('naam', naam);
+  if (error) { alert('Wijzigen mislukt: ' + error.message); return; }
+  laadBewoners();
 }
 
 function openGP(key) {
