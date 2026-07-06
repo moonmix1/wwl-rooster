@@ -422,7 +422,7 @@
       </table>
     </div>
     <p style="font-size:0.7rem;color:var(--subtle);margin-top:10px">
-      ★ = uitzondering: 2e shift in dezelfde week (normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
+      ★ = deze persoon draait deze week 2 diensten (uitzondering, normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
     </p>
   </div>
 
@@ -861,6 +861,19 @@ function naamZoekVerander(waarde) {
   renderRotatie();
 }
 
+function berekenMeervoudigeDiensten(dagen) {
+  const telling = {};
+  Object.values(dagen).forEach(d => {
+    ['bankOch','bank','kook','corvee'].forEach(rolKey => {
+      if (d[rolKey]) {
+        const naam = d[rolKey].replace('★','').trim();
+        telling[naam] = (telling[naam] || 0) + 1;
+      }
+    });
+  });
+  return new Set(Object.keys(telling).filter(n => telling[n] >= 2));
+}
+
 function renderVandaagMetMeldingen(meldingen) {
   const dag = dagNaam();
   const d = huidigRooster[dag]||{};
@@ -891,10 +904,10 @@ function renderVandaag() {
   laadMeldingen();
 }
 
-function pill(naam, type, dag, rolKey) {
+function pill(naam, type, dag, rolKey, meervoudigSet) {
   const rawNaam = naam.replace('★','').trim();
   const isB = bewonersBeheerSet.has(rawNaam);
-  const isExtra = naam.includes('★');
+  const isExtra = meervoudigSet ? meervoudigSet.has(rawNaam) : naam.includes('★');
   const kleur = naamMatchKleuren[rawNaam];
   const bewerkbaar = gpBeheerActief() && dag && rolKey;
   let stijl = '';
@@ -912,6 +925,7 @@ function renderWeek() {
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
+  const meervoudig = berekenMeervoudigeDiensten(huidigRooster);
   const legePlek = (dag, rolKey, standaardTekst) => beheer
     ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="bewerkRoosterCel('${dag}','${rolKey}')">+ toewijzen</button>`
     : standaardTekst;
@@ -919,10 +933,10 @@ function renderWeek() {
     const d = huidigRooster[dag]||{};
     return `<tr class="${dag===vandaag?'vandaag':''}">
       <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
-      <td>${d.bankOch?pill(d.bankOch,'bankoch',dag,'bankOch'):legePlek(dag,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>')}</td>
-      <td>${d.kook?pill(d.kook,'kook',dag,'kook'):legePlek(dag,'kook','—')}</td>
-      <td>${d.bank?pill(d.bank,'bank',dag,'bank'):legePlek(dag,'bank','—')}</td>
-      <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee'):legePlek(dag,'corvee','—')}</td>
+      <td>${d.bankOch?pill(d.bankOch,'bankoch',dag,'bankOch',meervoudig):legePlek(dag,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>')}</td>
+      <td>${d.kook?pill(d.kook,'kook',dag,'kook',meervoudig):legePlek(dag,'kook','—')}</td>
+      <td>${d.bank?pill(d.bank,'bank',dag,'bank',meervoudig):legePlek(dag,'bank','—')}</td>
+      <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee',meervoudig):legePlek(dag,'corvee','—')}</td>
     </tr>`;
   }).join('');
 }
