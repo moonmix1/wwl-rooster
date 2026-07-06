@@ -290,7 +290,13 @@
   .gp-tekst { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .gp-titel { font-size: 0.92rem; font-weight: 800; color: white; }
   .gp-sub { font-size: 0.74rem; color: var(--muted); }
-  .gp-beheer-rij { max-width: 900px; margin: 0 auto 12px; padding: 0 16px; display: flex; justify-content: flex-end; }
+  .gp-beheer-rij { max-width: 900px; margin: 0 auto 12px; padding: 0 16px; display: flex; justify-content: flex-end; gap: 8px; }
+  #gp-nieuw-btn {
+    background: #1e293b; border: 1.5px solid #4ade80; color: #4ade80;
+    border-radius: 8px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  #gp-nieuw-btn:hover { background: #052e16; }
   #gp-beheer-btn {
     background: #1e293b; border: 1.5px solid var(--border); color: var(--muted);
     border-radius: 8px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
@@ -357,6 +363,7 @@
 
 <div id="geavanceerd-paneel">
   <div class="gp-beheer-rij">
+    <button id="gp-nieuw-btn" style="display:none" onclick="toonNieuwOnderwerpForm()">➕ Nieuw onderwerp</button>
     <button id="gp-beheer-btn" onclick="gpBeheerToggle()">🔒 Beheerder</button>
   </div>
   <div class="gp-pagina-label" id="gp-pagina-label"></div>
@@ -774,6 +781,8 @@ function initSupabase() {
     zorgVoorHuidigeWeek();
     laadRegelsTekst();
     luisterRegelsTekstLive();
+    laadGPAangepasteOnderwerpen();
+    luisterGPOnderwerpenLive();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -902,14 +911,17 @@ function renderWeek() {
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
+  const legePlek = (dag, rolKey, standaardTekst) => beheer
+    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="bewerkRoosterCel('${dag}','${rolKey}')">+ toewijzen</button>`
+    : standaardTekst;
   document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
     const d = huidigRooster[dag]||{};
     return `<tr class="${dag===vandaag?'vandaag':''}">
       <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
-      <td>${d.bankOch?pill(d.bankOch,'bankoch',dag,'bankOch'):(beheer?`<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="bewerkRoosterCel('${dag}','bankOch')">+ toewijzen</button>`:'<span class="kantoor-label">kantoor aanwezig</span>')}</td>
-      <td>${d.kook?pill(d.kook,'kook',dag,'kook'):'—'}</td>
-      <td>${d.bank?pill(d.bank,'bank',dag,'bank'):'—'}</td>
-      <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee'):'—'}</td>
+      <td>${d.bankOch?pill(d.bankOch,'bankoch',dag,'bankOch'):legePlek(dag,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>')}</td>
+      <td>${d.kook?pill(d.kook,'kook',dag,'kook'):legePlek(dag,'kook','—')}</td>
+      <td>${d.bank?pill(d.bank,'bank',dag,'bank'):legePlek(dag,'bank','—')}</td>
+      <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee'):legePlek(dag,'corvee','—')}</td>
     </tr>`;
   }).join('');
 }
@@ -920,16 +932,29 @@ function bewerkRoosterCel(dag, rolKey) {
   const huidige = huidigRooster[dag][rolKey] ? huidigRooster[dag][rolKey].replace('★','').trim() : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ ${ROOSTER_ROL_NAMEN[rolKey] || rolKey} — ${dag}</h2>
-    <p class="gp-modal-intro">Kies wie deze dienst overneemt. Dit wijzigt alleen de huidige week.</p>
+    <p class="gp-modal-intro">Kies wie deze dienst doet, of verwijder de dienst voor deze dag. Dit wijzigt alleen de huidige week.</p>
     <div class="melding-form" style="margin-top:4px">
       <label>Naam</label>
       <select id="rooster-edit-naam">${naamOpties()}</select>
       <button class="verstuur-btn" onclick="bevestigRoosterWijziging('${dag}','${rolKey}')">Opslaan →</button>
+      ${huidige ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="verwijderRoosterCel('${dag}','${rolKey}')">🗑 Dienst verwijderen voor deze dag</button>` : ''}
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
   const sel = document.getElementById('rooster-edit-naam');
   if (sel && huidige) sel.value = huidige;
+}
+
+async function verwijderRoosterCel(dag, rolKey) {
+  if (!confirm(`Weet je zeker dat je deze dienst (${ROOSTER_ROL_NAMEN[rolKey]||rolKey}, ${dag}) wilt verwijderen?`)) return;
+  delete huidigRooster[dag][rolKey];
+  sluitGPModal();
+  renderWeek();
+  renderVandaag();
+  if (!supabaseActief) return;
+  const weekStart = weekStartVan(new Date());
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
+  if (error) alert('Opslaan mislukt: ' + error.message);
 }
 
 async function bevestigRoosterWijziging(dag, rolKey) {
@@ -1022,23 +1047,21 @@ function renderRotatie() {
 function idFor(ns, basis) { return basis + '-' + ns; }
 
 function cameraZoneHTML(ns) {
-  const documentModus = (ns === 'documenten');
-  const accept = documentModus ? 'image/*,.pdf,.doc,.docx,.txt' : 'image/*';
-  const bibliotheekLabel = documentModus ? '📄 Bestand kiezen (foto, pdf, word, tekst)' : '🖼 Uit bibliotheek';
+  const accept = 'image/*,.pdf,.doc,.docx,.txt';
   return `
-  <label>${documentModus ? 'Bestand' : 'Foto'} (optioneel)</label>
+  <label>Foto of bestand (optioneel)</label>
   <div class="camera-zone" id="${idFor(ns,'camera-zone')}">
     <div class="cam-placeholder" id="${idFor(ns,'cam-placeholder')}">
-      <span class="cam-icon">${documentModus ? '📄' : '📷'}</span>
-      ${documentModus ? 'Kies een foto, PDF, Word- of tekstbestand (max. 5MB)' : 'Neem een foto of kies er een uit je bibliotheek'}
+      <span class="cam-icon">📷</span>
+      Neem een foto, of kies een foto/PDF/Word/tekstbestand (max. 5MB)
     </div>
     <video id="${idFor(ns,'cam-video')}" autoplay playsinline></video>
     <canvas id="${idFor(ns,'cam-canvas')}"></canvas>
     <img id="${idFor(ns,'foto-preview')}" alt="preview" />
     <div id="${idFor(ns,'bestand-info')}" class="foto-hint" style="display:none;font-size:0.85rem;padding:8px 0"></div>
     <div class="cam-btn-rij" id="${idFor(ns,'cam-btns-idle')}">
-      ${documentModus ? '' : `<button type="button" class="cam-btn cam-btn-primary" onclick="startCamera('${ns}')">📷 Camera openen</button>`}
-      <button type="button" class="cam-btn" onclick="document.getElementById('${idFor(ns,'foto-file')}').click()">${bibliotheekLabel}</button>
+      <button type="button" class="cam-btn cam-btn-primary" onclick="startCamera('${ns}')">📷 Camera openen</button>
+      <button type="button" class="cam-btn" onclick="document.getElementById('${idFor(ns,'foto-file')}').click()">📄 Bestand kiezen (foto, pdf, word, tekst)</button>
       <input type="file" id="${idFor(ns,'foto-file')}" accept="${accept}" style="display:none" onchange="fotoUitBestand(event, '${ns}')" />
     </div>
     <div class="cam-btn-rij" id="${idFor(ns,'cam-btns-live')}" style="display:none">
@@ -1178,6 +1201,7 @@ async function verstuurMelding() {
       naam, type: gekozenType, label: t.label,
       bericht: bericht || null,
       foto: huidigeFoto['melding'] || null,
+      bestandsnaam: huidigeBestandsnaam['melding'] || null,
       kleur: t.kleur, bg: t.bg,
       tijd: new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})
     }]);
@@ -1195,11 +1219,21 @@ async function verwijderMelding(id) {
 }
 
 function meldingHTML(m) {
-  const fotoBlok = m.foto ? `
+  const isAfbeelding = m.foto && m.foto.startsWith('data:image/');
+  let fotoBlok = '';
+  if (m.foto && isAfbeelding) {
+    fotoBlok = `
     <div class="melding-foto-wrap" onclick="openLightbox(this)">
       <img class="melding-foto-thumb" src="${m.foto}" alt="foto" />
       <div class="foto-hint">🔍 Tik om te vergroten</div>
-    </div>` : '';
+    </div>`;
+  } else if (m.foto) {
+    fotoBlok = `
+    <a href="${m.foto}" download="${m.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
+      <span style="font-size:1.3rem">📄</span>
+      <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam || 'Document'} — tik om te downloaden</span>
+    </a>`;
+  }
   return `<div class="melding-item">
     <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
     <div style="flex:1;min-width:0">
@@ -1477,6 +1511,7 @@ function renderGPPaginas() {
           <div class="gp-order-btns">
             <button class="gp-order-btn" onclick="gpVerplaats(${globalIndex},-1)" ${globalIndex===0?'disabled':''}>▲</button>
             <button class="gp-order-btn" onclick="gpVerplaats(${globalIndex},1)" ${globalIndex===items.length-1?'disabled':''}>▼</button>
+            <button class="gp-order-btn" style="color:var(--warn)" onclick="gpOnderwerpVerwijderen(${globalIndex})">🗑</button>
           </div>
         </div>`;
       }).join('')}
@@ -1487,6 +1522,89 @@ function renderGPPaginas() {
   ).join('');
 
   gpUpdatePaginaLabel(0, gpTotaalPaginas);
+}
+
+// ── ONDERWERPEN TOEVOEGEN/VERWIJDEREN (beheerder) ──
+function renderGPNieuwKnop() {
+  const btn = document.getElementById('gp-nieuw-btn');
+  if (btn) btn.style.display = gpBeheerActief() ? 'inline-block' : 'none';
+}
+
+function toonNieuwOnderwerpForm() {
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>➕ Nieuw onderwerp</h2>
+    <p class="gp-modal-intro">Maak een nieuw prikbord-achtig onderwerp. Het werkt daarna hetzelfde als Prikbord of Ideeën: iedereen kan er berichten (met eventueel een foto) op plaatsen.</p>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Icoon (emoji)</label>
+      <input type="text" id="nieuw-onderwerp-icoon" placeholder="bijv. 🎸" maxlength="4">
+      <label>Titel</label>
+      <input type="text" id="nieuw-onderwerp-titel" placeholder="bijv. Muziekinstrumenten">
+      <label>Korte ondertitel</label>
+      <input type="text" id="nieuw-onderwerp-sub" placeholder="bijv. Te leen of te ruil">
+      <label>Uitleg (intro-tekst)</label>
+      <textarea id="nieuw-onderwerp-intro" rows="3" placeholder="Wat is de bedoeling van dit onderwerp?"></textarea>
+      <button class="verstuur-btn" onclick="maakNieuwOnderwerpAan()">Aanmaken →</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+async function maakNieuwOnderwerpAan() {
+  const icoon = document.getElementById('nieuw-onderwerp-icoon').value.trim() || '📌';
+  const titel = document.getElementById('nieuw-onderwerp-titel').value.trim();
+  const sub   = document.getElementById('nieuw-onderwerp-sub').value.trim() || 'Nieuw onderwerp';
+  const intro = document.getElementById('nieuw-onderwerp-intro').value.trim() || 'Deel hier je bericht.';
+  if (!titel) { alert('Vul een titel in.'); return; }
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+
+  const key = 'aangepast_' + Date.now();
+  const {error} = await sb.from('gp_items_info').insert([{ sleutel: key, icoon, titel, sub, intro }]);
+  if (error) { alert('Aanmaken mislukt: ' + error.message); return; }
+
+  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro };
+  if (!EXTRA_CATEGORIEEN.includes(key)) EXTRA_CATEGORIEEN.push(key);
+
+  const items = getGPVolgorde();
+  items.push({ key, icon: icoon, titel, sub, actief: true });
+  await opslaanGPVolgorde(items);
+
+  sluitGPModal();
+  renderGPPaginas();
+}
+
+async function gpOnderwerpVerwijderen(index) {
+  const items = getGPVolgorde();
+  const item = items[index];
+  if (!item) return;
+  if (!confirm(`"${item.titel.replace(/&amp;/g,'&')}" verwijderen? Geplaatste berichten daarin blijven bewaard maar zijn niet meer te zien. Dit kan niet ongedaan gemaakt worden.`)) return;
+  items.splice(index, 1);
+  await opslaanGPVolgorde(items);
+  if (supabaseActief && gpAangepasteOnderwerpen[item.key]) {
+    await sb.from('gp_items_info').delete().eq('sleutel', item.key);
+  }
+  renderGPPaginas();
+}
+
+async function laadGPAangepasteOnderwerpen() {
+  if (!supabaseActief) return;
+  const {data, error} = await sb.from('gp_items_info').select('*');
+  if (!error && data) {
+    gpAangepasteOnderwerpen = {};
+    data.forEach(r => {
+      gpAangepasteOnderwerpen[r.sleutel] = { icon: r.icoon, titel: r.titel, sub: r.sub, intro: r.intro };
+      if (!EXTRA_CATEGORIEEN.includes(r.sleutel)) EXTRA_CATEGORIEEN.push(r.sleutel);
+    });
+  }
+  const paneel = document.getElementById('geavanceerd-paneel');
+  if (paneel && paneel.classList.contains('open')) renderGPPaginas();
+}
+
+function luisterGPOnderwerpenLive() {
+  if (!supabaseActief) return;
+  sb.channel('gp-onderwerpen-live')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'gp_items_info'}, () => {
+      laadGPAangepasteOnderwerpen();
+    }).subscribe();
 }
 
 function gpVerplaats(index, richting) {
@@ -1529,6 +1647,7 @@ function gpBeheerUpdateUI() {
   btn.textContent = actief ? '🔓 Beheerder actief' : '🔒 Beheerder';
   herRenderRoosterTabs();
   renderRegelsBeheerKnop();
+  renderGPNieuwKnop();
 }
 
 function gpNaarPagina(index) {
@@ -1602,7 +1721,8 @@ async function bewonerVerwijderen(naam) {
 }
 
 let extraChannel = null;
-const EXTRA_CATEGORIEEN = ['prikbord','ideeen','dringend','klussen','verjaardag','activiteiten','contacten','documenten'];
+let EXTRA_CATEGORIEEN = ['prikbord','ideeen','dringend','klussen','verjaardag','activiteiten','contacten','documenten'];
+let gpAangepasteOnderwerpen = {};
 
 const EXTRA_PLACEHOLDERS = {
   prikbord:     "bijv. 'Fiets te koop, 20 euro'",
@@ -1709,7 +1829,10 @@ function renderBewonersModalInhoud() {
 }
 
 function openGP(key) {
-  const data = GP_INHOUD[key] || GP_INHOUD.placeholder;
+  const custom = gpAangepasteOnderwerpen[key];
+  const data = custom
+    ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: custom.intro || '', footer: '' }
+    : (GP_INHOUD[key] || GP_INHOUD.placeholder);
   const interactief = EXTRA_CATEGORIEEN.includes(key);
   let extraHtml = '';
   if (interactief) {
