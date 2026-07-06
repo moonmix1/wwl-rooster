@@ -137,16 +137,17 @@
   .wa-btn:hover { background: #128C7E; }
   .melding-lijst { display: flex; flex-direction: column; gap: 10px; }
   .melding-item { background: #1a2744; border-radius: 14px; padding: 14px 16px;
-                  border: 2px solid #3d5a8a; display: flex; gap: 10px; align-items: flex-start;
-                  flex-wrap: wrap; box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+                  border: 2px solid #3d5a8a; display: flex; flex-direction: column; gap: 6px;
+                  box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
   .melding-item:hover { border-color: #5b7fc4; }
+  .melding-item-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .melding-badge { padding: 5px 10px; border-radius: 99px; font-size: 0.75rem;
                    font-weight: 800; white-space: nowrap; flex-shrink: 0;
-                   min-width: 120px; text-align: center; border: 1.5px solid rgba(255,255,255,0.15); }
+                   text-align: center; border: 1.5px solid rgba(255,255,255,0.15); }
   .melding-naam  { font-weight: 800; font-size: 0.9rem; color: white;
                    word-break: break-word; }
   .melding-tekst { font-size: 0.82rem; color: #b0c4de; margin-top: 3px; line-height: 1.4;
-                   word-break: break-word; overflow-wrap: break-word; }
+                   word-break: break-word; overflow-wrap: break-word; width: 100%; }
   .melding-tijd  { font-size: 0.7rem; color: var(--subtle); margin-left: auto; flex-shrink: 0; font-weight: 600; }
   .verwijder-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
                    border-radius: 6px; color: #94a3b8; cursor: pointer;
@@ -789,6 +790,10 @@ function initSupabase() {
 
 async function laadMeldingen() {
   if (!supabaseActief) return;
+  ['mel-lijst','vandaag-meldingen'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.innerHTML.trim()) el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
+  });
   const {data, error} = await sb.from('meldingen')
     .select('*').order('created_at', {ascending: false}).limit(20);
   if (!error && data) renderMeldingenData(data);
@@ -1166,10 +1171,17 @@ function stopCamera(ns) {
 function fotoNemen(ns) {
   const video  = document.getElementById(idFor(ns,'cam-video'));
   const canvas = document.getElementById(idFor(ns,'cam-canvas'));
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  huidigeFoto[ns] = canvas.toDataURL('image/jpeg', 0.82);
+  const MAX_BREEDTE = 1280;
+  let breedte = video.videoWidth;
+  let hoogte  = video.videoHeight;
+  if (breedte > MAX_BREEDTE) {
+    hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
+    breedte = MAX_BREEDTE;
+  }
+  canvas.width  = breedte;
+  canvas.height = hoogte;
+  canvas.getContext('2d').drawImage(video, 0, 0, breedte, hoogte);
+  huidigeFoto[ns] = canvas.toDataURL('image/jpeg', 0.75);
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   cameraNS = null;
   document.getElementById(idFor(ns,'cam-video')).style.display        = 'none';
@@ -1182,6 +1194,44 @@ function fotoNemen(ns) {
   document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'flex';
 }
 
+function comprimeerAfbeelding(file, callback) {
+  const MAX_BREEDTE = 1280;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      let breedte = img.width, hoogte = img.height;
+      if (breedte > MAX_BREEDTE) {
+        hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
+        breedte = MAX_BREEDTE;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = breedte; canvas.height = hoogte;
+      canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
+      callback(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = () => callback(ev.target.result); // lukt comprimeren niet, gebruik origineel
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function toonBestandPreview(ns, isAfbeelding, bestandsnaam) {
+  document.getElementById(idFor(ns,'cam-placeholder')).style.display  = 'none';
+  document.getElementById(idFor(ns,'cam-btns-idle')).style.display    = 'none';
+  const prev = document.getElementById(idFor(ns,'foto-preview'));
+  const info = document.getElementById(idFor(ns,'bestand-info'));
+  if (isAfbeelding) {
+    prev.src = huidigeFoto[ns];
+    prev.style.display = 'block';
+    if (info) info.style.display = 'none';
+  } else {
+    prev.style.display = 'none';
+    if (info) { info.textContent = '📄 ' + bestandsnaam; info.style.display = 'block'; }
+  }
+  document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'flex';
+}
+
 function fotoUitBestand(e, ns) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1190,26 +1240,20 @@ function fotoUitBestand(e, ns) {
     e.target.value = '';
     return;
   }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    huidigeFoto[ns] = ev.target.result;
-    huidigeBestandsnaam[ns] = file.name;
-    const isAfbeelding = file.type.startsWith('image/');
-    document.getElementById(idFor(ns,'cam-placeholder')).style.display  = 'none';
-    document.getElementById(idFor(ns,'cam-btns-idle')).style.display    = 'none';
-    const prev = document.getElementById(idFor(ns,'foto-preview'));
-    const info = document.getElementById(idFor(ns,'bestand-info'));
-    if (isAfbeelding) {
-      prev.src = huidigeFoto[ns];
-      prev.style.display = 'block';
-      if (info) info.style.display = 'none';
-    } else {
-      prev.style.display = 'none';
-      if (info) { info.textContent = '📄 ' + file.name; info.style.display = 'block'; }
-    }
-    document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'flex';
-  };
-  reader.readAsDataURL(file);
+  huidigeBestandsnaam[ns] = file.name;
+  if (file.type.startsWith('image/')) {
+    comprimeerAfbeelding(file, (dataUrl) => {
+      huidigeFoto[ns] = dataUrl;
+      toonBestandPreview(ns, true, file.name);
+    });
+  } else {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      huidigeFoto[ns] = ev.target.result;
+      toonBestandPreview(ns, false, file.name);
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function fotoBevestigen(ns) {
@@ -1272,6 +1316,18 @@ async function verwijderMelding(id) {
   if(supabaseActief) await sb.from('meldingen').delete().eq('id', id);
 }
 
+function tijdWeergave(momentString, reserveTekst) {
+  if (momentString) {
+    const d = new Date(momentString);
+    if (!isNaN(d)) {
+      const dagMaand = d.toLocaleDateString('nl-NL', {day:'2-digit', month:'2-digit'});
+      const uurMin   = d.toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'});
+      return `${dagMaand} ${uurMin}`;
+    }
+  }
+  return reserveTekst || '';
+}
+
 function meldingHTML(m) {
   const isAfbeelding = m.foto && m.foto.startsWith('data:image/');
   let fotoBlok = '';
@@ -1289,14 +1345,14 @@ function meldingHTML(m) {
     </a>`;
   }
   return `<div class="melding-item">
-    <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
-    <div style="flex:1;min-width:0">
-      <div class="melding-naam">${m.naam}</div>
-      ${m.bericht?`<div class="melding-tekst">${m.bericht}</div>`:''}
-      ${fotoBlok}
+    <div class="melding-item-top">
+      <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
+      <span class="melding-tijd">${tijdWeergave(m.created_at, m.tijd)}</span>
+      <button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>
     </div>
-    <span class="melding-tijd">${m.tijd}</span>
-    <button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>
+    <div class="melding-naam">${m.naam}</div>
+    ${fotoBlok}
+    ${m.bericht?`<div class="melding-tekst">${m.bericht}</div>`:''}
   </div>`;
 }
 
@@ -1794,6 +1850,7 @@ const EXTRA_PLACEHOLDERS = {
 async function laadExtraItems(categorie) {
   const el = document.getElementById('extra-lijst-' + categorie);
   if (!el) return;
+  el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
   if (!supabaseActief) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Supabase niet actief.</p>'; return; }
   const {data, error} = await sb.from('extra_items')
     .select('*').eq('categorie', categorie).order('created_at', {ascending:false}).limit(50);
@@ -1816,13 +1873,13 @@ async function laadExtraItems(categorie) {
     }
     return `
     <div class="melding-item">
-      <div style="flex:1;min-width:0">
-        <div class="melding-naam">${item.naam}</div>
-        ${item.tekst?`<div class="melding-tekst">${item.tekst}</div>`:''}
-        ${fotoBlok}
+      <div class="melding-item-top">
+        <span class="melding-tijd">${tijdWeergave(item.created_at)}</span>
+        <button class="verwijder-btn" onclick="verwijderExtraItem(${item.id}, '${categorie}')">✕</button>
       </div>
-      <span class="melding-tijd">${new Date(item.created_at).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})}</span>
-      <button class="verwijder-btn" onclick="verwijderExtraItem(${item.id}, '${categorie}')">✕</button>
+      <div class="melding-naam">${item.naam}</div>
+      ${fotoBlok}
+      ${item.tekst?`<div class="melding-tekst">${item.tekst}</div>`:''}
     </div>`;
   }).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
 }
@@ -1953,3 +2010,4 @@ initSupabase();
 </script>
 </body>
 </html>
+
