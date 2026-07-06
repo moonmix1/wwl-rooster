@@ -936,6 +936,14 @@ function bewerkRoosterCel(dag, rolKey) {
     <div class="melding-form" style="margin-top:4px">
       <label>Naam</label>
       <select id="rooster-edit-naam">${naamOpties()}</select>
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:-8px 0 16px">
+        <a href="#" onclick="toonNieuweRoosterNaamVeld(); return false;" style="font-size:0.78rem;color:#818cf8;text-decoration:none">+ Nieuwe naam toevoegen aan de lijst</a>
+        <a href="#" onclick="verwijderGeselecteerdeRoosterNaam(); return false;" style="font-size:0.78rem;color:var(--warn);text-decoration:none">🗑 Geselecteerde naam uit lijst verwijderen</a>
+      </div>
+      <div id="rooster-nieuwe-naam-veld" style="display:none">
+        <input type="text" id="rooster-nieuwe-naam-input" placeholder="Nieuwe naam">
+        <button type="button" class="cam-btn cam-btn-primary" style="margin-bottom:16px" onclick="voegNaamToeVanuitRooster()">Toevoegen aan lijst</button>
+      </div>
       <button class="verstuur-btn" onclick="bevestigRoosterWijziging('${dag}','${rolKey}')">Opslaan →</button>
       ${huidige ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="verwijderRoosterCel('${dag}','${rolKey}')">🗑 Dienst verwijderen voor deze dag</button>` : ''}
     </div>
@@ -943,6 +951,37 @@ function bewerkRoosterCel(dag, rolKey) {
   document.getElementById('gp-overlay').classList.add('open');
   const sel = document.getElementById('rooster-edit-naam');
   if (sel && huidige) sel.value = huidige;
+}
+
+function toonNieuweRoosterNaamVeld() {
+  const veld = document.getElementById('rooster-nieuwe-naam-veld');
+  if (veld) veld.style.display = (veld.style.display === 'none') ? 'block' : 'none';
+}
+
+async function voegNaamToeVanuitRooster() {
+  const inp = document.getElementById('rooster-nieuwe-naam-input');
+  const naam = inp.value.trim();
+  if (!naam) { alert('Vul een naam in.'); return; }
+  if (!bewonersCache.some(n => n.toLowerCase() === naam.toLowerCase())) {
+    if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+    const {error} = await sb.from('bewoners').insert([{ naam }]);
+    if (error) { alert('Toevoegen mislukt: ' + error.message); return; }
+    bewonersCache.push(naam);
+    bewonersCache.sort((a,b) => a.localeCompare(b));
+    vulNaamSelectMelding();
+  }
+  const sel = document.getElementById('rooster-edit-naam');
+  if (sel) { sel.innerHTML = naamOpties(); sel.value = naam; }
+  inp.value = '';
+  document.getElementById('rooster-nieuwe-naam-veld').style.display = 'none';
+}
+
+async function verwijderGeselecteerdeRoosterNaam() {
+  const sel = document.getElementById('rooster-edit-naam');
+  const naam = sel ? sel.value : '';
+  if (!naam) { alert('Selecteer eerst een naam om te verwijderen.'); return; }
+  await bewonerVerwijderen(naam);
+  if (sel) sel.innerHTML = naamOpties();
 }
 
 async function verwijderRoosterCel(dag, rolKey) {
