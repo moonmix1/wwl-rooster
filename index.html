@@ -147,7 +147,8 @@
   .melding-naam  { font-weight: 800; font-size: 0.9rem; color: white;
                    word-break: break-word; }
   .melding-tekst { font-size: 0.82rem; color: #b0c4de; margin-top: 3px; line-height: 1.4;
-                   word-break: break-word; overflow-wrap: break-word; width: 100%; }
+                   word-break: break-word; overflow-wrap: break-word; width: 100%;
+                   white-space: pre-wrap; }
   .melding-tijd  { font-size: 0.7rem; color: var(--subtle); margin-left: auto; flex-shrink: 0; font-weight: 600; }
   .verwijder-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
                    border-radius: 6px; color: #94a3b8; cursor: pointer;
@@ -358,14 +359,14 @@
 
 <div class="header">
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
-  <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd</button>
+  <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd <span id="goedkeuring-teller" style="display:none;background:var(--warn);color:white;border-radius:99px;padding:1px 6px;font-size:0.65rem;margin-left:4px"></span></button>
   <div><div id="klok">--:--</div><div id="datum"></div></div>
 </div>
 
 <div id="geavanceerd-paneel">
   <div class="gp-beheer-rij">
     <button id="gp-nieuw-btn" style="display:none" onclick="toonNieuwOnderwerpForm()">➕ Nieuw onderwerp</button>
-    <button id="gp-beheer-btn" onclick="gpBeheerToggle()">🔒 Beheerder</button>
+    <button id="gp-beheer-btn" style="display:none" disabled>⭐ Jij bent beheerder</button>
   </div>
   <div class="gp-pagina-label" id="gp-pagina-label"></div>
   <div class="gp-pages" id="gp-pages"></div>
@@ -377,6 +378,12 @@
     <button class="gp-modal-close" onclick="sluitGPModal()">✕</button>
 
     <div id="gp-modal-inhoud"></div>
+  </div>
+</div>
+
+<div id="auth-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:10000;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto">
+  <div class="gp-modal" style="margin-top:30px;max-width:480px;border-color:#2d4a7a">
+    <div id="auth-inhoud"></div>
   </div>
 </div>
 
@@ -526,8 +533,7 @@
     </div>
 
     <div class="melding-form">
-      <label>Jouw naam</label>
-      <select id="inp-naam" size="1"></select>
+      <div id="melding-naam-weergave"></div>
       <label>Type melding</label>
       <div class="type-grid" id="type-grid"></div>
       <label>Toelichting (optioneel)</label>
@@ -757,6 +763,239 @@ const MELDING_TYPES = [
   {id:"algemeen",label:"💬 Algemeen bericht", kleur:"#e2e8f0", bg:"#334155"},
 ];
 
+// ── ECHTE ACCOUNTS (Supabase Auth + goedkeuring door beheerder) ──
+let huidigProfiel = null; // { id, naam, email, goedgekeurd, geweigerd }
+let profielenChannel = null;
+
+function mijnNaam() { return huidigProfiel ? huidigProfiel.naam : null; }
+
+async function checkAuthStatus() {
+  if (!supabaseActief) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { toonAuthScherm('login'); return; }
+  await laadEigenProfiel();
+}
+
+async function laadEigenProfiel() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { toonAuthScherm('login'); return; }
+  const { data, error } = await sb.from('profielen').select('*').eq('id', user.id).maybeSingle();
+  if (error || !data) { toonAuthScherm('login'); return; }
+  huidigProfiel = data;
+  if (data.geweigerd) { toonAuthScherm('geweigerd'); return; }
+  if (!data.goedgekeurd) { toonAuthScherm('wachten'); return; }
+  document.getElementById('auth-overlay').style.display = 'none';
+  vulJouwNaamWeergaven();
+  starApp();
+}
+
+function starApp() {
+  verversBeheerderUI();
+  laadMeldingen();
+  luisterLive();
+  laadPoll();
+  luisterPollLive();
+  laadGPVolgorde();
+  luisterGPVolgordeLive();
+  laadBewoners();
+  luisterBewonersLive();
+  zorgVoorHuidigeWeek();
+  laadRegelsTekst();
+  luisterRegelsTekstLive();
+  laadGPAangepasteOnderwerpen();
+  luisterGPOnderwerpenLive();
+  laadGoedkeuringenTeller();
+  luisterGoedkeuringenLive();
+}
+
+function toonAuthScherm(soort) {
+  document.getElementById('auth-overlay').style.display = 'flex';
+  if (soort === 'login') return toonInlogScherm();
+  if (soort === 'registreren') return toonRegistratieScherm();
+  if (soort === 'wachten') return toonWachtScherm();
+  if (soort === 'geweigerd') return toonGeweigerdScherm();
+}
+
+function toonInlogScherm() {
+  document.getElementById('auth-inhoud').innerHTML = `
+    <h2>🔑 Inloggen</h2>
+    <p class="gp-modal-intro">Log in met je e-mailadres en wachtwoord.</p>
+    <div class="melding-form" style="margin-top:4px">
+      <label>E-mailadres</label>
+      <input type="email" id="login-email" placeholder="jouw@email.nl">
+      <label>Wachtwoord</label>
+      <input type="password" id="login-wachtwoord" placeholder="Wachtwoord">
+      <button class="verstuur-btn" onclick="inloggen()">Inloggen →</button>
+    </div>
+    <p style="text-align:center;font-size:0.82rem;color:var(--muted)">
+      Nog geen account? <a href="#" onclick="toonRegistratieScherm(); return false;" style="color:#818cf8">Account aanmaken</a>
+    </p>
+    <p style="text-align:center;font-size:0.78rem"><a href="#" onclick="wachtwoordVergeten(); return false;" style="color:var(--subtle)">Wachtwoord vergeten?</a></p>
+  `;
+}
+
+function toonRegistratieScherm() {
+  document.getElementById('auth-inhoud').innerHTML = `
+    <h2>👋 Account aanmaken</h2>
+    <p class="gp-modal-intro">
+      Kies je voornaam — <strong>dezelfde naam die iedereen in huis van je gewend is</strong>. Na het aanmaken moet een beheerder je nog goedkeuren voordat je de app kunt gebruiken.
+    </p>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Jouw naam</label>
+      <select id="reg-naam">${naamOpties()}</select>
+      <label>E-mailadres</label>
+      <input type="email" id="reg-email" placeholder="jouw@email.nl">
+      <label>Wachtwoord</label>
+      <input type="password" id="reg-wachtwoord" placeholder="Kies een wachtwoord (min. 6 tekens)">
+      <button class="verstuur-btn" onclick="registreren()">Account aanmaken →</button>
+    </div>
+    <p style="text-align:center;font-size:0.82rem;color:var(--muted)">
+      Al een account? <a href="#" onclick="toonInlogScherm(); return false;" style="color:#818cf8">Inloggen</a>
+    </p>
+  `;
+}
+
+function toonWachtScherm() {
+  document.getElementById('auth-inhoud').innerHTML = `
+    <h2>⏳ Wachten op goedkeuring</h2>
+    <p class="gp-modal-intro">
+      Je account (${huidigProfiel ? huidigProfiel.naam : ''}) is aangemaakt. Een beheerder moet je nog goedkeuren voordat je de app kunt gebruiken.
+    </p>
+    <button class="verstuur-btn" onclick="checkAuthStatus()">🔄 Opnieuw controleren</button>
+    <button class="poll-sluit-btn" onclick="uitloggen()">Uitloggen</button>
+  `;
+}
+
+function toonGeweigerdScherm() {
+  document.getElementById('auth-inhoud').innerHTML = `
+    <h2>🚫 Toegang geweigerd</h2>
+    <p class="gp-modal-intro">Je aanvraag is afgewezen door een beheerder.</p>
+    <button class="poll-sluit-btn" onclick="uitloggen()">Uitloggen</button>
+  `;
+}
+
+async function registreren() {
+  const naam = document.getElementById('reg-naam').value;
+  const email = document.getElementById('reg-email').value.trim();
+  const wachtwoord = document.getElementById('reg-wachtwoord').value;
+  if (!naam) { alert('Kies je naam.'); return; }
+  if (!email) { alert('Vul je e-mailadres in.'); return; }
+  if (!wachtwoord || wachtwoord.length < 6) { alert('Wachtwoord moet minimaal 6 tekens zijn.'); return; }
+  const { data, error } = await sb.auth.signUp({
+    email, password: wachtwoord,
+    options: { data: { naam } }
+  });
+  if (error) { alert('Registreren mislukt: ' + error.message); return; }
+  if (data.session) {
+    await laadEigenProfiel();
+  } else {
+    alert('Check je e-mail om je account te bevestigen, en log daarna in.');
+    toonInlogScherm();
+  }
+}
+
+async function inloggen() {
+  const email = document.getElementById('login-email').value.trim();
+  const wachtwoord = document.getElementById('login-wachtwoord').value;
+  if (!email || !wachtwoord) { alert('Vul e-mailadres en wachtwoord in.'); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: wachtwoord });
+  if (error) { alert('Inloggen mislukt: ' + error.message); return; }
+  await laadEigenProfiel();
+}
+
+async function wachtwoordVergeten() {
+  const email = prompt('Vul je e-mailadres in om een resetlink te ontvangen:');
+  if (!email) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email);
+  if (error) { alert('Er ging iets mis: ' + error.message); return; }
+  alert('Check je e-mail voor een link om je wachtwoord opnieuw in te stellen.');
+}
+
+async function uitloggen() {
+  await sb.auth.signOut();
+  huidigProfiel = null;
+  toonAuthScherm('login');
+}
+
+function vulJouwNaamWeergaven() {
+  const el = document.getElementById('melding-naam-weergave');
+  if (!el) return;
+  const naam = mijnNaam();
+  el.innerHTML = naam
+    ? `<label>Jij plaatst als</label><div style="font-weight:800;color:white;font-size:1rem;margin-bottom:16px">${naam}</div>`
+    : '';
+}
+
+function resetMijnNaam() {
+  if (!confirm('Weet je zeker dat je een andere naam wilt kiezen?')) return;
+  const nieuweNaam = prompt('Kies je nieuwe naam exact zoals in de bewonerslijst:');
+  if (!nieuweNaam || !bewonersCache.includes(nieuweNaam)) { alert('Deze naam staat niet in de bewonerslijst.'); return; }
+  sb.rpc('wijzig_eigen_naam', { nieuwe_naam: nieuweNaam }).then(({error}) => {
+    if (error) { alert('Wijzigen mislukt: ' + error.message); return; }
+    huidigProfiel.naam = nieuweNaam;
+    sluitGPModal();
+    vulJouwNaamWeergaven();
+  });
+}
+
+// ── GOEDKEURINGEN (beheerder) ──
+let profielenCache = [];
+
+async function laadProfielenCache() {
+  if (!supabaseActief) return;
+  const { data } = await sb.from('profielen').select('*').order('naam', {ascending:true});
+  if (data) profielenCache = data;
+}
+
+async function laadGoedkeuringenTeller() {
+  if (!supabaseActief) return;
+  await laadProfielenCache();
+  const teller = document.getElementById('goedkeuring-teller');
+  if (teller) {
+    const aantal = profielenCache.filter(p => !p.goedgekeurd && !p.geweigerd).length;
+    teller.style.display = aantal > 0 ? 'inline-block' : 'none';
+    teller.textContent = aantal;
+  }
+}
+
+function luisterGoedkeuringenLive() {
+  if (!supabaseActief || profielenChannel) return;
+  profielenChannel = sb.channel('profielen-live')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'profielen'}, async () => {
+      laadGoedkeuringenTeller();
+      if (huidigProfiel) {
+        const {data} = await sb.from('profielen').select('*').eq('id', huidigProfiel.id).maybeSingle();
+        if (data) { huidigProfiel = data; verversBeheerderUI(); vulJouwNaamWeergaven(); }
+      }
+      const overlay = document.getElementById('gp-overlay');
+      if (overlay && overlay.classList.contains('open') && document.getElementById('bewoners-lijst')) {
+        openGP('instellingen');
+      }
+    }).subscribe();
+}
+
+async function keurGoed(id) {
+  const {error} = await sb.from('profielen').update({ goedgekeurd: true, geweigerd: false }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
+  laadGoedkeuringenTeller();
+}
+
+async function weiger(id) {
+  if (!confirm('Weet je zeker dat je deze aanvraag wilt weigeren?')) return;
+  const {error} = await sb.from('profielen').update({ goedgekeurd: false, geweigerd: true }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
+  laadGoedkeuringenTeller();
+}
+
+async function intrekkenToegang(id, naam) {
+  if (!confirm(`Weet je zeker dat je de toegang van "${naam}" wilt intrekken? Diegene kan hierna niets meer zien in de app.`)) return;
+  const {error} = await sb.from('profielen').update({ goedgekeurd: false }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
+}
+
 let huidigeFoto  = {};
 let huidigeBestandsnaam = {};
 let cameraStream = null;
@@ -772,19 +1011,7 @@ function initSupabase() {
   try {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     supabaseActief = true;
-    laadMeldingen();
-    luisterLive();
-    laadPoll();
-    luisterPollLive();
-    laadGPVolgorde();
-    luisterGPVolgordeLive();
-    laadBewoners();
-    luisterBewonersLive();
-    zorgVoorHuidigeWeek();
-    laadRegelsTekst();
-    luisterRegelsTekstLive();
-    laadGPAangepasteOnderwerpen();
-    luisterGPOnderwerpenLive();
+    checkAuthStatus();
   } catch(e) { console.error('Supabase fout:', e); }
 }
 
@@ -1287,9 +1514,9 @@ function renderTypeKnoppen() {
 function kiesType(id){ gekozenType=id; renderTypeKnoppen(); }
 
 async function verstuurMelding() {
-  const naam    = document.getElementById('inp-naam').value.trim();
+  const naam    = mijnNaam();
   const bericht = document.getElementById('inp-bericht').value.trim();
-  if(!naam){ alert('Selecteer je naam.'); return; }
+  if(!naam){ toonAuthScherm('login'); return; }
   if(!bericht && !huidigeFoto['melding']){ alert('Voeg een bericht of foto toe.'); return; }
   const t = MELDING_TYPES.find(x=>x.id===gekozenType) || MELDING_TYPES.find(x=>x.id==='algemeen');
   const btn = document.getElementById('verstuur-btn');
@@ -1305,7 +1532,6 @@ async function verstuurMelding() {
     }]);
     if(error) { alert('Fout bij versturen: ' + error.message); }
   }
-  document.getElementById('inp-naam').value    = '';
   document.getElementById('inp-bericht').value = '';
   fotoOpnieuw('melding');
   btn.disabled = false;
@@ -1344,11 +1570,14 @@ function meldingHTML(m) {
       <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam || 'Document'} — tik om te downloaden</span>
     </a>`;
   }
+  const magBewerken = m.naam === mijnNaam();
+  const magVerwijderen = magBewerken || gpBeheerActief();
   return `<div class="melding-item">
     <div class="melding-item-top">
       <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
       <span class="melding-tijd">${tijdWeergave(m.created_at, m.tijd)}</span>
-      <button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>
+      ${magBewerken ? `<button class="verwijder-btn" onclick="bewerkMeldingTekst(${m.id})">✏️</button>` : ''}
+      ${magVerwijderen ? `<button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>` : ''}
     </div>
     <div class="melding-naam">${m.naam}</div>
     ${fotoBlok}
@@ -1356,7 +1585,34 @@ function meldingHTML(m) {
   </div>`;
 }
 
+let meldingenCache = {};
+
+function bewerkMeldingTekst(id) {
+  const m = meldingenCache[id];
+  if (!m) return;
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>✏️ Bericht bewerken</h2>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Tekst</label>
+      <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
+      <button class="verstuur-btn" onclick="bevestigBewerkMelding(${id})">Opslaan →</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+async function bevestigBewerkMelding(id) {
+  const nieuweTekst = document.getElementById('bewerk-melding-tekst').value.trim();
+  sluitGPModal();
+  if (!supabaseActief) return;
+  const {error} = await sb.from('meldingen').update({ bericht: nieuweTekst || null }).eq('id', id);
+  if (error) { alert('Opslaan mislukt: ' + error.message); return; }
+  laadMeldingen();
+}
+
 function renderMeldingenData(data) {
+  meldingenCache = {};
+  data.forEach(m => { meldingenCache[m.id] = m; });
   const html = data.length
     ? data.map(meldingHTML).join('')
     : '<p style="font-size:0.8rem;color:var(--subtle)">Geen meldingen op dit moment.</p>';
@@ -1378,7 +1634,7 @@ function sluitLightbox() {
 }
 
 function waSturen() {
-  const naam    = document.getElementById('inp-naam').value.trim()||'(naam)';
+  const naam    = mijnNaam() || '(naam)';
   const bericht = document.getElementById('inp-bericht').value.trim();
   const t = MELDING_TYPES.find(x=>x.id===gekozenType);
   const tekst = `WWL melding\n${t.label} — ${naam}${bericht?'\n"'+bericht+'"':''}`;
@@ -1472,10 +1728,21 @@ function toggleGeavanceerd() {
   paneel.classList.toggle('open');
   btn.classList.toggle('actief');
   if (paneel.classList.contains('open')) {
-    gpBeheerUpdateUI();
+    verversBeheerderUI();
     laadGPVolgorde();
     renderGPPaginas();
   }
+}
+
+function verversBeheerderUI() {
+  const paneel = document.getElementById('geavanceerd-paneel');
+  const btn = document.getElementById('gp-beheer-btn');
+  const actief = gpBeheerActief();
+  if (paneel) paneel.classList.toggle('gp-beheer-modus', actief);
+  if (btn) { btn.style.display = actief ? 'inline-flex' : 'none'; btn.textContent = '⭐ Jij bent beheerder'; }
+  herRenderRoosterTabs();
+  renderRegelsBeheerKnop();
+  renderGPNieuwKnop();
 }
 
 const GP_INHOUD = {
@@ -1726,38 +1993,23 @@ function gpVerplaats(index, richting) {
   renderGPPaginas();
 }
 
-// ── BEHEERDER-VERGRENDELING ──
-// Pincode hier aanpassen indien gewenst:
-const GP_BEHEER_PIN = '1234';
-const GP_BEHEER_SESSIE_KEY = 'wwl-gp-beheer';
+// ── BEHEERDER-STATUS ──
+// Beheerder is nu een echte eigenschap van je account (is_beheerder in Supabase),
+// niet meer een pincode. Alleen een bestaande beheerder kan iemand anders beheerder maken.
+function gpBeheerActief() { return !!(huidigProfiel && huidigProfiel.is_beheerder); }
 
-function gpBeheerActief() { return localStorage.getItem(GP_BEHEER_SESSIE_KEY) === '1'; }
-
-function gpBeheerToggle() {
-  if (gpBeheerActief()) {
-    localStorage.removeItem(GP_BEHEER_SESSIE_KEY);
-    gpBeheerUpdateUI();
-    return;
-  }
-  const invoer = prompt('Pincode beheerder:');
-  if (invoer === GP_BEHEER_PIN) {
-    localStorage.setItem(GP_BEHEER_SESSIE_KEY, '1');
-    gpBeheerUpdateUI();
-  } else if (invoer !== null) {
-    alert('Onjuiste pincode.');
-  }
+async function maakBeheerder(id) {
+  if (!confirm('Weet je zeker dat je deze persoon beheerdersrechten wilt geven?')) return;
+  const {error} = await sb.from('profielen').update({ is_beheerder: true }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
 }
 
-function gpBeheerUpdateUI() {
-  const paneel = document.getElementById('geavanceerd-paneel');
-  const btn = document.getElementById('gp-beheer-btn');
-  const actief = gpBeheerActief();
-  paneel.classList.toggle('gp-beheer-modus', actief);
-  btn.classList.toggle('gp-beheer-actief', actief);
-  btn.textContent = actief ? '🔓 Beheerder actief' : '🔒 Beheerder';
-  herRenderRoosterTabs();
-  renderRegelsBeheerKnop();
-  renderGPNieuwKnop();
+async function haalBeheerderWeg(id) {
+  if (!confirm('Weet je zeker dat je de beheerdersrechten van deze persoon wilt intrekken?')) return;
+  const {error} = await sb.from('profielen').update({ is_beheerder: false }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
 }
 
 function gpNaarPagina(index) {
@@ -1786,8 +2038,7 @@ function naamOpties() {
 }
 
 function vulNaamSelectMelding() {
-  const sel = document.getElementById('inp-naam');
-  if (sel) sel.innerHTML = naamOpties();
+  vulJouwNaamWeergaven();
 }
 
 async function laadBewoners() {
@@ -1847,167 +2098,26 @@ const EXTRA_PLACEHOLDERS = {
   documenten:   "bijv. 'Huisreglement 2026, zie foto'",
 };
 
-async function laadExtraItems(categorie) {
-  const el = document.getElementById('extra-lijst-' + categorie);
-  if (!el) return;
-  el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
-  if (!supabaseActief) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Supabase niet actief.</p>'; return; }
-  const {data, error} = await sb.from('extra_items')
-    .select('*').eq('categorie', categorie).order('created_at', {ascending:false}).limit(50);
-  if (error) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--warn)">Fout bij laden: ' + error.message + '</p>'; return; }
-  el.innerHTML = (data && data.length) ? data.map(item => {
-    const isAfbeelding = item.foto && item.foto.startsWith('data:image/');
-    let fotoBlok = '';
-    if (item.foto && isAfbeelding) {
-      fotoBlok = `
-      <div class="melding-foto-wrap" onclick="openLightbox(this)">
-        <img class="melding-foto-thumb" src="${item.foto}" alt="foto" />
-        <div class="foto-hint">🔍 Tik om te vergroten</div>
-      </div>`;
-    } else if (item.foto) {
-      fotoBlok = `
-      <a href="${item.foto}" download="${item.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
-        <span style="font-size:1.3rem">📄</span>
-        <span style="font-size:0.78rem;color:var(--text)">${item.bestandsnaam || 'Document'} — tik om te downloaden</span>
-      </a>`;
-    }
-    return `
-    <div class="melding-item">
-      <div class="melding-item-top">
-        <span class="melding-tijd">${tijdWeergave(item.created_at)}</span>
-        <button class="verwijder-btn" onclick="verwijderExtraItem(${item.id}, '${categorie}')">✕</button>
-      </div>
-      <div class="melding-naam">${item.naam}</div>
-      ${fotoBlok}
-      ${item.tekst?`<div class="melding-tekst">${item.tekst}</div>`:''}
-    </div>`;
-  }).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
-}
+let extraItemsCache = {};
 
-async function voegExtraItemToe(categorie) {
-  const naamEl  = document.getElementById('extra-naam-' + categorie);
-  const tekstEl = document.getElementById('extra-tekst-' + categorie);
-  const naam  = naamEl.value.trim();
-  const tekst = tekstEl.value.trim();
-  const foto  = huidigeFoto[categorie] || null;
-  const bestandsnaam = huidigeBestandsnaam[categorie] || null;
-  if (!naam)  { alert('Selecteer je naam.'); return; }
-  if (!tekst && !foto) { alert('Vul een bericht of bestand in.'); return; }
-  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
-  const {error} = await sb.from('extra_items').insert([{ categorie, naam, tekst: tekst || '', foto, bestandsnaam }]);
-  if (error) { alert('Fout bij plaatsen: ' + error.message); return; }
-  tekstEl.value = '';
-  fotoOpnieuw(categorie);
-  laadExtraItems(categorie);
-}
-
-async function verwijderExtraItem(id, categorie) {
-  if (!supabaseActief) return;
-  await sb.from('extra_items').delete().eq('id', id);
-  laadExtraItems(categorie);
-}
-
-function luisterExtraLive(categorie) {
-  if (!supabaseActief) return;
-  if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
-  extraChannel = sb.channel('extra-live-' + categorie)
-    .on('postgres_changes', {event:'*', schema:'public', table:'extra_items', filter:`categorie=eq.${categorie}`}, () => {
-      laadExtraItems(categorie);
-    }).subscribe();
-}
-
-function renderBewonersModalInhoud() {
-  const beheerder = gpBeheerActief();
-  const lijstHtml = bewonersCache.length
-    ? bewonersCache.map(naam => {
-        const heeftHuisje = bewonersBeheerSet.has(naam);
-        return `
-      <div class="melding-item">
-        <div style="flex:1;min-width:0"><div class="melding-naam">${naam}${heeftHuisje?' 🏠':''}</div></div>
-        ${beheerder ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="toggleBeheerderswoning('${naam.replace(/'/g,"\\'")}')">${heeftHuisje?'🏠 Verwijderen':'+ 🏠 Toewijzen'}</button>` : ''}
-        ${beheerder ? `<button class="verwijder-btn" onclick="bewonerVerwijderen('${naam.replace(/'/g,"\\'")}')">✕</button>` : ''}
-      </div>`;
-      }).join('')
-    : '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen bewoners toegevoegd.</p>';
-
-  return `
-    ${beheerder ? `
-      <div class="melding-form" style="margin-top:4px">
-        <label>Naam toevoegen</label>
-        <input type="text" id="bewoner-nieuwe-naam" placeholder="Voornaam">
-        <button class="verstuur-btn" onclick="bewonerToevoegen()">Toevoegen →</button>
-      </div>
-      <p style="font-size:0.75rem;color:var(--subtle);margin:-8px 0 14px">🏠 = beheederswoning-badge, zichtbaar bij het weekrooster en de rotatie.</p>` : `
-      <p style="font-size:0.78rem;color:var(--subtle);font-style:italic;margin-bottom:14px">
-        Alleen de beheerder kan namen toevoegen of verwijderen. Tik op 🔒 Beheerder hierboven om in te loggen.
-      </p>`}
-    <div class="sectie-titel"><span class="live-dot"></span>Huidige bewoners (${bewonersCache.length})</div>
-    <div id="bewoners-lijst" class="melding-lijst" style="gap:8px">${lijstHtml}</div>
-  `;
-}
-
-async function toggleBeheerderswoning(naam) {
-  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
-  const nieuweStatus = !bewonersBeheerSet.has(naam);
-  const {error} = await sb.from('bewoners').update({ beheerderswoning: nieuweStatus }).eq('naam', naam);
-  if (error) { alert('Wijzigen mislukt: ' + error.message); return; }
-  laadBewoners();
-}
-
-function openGP(key) {
-  const custom = gpAangepasteOnderwerpen[key];
-  const data = custom
-    ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: custom.intro || '', footer: '' }
-    : (GP_INHOUD[key] || GP_INHOUD.placeholder);
-  const interactief = EXTRA_CATEGORIEEN.includes(key);
-  let extraHtml = '';
-  if (interactief) {
-    extraHtml = `
-      <div class="sectie-titel"><span class="live-dot"></span>Geplaatst</div>
-      <div id="extra-lijst-${key}" class="melding-lijst"></div>
-      <details style="margin-top:16px">
-        <summary style="font-size:0.85rem;color:#818cf8;cursor:pointer;font-weight:800">+ Nieuw bericht plaatsen</summary>
-        <div class="melding-form" style="margin-top:12px">
-          <label>Jouw naam</label>
-          <select id="extra-naam-${key}">${naamOpties()}</select>
-          <label>Bericht</label>
-          <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
-          ${cameraZoneHTML(key)}
-          <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
-        </div>
-      </details>`;
-  } else if (key === 'instellingen') {
-    extraHtml = renderBewonersModalInhoud();
-  } else if (data.footer) {
-    extraHtml = `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>`;
-  }
+function bewerkExtraItemTekst(id, categorie) {
+  const item = extraItemsCache[id];
+  if (!item) return;
   document.getElementById('gp-modal-inhoud').innerHTML = `
-    <h2>${data.titel}</h2>
-    <p class="gp-modal-intro">${data.intro}</p>
-    ${extraHtml}
+    <h2>✏️ Bericht bewerken</h2>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Tekst</label>
+      <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
+      <button class="verstuur-btn" onclick="bevestigBewerkExtraItem(${id}, '${categorie}')">Opslaan →</button>
+    </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
-  if (interactief) { laadExtraItems(key); luisterExtraLive(key); }
 }
 
-function sluitGPModal() {
-  document.getElementById('gp-overlay').classList.remove('open');
-  if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
-  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  cameraNS = null;
-  EXTRA_CATEGORIEEN.forEach(c => { huidigeFoto[c] = null; huidigeBestandsnaam[c] = null; });
-}
-
-// ── INIT ──
-document.getElementById('melding-camera-plek').innerHTML = cameraZoneHTML('melding');
-vulNaamSelectMelding();
-renderTypeKnoppen();
-renderVandaag();
-renderWeek();
-renderRotatie();
-renderPoll();
-initSupabase();
-</script>
-</body>
-</html>
-
+async function bevestigBewerkExtraItem(id, categorie) {
+  const nieuweTekst = document.getElementById('bewerk-extra-tekst').value.trim();
+  sluitGPModal();
+  if (!supabaseActief) return;
+  const {error} = await sb.from('extra_items').update({ tekst: nieuweTekst }).eq('id', id);
+  if (error) { alert('Opslaan mislukt: ' + error.message); return; }
+  
