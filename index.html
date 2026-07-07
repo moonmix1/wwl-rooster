@@ -838,11 +838,11 @@ function toonRegistratieScherm() {
   document.getElementById('auth-inhoud').innerHTML = `
     <h2>👋 Account aanmaken</h2>
     <p class="gp-modal-intro">
-      Kies je voornaam — <strong>dezelfde naam die iedereen in huis van je gewend is</strong>. Na het aanmaken moet een beheerder je nog goedkeuren voordat je de app kunt gebruiken.
+      Typ je voornaam — <strong>exact dezelfde naam die iedereen in huis van je gewend is</strong>, met dezelfde spelling/hoofdletter als gebruikelijk. Na het aanmaken moet een beheerder je nog goedkeuren voordat je de app kunt gebruiken.
     </p>
     <div class="melding-form" style="margin-top:4px">
       <label>Jouw naam</label>
-      <select id="reg-naam">${naamOpties()}</select>
+      <input type="text" id="reg-naam" placeholder="bijv. Henk">
       <label>E-mailadres</label>
       <input type="email" id="reg-email" placeholder="jouw@email.nl">
       <label>Wachtwoord</label>
@@ -875,12 +875,17 @@ function toonGeweigerdScherm() {
 }
 
 async function registreren() {
-  const naam = document.getElementById('reg-naam').value;
+  const naam = document.getElementById('reg-naam').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const wachtwoord = document.getElementById('reg-wachtwoord').value;
-  if (!naam) { alert('Kies je naam.'); return; }
+  if (!naam) { alert('Vul je naam in.'); return; }
   if (!email) { alert('Vul je e-mailadres in.'); return; }
   if (!wachtwoord || wachtwoord.length < 6) { alert('Wachtwoord moet minimaal 6 tekens zijn.'); return; }
+
+  const { data: naamGeldig, error: naamError } = await sb.rpc('is_geldige_bewonersnaam', { te_checken_naam: naam });
+  if (naamError) { alert('Er ging iets mis bij het controleren van je naam: ' + naamError.message); return; }
+  if (!naamGeldig) { alert('Deze naam staat niet in de bewonerslijst. Check de spelling (hoofdletter, exact zoals gebruikelijk) of vraag de beheerder om je naam eerst toe te voegen.'); return; }
+
   const { data, error } = await sb.auth.signUp({
     email, password: wachtwoord,
     options: { data: { naam } }
