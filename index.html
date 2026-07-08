@@ -970,7 +970,6 @@ function vulAccountMenu() {
   plek.innerHTML = `
     <button id="account-btn" onclick="toggleAccountMenu()">👤 ${naam} ▾</button>
     <div id="account-dropdown">
-      <button onclick="resetMijnNaam()">🔄 Andere naam kiezen</button>
       <button class="uitloggen" onclick="uitloggen()">🚪 Uitloggen</button>
     </div>
   `;
@@ -2306,7 +2305,10 @@ function renderBewonersModalInhoud() {
     </div>` : '';
 
   return `
-    <p style="font-size:0.72rem;color:var(--subtle);margin-bottom:14px">Je account (naam wijzigen, uitloggen) vind je bovenin de app, bij het 👤-knopje.</p>
+    <p style="font-size:0.72rem;color:var(--subtle);margin-bottom:14px">
+      Uitloggen doe je bovenin de app, bij het 👤-knopje.
+      Staat je naam niet meer goed? <a href="#" onclick="resetMijnNaam(); return false;" style="color:#818cf8">Andere naam kiezen</a>.
+    </p>
     ${goedkeuringenHtml}
     ${accountsHtml}
     ${beheerder ? `
