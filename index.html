@@ -814,7 +814,10 @@ async function laadEigenProfiel() {
   }
 }
 
+let appGestart = false;
 function starApp() {
+  if (appGestart) return;
+  appGestart = true;
   verversBeheerderUI();
   laadMeldingen();
   luisterLive();
@@ -1086,9 +1089,10 @@ async function laadMeldingen() {
   if (!error && data) renderMeldingenData(data);
 }
 
+let meldingenChannel = null;
 function luisterLive() {
-  if (!supabaseActief) return;
-  sb.channel('meldingen-live')
+  if (!supabaseActief || meldingenChannel) return;
+  meldingenChannel = sb.channel('meldingen-live')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'meldingen'}, () => {
       laadMeldingen();
     }).subscribe();
@@ -1351,9 +1355,10 @@ async function laadRegelsTekst() {
   }
 }
 
+let paginaTekstChannel = null;
 function luisterRegelsTekstLive() {
-  if (!supabaseActief) return;
-  sb.channel('pagina-tekst-live')
+  if (!supabaseActief || paginaTekstChannel) return;
+  paginaTekstChannel = sb.channel('pagina-tekst-live')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'pagina_tekst'}, () => {
       laadRegelsTekst();
     }).subscribe();
@@ -1720,9 +1725,10 @@ async function laadPoll() {
   }
 }
 
+let pollsChannel = null;
 function luisterPollLive() {
-  if (!supabaseActief) return;
-  sb.channel('polls-live')
+  if (!supabaseActief || pollsChannel) return;
+  pollsChannel = sb.channel('polls-live')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'polls'}, () => {
       laadPoll();
     }).subscribe();
@@ -1905,7 +1911,7 @@ async function laadGPVolgorde() {
 }
 
 function luisterGPVolgordeLive() {
-  if (!supabaseActief) return;
+  if (!supabaseActief || gpVolgordeChannel) return;
   gpVolgordeChannel = sb.channel('gp-volgorde-live')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'gp_volgorde'}, () => {
       laadGPVolgorde();
@@ -2036,9 +2042,10 @@ async function laadGPAangepasteOnderwerpen() {
   if (paneel && paneel.classList.contains('open')) renderGPPaginas();
 }
 
+let gpOnderwerpenChannel = null;
 function luisterGPOnderwerpenLive() {
-  if (!supabaseActief) return;
-  sb.channel('gp-onderwerpen-live')
+  if (!supabaseActief || gpOnderwerpenChannel) return;
+  gpOnderwerpenChannel = sb.channel('gp-onderwerpen-live')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'gp_items_info'}, () => {
       laadGPAangepasteOnderwerpen();
     }).subscribe();
@@ -2116,9 +2123,10 @@ async function laadBewoners() {
   }
 }
 
+let bewonersChannel = null;
 function luisterBewonersLive() {
-  if (!supabaseActief) return;
-  sb.channel('bewoners-live')
+  if (!supabaseActief || bewonersChannel) return;
+  bewonersChannel = sb.channel('bewoners-live')
     .on('postgres_changes', {event:'*', schema:'public', table:'bewoners'}, () => {
       laadBewoners();
     }).subscribe();
