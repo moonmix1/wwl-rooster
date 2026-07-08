@@ -777,16 +777,22 @@ async function checkAuthStatus() {
 }
 
 async function laadEigenProfiel() {
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) { toonAuthScherm('login'); return; }
-  const { data, error } = await sb.from('profielen').select('*').eq('id', user.id).maybeSingle();
-  if (error || !data) { toonAuthScherm('login'); return; }
-  huidigProfiel = data;
-  if (data.geweigerd) { toonAuthScherm('geweigerd'); return; }
-  if (!data.goedgekeurd) { toonAuthScherm('wachten'); return; }
-  document.getElementById('auth-overlay').style.display = 'none';
-  vulJouwNaamWeergaven();
-  starApp();
+  try {
+    const { data: { user }, error: userError } = await sb.auth.getUser();
+    if (userError) { alert('DIAGNOSE — fout bij ophalen gebruiker: ' + userError.message); toonAuthScherm('login'); return; }
+    if (!user) { alert('DIAGNOSE — geen gebruiker gevonden na inloggen.'); toonAuthScherm('login'); return; }
+    const { data, error } = await sb.from('profielen').select('*').eq('id', user.id).maybeSingle();
+    if (error) { alert('DIAGNOSE — fout bij ophalen profiel: ' + error.message); toonAuthScherm('login'); return; }
+    if (!data) { alert('DIAGNOSE — geen profiel gevonden voor jouw account (id: ' + user.id + ').'); toonAuthScherm('login'); return; }
+    huidigProfiel = data;
+    if (data.geweigerd) { toonAuthScherm('geweigerd'); return; }
+    if (!data.goedgekeurd) { toonAuthScherm('wachten'); return; }
+    document.getElementById('auth-overlay').style.display = 'none';
+    vulJouwNaamWeergaven();
+    starApp();
+  } catch (e) {
+    alert('DIAGNOSE — onverwachte fout: ' + e.message);
+  }
 }
 
 function starApp() {
@@ -903,9 +909,13 @@ async function inloggen() {
   const email = document.getElementById('login-email').value.trim();
   const wachtwoord = document.getElementById('login-wachtwoord').value;
   if (!email || !wachtwoord) { alert('Vul e-mailadres en wachtwoord in.'); return; }
-  const { error } = await sb.auth.signInWithPassword({ email, password: wachtwoord });
-  if (error) { alert('Inloggen mislukt: ' + error.message); return; }
-  await laadEigenProfiel();
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email, password: wachtwoord });
+    if (error) { alert('Inloggen mislukt: ' + error.message); return; }
+    await laadEigenProfiel();
+  } catch (e) {
+    alert('DIAGNOSE — onverwachte fout bij inloggen: ' + e.message);
+  }
 }
 
 async function wachtwoordVergeten() {
