@@ -299,6 +299,24 @@
     cursor: pointer; transition: all 0.15s;
   }
   #gp-nieuw-btn:hover { background: #052e16; }
+  #account-btn {
+    background: var(--surface2); border: 1.5px solid var(--border); color: var(--text);
+    border-radius: 99px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+  }
+  #account-btn:hover { border-color: var(--bank); }
+  #account-dropdown {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0;
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 8px; min-width: 190px; z-index: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  #account-dropdown.open { display: block; }
+  #account-dropdown button {
+    width: 100%; text-align: left; background: none; border: none; color: var(--text);
+    padding: 9px 10px; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+  }
+  #account-dropdown button:hover { background: var(--surface2); }
+  #account-dropdown button.uitloggen { color: var(--warn); }
   #gp-beheer-btn {
     background: #1e293b; border: 1.5px solid var(--border); color: var(--muted);
     border-radius: 8px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
@@ -360,6 +378,7 @@
 <div class="header">
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
   <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd <span id="goedkeuring-teller" style="display:none;background:var(--warn);color:white;border-radius:99px;padding:1px 6px;font-size:0.65rem;margin-left:4px"></span></button>
+  <div id="account-menu-plek" style="position:relative"></div>
   <div><div id="klok">--:--</div><div id="datum"></div></div>
 </div>
 
@@ -934,12 +953,39 @@ async function uitloggen() {
 
 function vulJouwNaamWeergaven() {
   const el = document.getElementById('melding-naam-weergave');
-  if (!el) return;
   const naam = mijnNaam();
-  el.innerHTML = naam
-    ? `<label>Jij plaatst als</label><div style="font-weight:800;color:white;font-size:1rem;margin-bottom:16px">${naam}</div>`
-    : '';
+  if (el) {
+    el.innerHTML = naam
+      ? `<label>Jij plaatst als</label><div style="font-weight:800;color:white;font-size:1rem;margin-bottom:16px">${naam}</div>`
+      : '';
+  }
+  vulAccountMenu();
 }
+
+function vulAccountMenu() {
+  const plek = document.getElementById('account-menu-plek');
+  if (!plek) return;
+  const naam = mijnNaam();
+  if (!naam) { plek.innerHTML = ''; return; }
+  plek.innerHTML = `
+    <button id="account-btn" onclick="toggleAccountMenu()">👤 ${naam} ▾</button>
+    <div id="account-dropdown">
+      <button onclick="resetMijnNaam()">🔄 Andere naam kiezen</button>
+      <button class="uitloggen" onclick="uitloggen()">🚪 Uitloggen</button>
+    </div>
+  `;
+}
+
+function toggleAccountMenu() {
+  document.getElementById('account-dropdown')?.classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const plek = document.getElementById('account-menu-plek');
+  if (plek && !plek.contains(e.target)) {
+    document.getElementById('account-dropdown')?.classList.remove('open');
+  }
+});
 
 function resetMijnNaam() {
   if (!confirm('Weet je zeker dat je een andere naam wilt kiezen?')) return;
@@ -2260,11 +2306,7 @@ function renderBewonersModalInhoud() {
     </div>` : '';
 
   return `
-    <div class="rust-box" style="margin-bottom:16px;font-size:0.85rem">
-      Jij plaatst berichten als: <strong style="color:white">${mijnNaam() || '(nog niet ingesteld)'}</strong><br>
-      <button class="poll-sluit-btn" style="margin-top:10px" onclick="resetMijnNaam()">🔄 Andere naam kiezen</button>
-      <button class="poll-sluit-btn" style="margin-top:8px" onclick="uitloggen()">🚪 Uitloggen</button>
-    </div>
+    <p style="font-size:0.72rem;color:var(--subtle);margin-bottom:14px">Je account (naam wijzigen, uitloggen) vind je bovenin de app, bij het 👤-knopje.</p>
     ${goedkeuringenHtml}
     ${accountsHtml}
     ${beheerder ? `
