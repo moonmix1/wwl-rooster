@@ -163,7 +163,9 @@
   .melding-foto-thumb { width: 110px; height: 80px; object-fit: cover;
     border-radius: 10px; border: 1px solid var(--border); display: block; transition: opacity 0.15s; }
   .melding-foto-thumb:hover { opacity: 0.8; }
+  .melding-foto-klein { filter: blur(2px) saturate(0.85); opacity: 0.75; }
   .foto-hint { font-size: 0.6rem; color: var(--subtle); margin-top: 3px; }
+  .foto-hint.laden { color: #fbbf24; }
   .camera-zone { background: var(--surface2); border: 1px dashed var(--border);
     border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 14px; }
   .camera-zone video { width: 100%; border-radius: 8px; display: none; max-height: 220px; object-fit: cover; }
@@ -1060,6 +1062,7 @@ async function intrekkenToegang(id, naam) {
 }
 
 let huidigeFoto  = {};
+let huidigeFotoKlein = {};
 let huidigeBestandsnaam = {};
 let cameraStream = null;
 let cameraNS     = null;
@@ -1084,9 +1087,25 @@ async function laadMeldingen() {
     const el = document.getElementById(id);
     if (el && !el.innerHTML.trim()) el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
   });
+  // Fase 1: snel — tekst en piepklein miniatuurtje, geen zware volledige foto's
   const {data, error} = await sb.from('meldingen')
-    .select('*').order('created_at', {ascending: false}).limit(20);
-  if (!error && data) renderMeldingenData(data);
+    .select('id, naam, type, label, bericht, bestandsnaam, foto_klein, kleur, bg, tijd, created_at')
+    .order('created_at', {ascending: false}).limit(20);
+  if (error || !data) return;
+  renderMeldingenData(data);
+
+  // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
+  const idsMetMedia = data.filter(m => m.foto_klein || m.bestandsnaam).map(m => m.id);
+  if (idsMetMedia.length) {
+    const {data: fotoData} = await sb.from('meldingen').select('id, foto').in('id', idsMetMedia);
+    (fotoData || []).forEach(rij => {
+      if (!rij.foto) return;
+      if (meldingenCache[rij.id]) meldingenCache[rij.id].foto = rij.foto;
+      document.querySelectorAll('#melding-media-' + rij.id).forEach(plek => {
+        plek.innerHTML = meldingMediaVolledig(meldingenCache[rij.id]);
+      });
+    });
+  }
 }
 
 let meldingenChannel = null;
@@ -1460,10 +1479,20 @@ function stopCamera(ns) {
   cameraNS = null;
 }
 
+function maakThumbnail(bronCanvas) {
+  const THUMB_BREEDTE = 90;
+  const schaal = THUMB_BREEDTE / bronCanvas.width;
+  const thumbCanvas = document.createElement('canvas');
+  thumbCanvas.width = THUMB_BREEDTE;
+  thumbCanvas.height = Math.max(1, Math.round(bronCanvas.height * schaal));
+  thumbCanvas.getContext('2d').drawImage(bronCanvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+  return thumbCanvas.toDataURL('image/jpeg', 0.35);
+}
+
 function fotoNemen(ns) {
   const video  = document.getElementById(idFor(ns,'cam-video'));
   const canvas = document.getElementById(idFor(ns,'cam-canvas'));
-  const MAX_BREEDTE = 1280;
+  const MAX_BREEDTE = 900;
   let breedte = video.videoWidth;
   let hoogte  = video.videoHeight;
   if (breedte > MAX_BREEDTE) {
@@ -1473,7 +1502,8 @@ function fotoNemen(ns) {
   canvas.width  = breedte;
   canvas.height = hoogte;
   canvas.getContext('2d').drawImage(video, 0, 0, breedte, hoogte);
-  huidigeFoto[ns] = canvas.toDataURL('image/jpeg', 0.75);
+  huidigeFoto[ns] = canvas.toDataURL('image/jpeg', 0.60);
+  huidigeFotoKlein[ns] = maakThumbnail(canvas);
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   cameraNS = null;
   document.getElementById(idFor(ns,'cam-video')).style.display        = 'none';
@@ -1487,7 +1517,7 @@ function fotoNemen(ns) {
 }
 
 function comprimeerAfbeelding(file, callback) {
-  const MAX_BREEDTE = 1280;
+  const MAX_BREEDTE = 900;
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new Image();
@@ -1500,9 +1530,9 @@ function comprimeerAfbeelding(file, callback) {
       const canvas = document.createElement('canvas');
       canvas.width = breedte; canvas.height = hoogte;
       canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
-      callback(canvas.toDataURL('image/jpeg', 0.75));
+      callback(canvas.toDataURL('image/jpeg', 0.60), maakThumbnail(canvas));
     };
-    img.onerror = () => callback(ev.target.result); // lukt comprimeren niet, gebruik origineel
+    img.onerror = () => callback(ev.target.result, null); // lukt comprimeren niet, gebruik origineel
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
@@ -1534,8 +1564,9 @@ function fotoUitBestand(e, ns) {
   }
   huidigeBestandsnaam[ns] = file.name;
   if (file.type.startsWith('image/')) {
-    comprimeerAfbeelding(file, (dataUrl) => {
+    comprimeerAfbeelding(file, (dataUrl, thumbnail) => {
       huidigeFoto[ns] = dataUrl;
+      huidigeFotoKlein[ns] = thumbnail;
       toonBestandPreview(ns, true, file.name);
     });
   } else {
@@ -1555,6 +1586,7 @@ function fotoBevestigen(ns) {
 
 function fotoOpnieuw(ns) {
   huidigeFoto[ns] = null;
+  huidigeFotoKlein[ns] = null;
   huidigeBestandsnaam[ns] = null;
   const fileInput = document.getElementById(idFor(ns,'foto-file'));
   if (fileInput) fileInput.value = '';
@@ -1591,6 +1623,7 @@ async function verstuurMelding() {
       naam, type: gekozenType, label: t.label,
       bericht: bericht || null,
       foto: huidigeFoto['melding'] || null,
+      foto_klein: huidigeFotoKlein['melding'] || null,
       bestandsnaam: huidigeBestandsnaam['melding'] || null,
       kleur: t.kleur, bg: t.bg,
       tijd: new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})
@@ -1619,22 +1652,38 @@ function tijdWeergave(momentString, reserveTekst) {
   return reserveTekst || '';
 }
 
-function meldingHTML(m) {
-  const isAfbeelding = m.foto && m.foto.startsWith('data:image/');
-  let fotoBlok = '';
-  if (m.foto && isAfbeelding) {
-    fotoBlok = `
-    <div class="melding-foto-wrap" onclick="openLightbox(this)">
+function meldingMediaPlaatshouder(m) {
+  if (m.foto_klein) {
+    return `<div class="melding-foto-wrap">
+      <img class="melding-foto-thumb melding-foto-klein" src="${m.foto_klein}" alt="foto" />
+      <div class="foto-hint laden">⏳ Foto verscherpen…</div>
+    </div>`;
+  }
+  if (m.bestandsnaam) {
+    return `<div style="display:inline-flex;align-items:center;gap:8px;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px;opacity:0.6">
+      <span style="font-size:1.3rem">📄</span>
+      <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam} — ⏳ laden…</span>
+    </div>`;
+  }
+  return '';
+}
+
+function meldingMediaVolledig(m) {
+  if (!m.foto) return '';
+  const isAfbeelding = m.foto.startsWith('data:image/');
+  if (isAfbeelding) {
+    return `<div class="melding-foto-wrap" onclick="openLightbox(this)">
       <img class="melding-foto-thumb" src="${m.foto}" alt="foto" />
       <div class="foto-hint">🔍 Tik om te vergroten</div>
     </div>`;
-  } else if (m.foto) {
-    fotoBlok = `
-    <a href="${m.foto}" download="${m.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
-      <span style="font-size:1.3rem">📄</span>
-      <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam || 'Document'} — tik om te downloaden</span>
-    </a>`;
   }
+  return `<a href="${m.foto}" download="${m.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
+    <span style="font-size:1.3rem">📄</span>
+    <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam || 'Document'} — tik om te downloaden</span>
+  </a>`;
+}
+
+function meldingHTML(m) {
   const magBewerken = m.naam === mijnNaam();
   const magVerwijderen = magBewerken || gpBeheerActief();
   return `<div class="melding-item">
@@ -1645,7 +1694,7 @@ function meldingHTML(m) {
       ${magVerwijderen ? `<button class="verwijder-btn" onclick="verwijderMelding(${m.id})">✕</button>` : ''}
     </div>
     <div class="melding-naam">${m.naam}</div>
-    ${fotoBlok}
+    <div id="melding-media-${m.id}">${meldingMediaPlaatshouder(m)}</div>
     ${m.bericht?`<div class="melding-tekst">${m.bericht}</div>`:''}
   </div>`;
 }
@@ -2191,34 +2240,41 @@ async function bevestigBewerkExtraItem(id, categorie) {
   laadExtraItems(categorie);
 }
 
-async function laadExtraItems(categorie) {
-  const el = document.getElementById('extra-lijst-' + categorie);
-  if (!el) return;
-  el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
-  if (!supabaseActief) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Supabase niet actief.</p>'; return; }
-  const {data, error} = await sb.from('extra_items')
-    .select('*').eq('categorie', categorie).order('created_at', {ascending:false}).limit(50);
-  if (error) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--warn)">Fout bij laden: ' + error.message + '</p>'; return; }
-  (data || []).forEach(item => { extraItemsCache[item.id] = item; });
-  el.innerHTML = (data && data.length) ? data.map(item => {
-    const isAfbeelding = item.foto && item.foto.startsWith('data:image/');
-    let fotoBlok = '';
-    if (item.foto && isAfbeelding) {
-      fotoBlok = `
-      <div class="melding-foto-wrap" onclick="openLightbox(this)">
-        <img class="melding-foto-thumb" src="${item.foto}" alt="foto" />
-        <div class="foto-hint">🔍 Tik om te vergroten</div>
-      </div>`;
-    } else if (item.foto) {
-      fotoBlok = `
-      <a href="${item.foto}" download="${item.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
-        <span style="font-size:1.3rem">📄</span>
-        <span style="font-size:0.78rem;color:var(--text)">${item.bestandsnaam || 'Document'} — tik om te downloaden</span>
-      </a>`;
-    }
-    const magBewerken = item.naam === mijnNaam();
-    const magVerwijderen = magBewerken || gpBeheerActief();
-    return `
+function extraMediaPlaatshouder(item) {
+  if (item.foto_klein) {
+    return `<div class="melding-foto-wrap">
+      <img class="melding-foto-thumb melding-foto-klein" src="${item.foto_klein}" alt="foto" />
+      <div class="foto-hint laden">⏳ Foto verscherpen…</div>
+    </div>`;
+  }
+  if (item.bestandsnaam) {
+    return `<div style="display:inline-flex;align-items:center;gap:8px;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px;opacity:0.6">
+      <span style="font-size:1.3rem">📄</span>
+      <span style="font-size:0.78rem;color:var(--text)">${item.bestandsnaam} — ⏳ laden…</span>
+    </div>`;
+  }
+  return '';
+}
+
+function extraMediaVolledig(item) {
+  if (!item.foto) return '';
+  const isAfbeelding = item.foto.startsWith('data:image/');
+  if (isAfbeelding) {
+    return `<div class="melding-foto-wrap" onclick="openLightbox(this)">
+      <img class="melding-foto-thumb" src="${item.foto}" alt="foto" />
+      <div class="foto-hint">🔍 Tik om te vergroten</div>
+    </div>`;
+  }
+  return `<a href="${item.foto}" download="${item.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
+    <span style="font-size:1.3rem">📄</span>
+    <span style="font-size:0.78rem;color:var(--text)">${item.bestandsnaam || 'Document'} — tik om te downloaden</span>
+  </a>`;
+}
+
+function extraItemKaartHTML(item, categorie) {
+  const magBewerken = item.naam === mijnNaam();
+  const magVerwijderen = magBewerken || gpBeheerActief();
+  return `
     <div class="melding-item">
       <div class="melding-item-top">
         <span class="melding-tijd">${tijdWeergave(item.created_at)}</span>
@@ -2226,10 +2282,37 @@ async function laadExtraItems(categorie) {
         ${magVerwijderen ? `<button class="verwijder-btn" onclick="verwijderExtraItem(${item.id}, '${categorie}')">✕</button>` : ''}
       </div>
       <div class="melding-naam">${item.naam}</div>
-      ${fotoBlok}
+      <div id="extra-media-${item.id}">${extraMediaPlaatshouder(item)}</div>
       ${item.tekst?`<div class="melding-tekst">${item.tekst}</div>`:''}
     </div>`;
-  }).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
+}
+
+async function laadExtraItems(categorie) {
+  const el = document.getElementById('extra-lijst-' + categorie);
+  if (!el) return;
+  el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
+  if (!supabaseActief) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Supabase niet actief.</p>'; return; }
+
+  // Fase 1: snel — alleen tekst en piepklein miniatuurtje, geen zware volledige foto's
+  const {data, error} = await sb.from('extra_items')
+    .select('id, naam, tekst, bestandsnaam, foto_klein, created_at')
+    .eq('categorie', categorie).order('created_at', {ascending:false}).limit(50);
+  if (error) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--warn)">Fout bij laden: ' + error.message + '</p>'; return; }
+
+  (data || []).forEach(item => { extraItemsCache[item.id] = { ...(extraItemsCache[item.id]||{}), ...item }; });
+  el.innerHTML = (data && data.length) ? data.map(item => extraItemKaartHTML(item, categorie)).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
+
+  // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
+  const idsMetMedia = (data || []).filter(item => item.foto_klein || item.bestandsnaam).map(item => item.id);
+  if (idsMetMedia.length) {
+    const {data: fotoData} = await sb.from('extra_items').select('id, foto').in('id', idsMetMedia);
+    (fotoData || []).forEach(rij => {
+      if (!rij.foto) return;
+      if (extraItemsCache[rij.id]) extraItemsCache[rij.id].foto = rij.foto;
+      const plek = document.getElementById('extra-media-' + rij.id);
+      if (plek) plek.innerHTML = extraMediaVolledig(extraItemsCache[rij.id]);
+    });
+  }
 }
 
 async function voegExtraItemToe(categorie) {
@@ -2237,11 +2320,12 @@ async function voegExtraItemToe(categorie) {
   const naam  = mijnNaam();
   const tekst = tekstEl.value.trim();
   const foto  = huidigeFoto[categorie] || null;
+  const fotoKlein = huidigeFotoKlein[categorie] || null;
   const bestandsnaam = huidigeBestandsnaam[categorie] || null;
   if (!naam)  { toonAuthScherm('login'); return; }
   if (!tekst && !foto) { alert('Vul een bericht of bestand in.'); return; }
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
-  const {error} = await sb.from('extra_items').insert([{ categorie, naam, tekst: tekst || '', foto, bestandsnaam }]);
+  const {error} = await sb.from('extra_items').insert([{ categorie, naam, tekst: tekst || '', foto, foto_klein: fotoKlein, bestandsnaam }]);
   if (error) { alert('Fout bij plaatsen: ' + error.message); return; }
   tekstEl.value = '';
   fotoOpnieuw(categorie);
@@ -2261,6 +2345,58 @@ function luisterExtraLive(categorie) {
     .on('postgres_changes', {event:'*', schema:'public', table:'extra_items', filter:`categorie=eq.${categorie}`}, () => {
       laadExtraItems(categorie);
     }).subscribe();
+}
+
+// ── ONDERHOUD: oude, grote foto's met terugwerkende kracht verkleinen ──
+function herComprimeerFoto(dataUrl) {
+  return new Promise((resolve, reject) => {
+    if (!dataUrl || !dataUrl.startsWith('data:image/')) { reject(new Error('Geen afbeelding')); return; }
+    const img = new Image();
+    img.onload = () => {
+      const MAX_BREEDTE = 900;
+      let breedte = img.width, hoogte = img.height;
+      if (breedte > MAX_BREEDTE) {
+        hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
+        breedte = MAX_BREEDTE;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = breedte; canvas.height = hoogte;
+      canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
+      resolve({ nieuweFoto: canvas.toDataURL('image/jpeg', 0.60), nieuweThumb: maakThumbnail(canvas) });
+    };
+    img.onerror = () => reject(new Error('Kon afbeelding niet laden'));
+    img.src = dataUrl;
+  });
+}
+
+async function verkleinOudeFotos() {
+  if (!confirm('Dit doorloopt alle bestaande berichten en verkleint grote foto\'s naar het nieuwe, kleinere formaat. Dit kan enkele minuten duren. Doorgaan?')) return;
+  const voortgang = document.getElementById('onderhoud-voortgang');
+  const zet = (tekst) => { if (voortgang) voortgang.textContent = tekst; };
+  zet('⏳ Bezig met ophalen van alle berichten met foto\'s…');
+
+  let verwerkt = 0, overgeslagen = 0, mislukt = 0;
+  const DREMPEL = 130000; // ruwweg ~95KB — kleiner dan dit slaan we over, dat staat al op het nieuwe formaat
+
+  for (const tabel of ['meldingen', 'extra_items']) {
+    const {data, error} = await sb.from(tabel).select('id, foto, foto_klein').not('foto', 'is', null);
+    if (error || !data) continue;
+    for (let i = 0; i < data.length; i++) {
+      const rij = data[i];
+      if (!rij.foto || rij.foto.length < DREMPEL) { overgeslagen++; continue; }
+      zet(`⏳ Bezig: bericht ${i+1} van ${data.length} (${tabel === 'meldingen' ? 'Meldingen' : 'Onderwerpen'})… — ${verwerkt} verkleind`);
+      try {
+        const {nieuweFoto, nieuweThumb} = await herComprimeerFoto(rij.foto);
+        const updateData = { foto: nieuweFoto };
+        if (!rij.foto_klein) updateData.foto_klein = nieuweThumb;
+        const {error: updateError} = await sb.from(tabel).update(updateData).eq('id', rij.id);
+        if (updateError) { mislukt++; } else { verwerkt++; }
+      } catch (e) {
+        mislukt++;
+      }
+    }
+  }
+  zet(`✅ Klaar! ${verwerkt} foto's verkleind, ${overgeslagen} al klein genoeg, ${mislukt} mislukt.`);
 }
 
 function renderBewonersModalInhoud() {
@@ -2329,6 +2465,13 @@ function renderBewonersModalInhoud() {
       <p style="font-size:0.78rem;color:var(--subtle);font-style:italic;margin-bottom:14px">
         Alleen de beheerder kan namen toevoegen of verwijderen. Tik op 🔒 Beheerder hierboven om in te loggen.
       </p>`}
+    ${beheerder ? `
+      <div class="rust-box" style="margin-bottom:16px">
+        <strong>🗜️ Onderhoud: oude foto's verkleinen</strong><br>
+        <span style="font-size:0.78rem;color:var(--subtle)">Foto's geplaatst vóór de recente update staan nog op hun oude, grotere formaat. Dit knopje verkleint ze allemaal in één keer, zonder de foto's zelf te veranderen — alleen het bestandsformaat.</span>
+        <button class="cam-btn cam-btn-primary" style="margin-top:10px" onclick="verkleinOudeFotos()">Oude foto's verkleinen</button>
+        <div id="onderhoud-voortgang" style="font-size:0.78rem;color:var(--muted);margin-top:8px"></div>
+      </div>` : ''}
     <div class="sectie-titel"><span class="live-dot"></span>Bewonerslijst voor keuzemenu's (${bewonersCache.length})</div>
     <div id="bewoners-lijst" class="melding-lijst" style="gap:8px">${lijstHtml}</div>
   `;
@@ -2385,7 +2528,7 @@ function sluitGPModal() {
   if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   cameraNS = null;
-  EXTRA_CATEGORIEEN.forEach(c => { huidigeFoto[c] = null; huidigeBestandsnaam[c] = null; });
+  EXTRA_CATEGORIEEN.forEach(c => { huidigeFoto[c] = null; huidigeFotoKlein[c] = null; huidigeBestandsnaam[c] = null; });
 }
 
 // ── INIT ──
