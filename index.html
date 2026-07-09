@@ -331,6 +331,20 @@
     font-size: 0.85rem; font-weight: 800; cursor: pointer;
   }
   .gp-beheer-rij { max-width: 900px; margin: 0 auto 12px; padding: 0 16px; display: flex; justify-content: flex-end; gap: 8px; }
+
+  .deel-icoon-rij { display: flex; gap: 10px; margin-bottom: 14px; }
+  .deel-icoon {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 14px 6px; border-radius: 12px; text-decoration: none; cursor: pointer;
+    border: none; font-size: 0.72rem; font-weight: 700;
+  }
+  .deel-icoon-symbool { font-size: 1.7rem; }
+  .deel-icoon-wa { background: #075e54; color: #d4f8d4; }
+  .deel-icoon-wa:hover { background: #128C7E; }
+  .deel-icoon-fb { background: #1877F2; color: white; }
+  .deel-icoon-fb:hover { background: #3b8bff; }
+  .deel-icoon-meer { background: var(--surface2); color: var(--text); }
+  .deel-icoon-meer:hover { border-color: var(--bank); color: var(--bank); }
   #gp-nieuw-btn {
     background: #1e293b; border: 1.5px solid #4ade80; color: #4ade80;
     border-radius: 8px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
@@ -422,7 +436,7 @@
 
 <div id="geavanceerd-paneel">
   <div class="gp-deel-rij">
-    <button id="gp-deel-btn" onclick="toonDeelScherm()">📱 App delen (QR-code)</button>
+    <button id="gp-deel-btn" onclick="toonDeelScherm()">📱 App delen</button>
   </div>
   <div class="gp-beheer-rij">
     <button id="gp-nieuw-btn" style="display:none" onclick="toonNieuwOnderwerpForm()">➕ Nieuw onderwerp</button>
@@ -1945,17 +1959,29 @@ const APP_URL = 'https://moonmix1.github.io/wwl-rooster/';
 
 function toonDeelScherm() {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(APP_URL)}`;
+  const tekst = 'Bekijk het rooster en de meldingen van WWL:';
+  const waLink = `https://wa.me/?text=${encodeURIComponent(tekst + ' ' + APP_URL)}`;
+  const fbLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_URL)}`;
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>📱 App delen</h2>
-    <p class="gp-modal-intro">Laat iemand deze QR-code scannen met de camera van zijn telefoon om direct naar de app te gaan.</p>
-    <div style="text-align:center;margin:16px 0">
+    <p class="gp-modal-intro">Stuur de link door, of laat iemand naast je de QR-code scannen.</p>
+    <div class="deel-icoon-rij">
+      <a class="deel-icoon deel-icoon-wa" href="${waLink}" target="_blank" rel="noopener">
+        <span class="deel-icoon-symbool">💬</span><span>WhatsApp</span>
+      </a>
+      <a class="deel-icoon deel-icoon-fb" href="${fbLink}" target="_blank" rel="noopener">
+        <span class="deel-icoon-symbool">📘</span><span>Facebook</span>
+      </a>
+      ${navigator.share ? `<button type="button" class="deel-icoon deel-icoon-meer" onclick="deelViaNative()">
+        <span class="deel-icoon-symbool">⋯</span><span>Meer</span>
+      </button>` : ''}
+    </div>
+    <button class="cam-btn cam-btn-primary" style="width:100%;margin-bottom:16px" onclick="deelLinkKopieren()">📋 Link kopiëren</button>
+    <p style="font-size:0.75rem;color:var(--subtle);text-align:center;margin-bottom:8px">— of laat iemand deze code scannen —</p>
+    <div style="text-align:center;margin:8px 0">
       <img src="${qrUrl}" alt="QR-code naar de app" style="border-radius:12px;background:white;padding:12px" />
     </div>
-    <p style="font-size:0.8rem;color:var(--muted);text-align:center;word-break:break-all;margin-bottom:16px">${APP_URL}</p>
-    <div style="display:flex;gap:8px">
-      <button class="cam-btn cam-btn-primary" style="flex:1" onclick="deelLinkKopieren()">📋 Link kopiëren</button>
-      ${navigator.share ? `<button class="cam-btn cam-btn-primary" style="flex:1" onclick="deelViaNative()">📤 Delen</button>` : ''}
-    </div>
+    <p style="font-size:0.8rem;color:var(--muted);text-align:center;word-break:break-all">${APP_URL}</p>
   `;
   document.getElementById('gp-overlay').classList.add('open');
 }
