@@ -429,7 +429,7 @@
     <div class="sectie-titel" id="vandaag-label">Diensten vandaag</div>
     <div class="kaart-grid" id="vandaag-kaarten"></div>
     <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen (live)</div>
-    <div id="vandaag-meldingen" class="melding-lijst"></div>
+    <div id="vandaag-meldingen" class="melding-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p></div>
     <div class="rust-box" style="margin-top:14px">
       🌙 <strong>Rustperiode 22:00–10:00</strong> — geen diensten, omdat rust, respect en fatsoen vanzelfsprekend zijn in een groep van twintig mensen die elkaar kennen.
     </div>
@@ -564,7 +564,7 @@
       <a class="wa-btn" href="#" onclick="return waSturen()">📲 Sturen via WhatsApp</a>
     </div>
     <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen</div>
-    <div id="mel-lijst" class="melding-lijst"></div>
+    <div id="mel-lijst" class="melding-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p></div>
   </div>
 
 </div>
@@ -1095,9 +1095,9 @@ async function laadMeldingen() {
   renderMeldingenData(data);
 
   // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
-  const idsMetMedia = data.filter(m => m.foto_klein || m.bestandsnaam).map(m => m.id);
-  if (idsMetMedia.length) {
-    const {data: fotoData} = await sb.from('meldingen').select('id, foto').in('id', idsMetMedia);
+  const alleIds = data.map(m => m.id);
+  if (alleIds.length) {
+    const {data: fotoData} = await sb.from('meldingen').select('id, foto').in('id', alleIds).not('foto', 'is', null);
     (fotoData || []).forEach(rij => {
       if (!rij.foto) return;
       if (meldingenCache[rij.id]) meldingenCache[rij.id].foto = rij.foto;
@@ -1704,22 +1704,36 @@ let meldingenCache = {};
 function bewerkMeldingTekst(id) {
   const m = meldingenCache[id];
   if (!m) return;
+  const ns = 'bewerk-melding-' + id;
+  const huidigeFotoWeergave = (m.foto_klein || m.foto)
+    ? `<label>Huidige foto</label><img src="${m.foto_klein || m.foto}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;margin-bottom:12px" />`
+    : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ Bericht bewerken</h2>
     <div class="melding-form" style="margin-top:4px">
       <label>Tekst</label>
       <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
-      <button class="verstuur-btn" onclick="bevestigBewerkMelding(${id})">Opslaan →</button>
+      ${huidigeFotoWeergave}
+      ${cameraZoneHTML(ns)}
+      <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Kies alleen een nieuw bestand als je de foto wilt vervangen — anders blijft de huidige foto staan.</p>
+      <button class="verstuur-btn" onclick="bevestigBewerkMelding(${id}, '${ns}')">Opslaan →</button>
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
 }
 
-async function bevestigBewerkMelding(id) {
+async function bevestigBewerkMelding(id, ns) {
   const nieuweTekst = document.getElementById('bewerk-melding-tekst').value.trim();
+  const updateData = { bericht: nieuweTekst || null };
+  if (huidigeFoto[ns]) {
+    updateData.foto = huidigeFoto[ns];
+    updateData.foto_klein = huidigeFotoKlein[ns] || null;
+    updateData.bestandsnaam = huidigeBestandsnaam[ns] || null;
+  }
+  huidigeFoto[ns] = null; huidigeFotoKlein[ns] = null; huidigeBestandsnaam[ns] = null;
   sluitGPModal();
   if (!supabaseActief) return;
-  const {error} = await sb.from('meldingen').update({ bericht: nieuweTekst || null }).eq('id', id);
+  const {error} = await sb.from('meldingen').update(updateData).eq('id', id);
   if (error) { alert('Opslaan mislukt: ' + error.message); return; }
   laadMeldingen();
 }
@@ -2220,22 +2234,36 @@ let extraItemsCache = {};
 function bewerkExtraItemTekst(id, categorie) {
   const item = extraItemsCache[id];
   if (!item) return;
+  const ns = 'bewerk-extra-' + id;
+  const huidigeFotoWeergave = (item.foto_klein || item.foto)
+    ? `<label>Huidige foto</label><img src="${item.foto_klein || item.foto}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;margin-bottom:12px" />`
+    : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ Bericht bewerken</h2>
     <div class="melding-form" style="margin-top:4px">
       <label>Tekst</label>
       <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
-      <button class="verstuur-btn" onclick="bevestigBewerkExtraItem(${id}, '${categorie}')">Opslaan →</button>
+      ${huidigeFotoWeergave}
+      ${cameraZoneHTML(ns)}
+      <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Kies alleen een nieuw bestand als je de foto wilt vervangen — anders blijft de huidige foto staan.</p>
+      <button class="verstuur-btn" onclick="bevestigBewerkExtraItem(${id}, '${categorie}', '${ns}')">Opslaan →</button>
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
 }
 
-async function bevestigBewerkExtraItem(id, categorie) {
+async function bevestigBewerkExtraItem(id, categorie, ns) {
   const nieuweTekst = document.getElementById('bewerk-extra-tekst').value.trim();
+  const updateData = { tekst: nieuweTekst };
+  if (huidigeFoto[ns]) {
+    updateData.foto = huidigeFoto[ns];
+    updateData.foto_klein = huidigeFotoKlein[ns] || null;
+    updateData.bestandsnaam = huidigeBestandsnaam[ns] || null;
+  }
+  huidigeFoto[ns] = null; huidigeFotoKlein[ns] = null; huidigeBestandsnaam[ns] = null;
   sluitGPModal();
   if (!supabaseActief) return;
-  const {error} = await sb.from('extra_items').update({ tekst: nieuweTekst }).eq('id', id);
+  const {error} = await sb.from('extra_items').update(updateData).eq('id', id);
   if (error) { alert('Opslaan mislukt: ' + error.message); return; }
   laadExtraItems(categorie);
 }
@@ -2303,9 +2331,9 @@ async function laadExtraItems(categorie) {
   el.innerHTML = (data && data.length) ? data.map(item => extraItemKaartHTML(item, categorie)).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
 
   // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
-  const idsMetMedia = (data || []).filter(item => item.foto_klein || item.bestandsnaam).map(item => item.id);
-  if (idsMetMedia.length) {
-    const {data: fotoData} = await sb.from('extra_items').select('id, foto').in('id', idsMetMedia);
+  const alleIds = (data || []).map(item => item.id);
+  if (alleIds.length) {
+    const {data: fotoData} = await sb.from('extra_items').select('id, foto').in('id', alleIds).not('foto', 'is', null);
     (fotoData || []).forEach(rij => {
       if (!rij.foto) return;
       if (extraItemsCache[rij.id]) extraItemsCache[rij.id].foto = rij.foto;
@@ -2383,12 +2411,16 @@ async function verkleinOudeFotos() {
     if (error || !data) continue;
     for (let i = 0; i < data.length; i++) {
       const rij = data[i];
-      if (!rij.foto || rij.foto.length < DREMPEL) { overgeslagen++; continue; }
-      zet(`⏳ Bezig: bericht ${i+1} van ${data.length} (${tabel === 'meldingen' ? 'Meldingen' : 'Onderwerpen'})… — ${verwerkt} verkleind`);
+      if (!rij.foto) { overgeslagen++; continue; }
+      const teGroot = rij.foto.length >= DREMPEL;
+      const mistThumb = !rij.foto_klein;
+      if (!teGroot && !mistThumb) { overgeslagen++; continue; }
+      zet(`⏳ Bezig: bericht ${i+1} van ${data.length} (${tabel === 'meldingen' ? 'Meldingen' : 'Onderwerpen'})… — ${verwerkt} verwerkt`);
       try {
         const {nieuweFoto, nieuweThumb} = await herComprimeerFoto(rij.foto);
-        const updateData = { foto: nieuweFoto };
-        if (!rij.foto_klein) updateData.foto_klein = nieuweThumb;
+        const updateData = {};
+        if (teGroot) updateData.foto = nieuweFoto;
+        if (mistThumb) updateData.foto_klein = nieuweThumb;
         const {error: updateError} = await sb.from(tabel).update(updateData).eq('id', rij.id);
         if (updateError) { mislukt++; } else { verwerkt++; }
       } catch (e) {
