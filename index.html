@@ -164,6 +164,23 @@
     border-radius: 10px; border: 1px solid var(--border); display: block; transition: opacity 0.15s; }
   .melding-foto-thumb:hover { opacity: 0.8; }
   .melding-foto-klein { filter: blur(2px) saturate(0.85); opacity: 0.75; }
+
+  .media-lijst { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .media-chip { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--surface2); }
+  .media-chip img { width: 100%; height: 100%; object-fit: cover; }
+  .media-chip-doc { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;
+    font-size: 0.55rem; text-align: center; color: var(--muted); line-height: 1.3; padding: 2px; }
+  .media-chip button { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white;
+    border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.6rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1; }
+
+  .media-rij { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .media-groot .melding-foto-thumb { width: 150px; height: 110px; }
+  .media-klein .melding-foto-thumb { width: 60px; height: 60px; }
+  .media-doc-chip { display: flex; align-items: center; gap: 6px; background: var(--surface2);
+    padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.72rem;
+    color: var(--text); text-decoration: none; }
   .foto-hint { font-size: 0.6rem; color: var(--subtle); margin-top: 3px; }
   .foto-hint.laden { color: #fbbf24; }
   .camera-zone { background: var(--surface2); border: 1px dashed var(--border);
@@ -1061,9 +1078,7 @@ async function intrekkenToegang(id, naam) {
   openGP('instellingen');
 }
 
-let huidigeFoto  = {};
-let huidigeFotoKlein = {};
-let huidigeBestandsnaam = {};
+let huidigeMedia = {};
 let cameraStream = null;
 let cameraNS     = null;
 let sb = null;
@@ -1087,9 +1102,9 @@ async function laadMeldingen() {
     const el = document.getElementById(id);
     if (el && !el.innerHTML.trim()) el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
   });
-  // Fase 1: snel — tekst en piepklein miniatuurtje, geen zware volledige foto's
+  // Fase 1: snel — tekst en piepkleine miniatuurtjes, geen zware volledige foto's
   const {data, error} = await sb.from('meldingen')
-    .select('id, naam, type, label, bericht, bestandsnaam, foto_klein, kleur, bg, tijd, created_at')
+    .select('id, naam, type, label, bericht, media_klein, kleur, bg, tijd, created_at')
     .order('created_at', {ascending: false}).limit(20);
   if (error || !data) return;
   renderMeldingenData(data);
@@ -1097,10 +1112,10 @@ async function laadMeldingen() {
   // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
   const alleIds = data.map(m => m.id);
   if (alleIds.length) {
-    const {data: fotoData} = await sb.from('meldingen').select('id, foto').in('id', alleIds).not('foto', 'is', null);
+    const {data: fotoData} = await sb.from('meldingen').select('id, media_vol').in('id', alleIds).not('media_vol', 'is', null);
     (fotoData || []).forEach(rij => {
-      if (!rij.foto) return;
-      if (meldingenCache[rij.id]) meldingenCache[rij.id].foto = rij.foto;
+      if (!rij.media_vol) return;
+      if (meldingenCache[rij.id]) meldingenCache[rij.id].media_vol = rij.media_vol;
       document.querySelectorAll('#melding-media-' + rij.id).forEach(plek => {
         plek.innerHTML = meldingMediaVolledig(meldingenCache[rij.id]);
       });
@@ -1415,34 +1430,57 @@ function renderRotatie() {
 
 // ── CAMERA (generiek, werkt voor meerdere formulieren via ns = naamruimte) ──
 function idFor(ns, basis) { return basis + '-' + ns; }
+const MAX_MEDIA = 4;
 
-function cameraZoneHTML(ns) {
+function mediaZoneHTML(ns) {
   const accept = 'image/*,.pdf,.doc,.docx,.txt';
   return `
-  <label>Foto of bestand (optioneel)</label>
+  <label>Foto's / bestanden (optioneel, max. ${MAX_MEDIA})</label>
+  <div class="media-lijst" id="${idFor(ns,'media-lijst')}"></div>
   <div class="camera-zone" id="${idFor(ns,'camera-zone')}">
     <div class="cam-placeholder" id="${idFor(ns,'cam-placeholder')}">
       <span class="cam-icon">📷</span>
-      Neem een foto, of kies een foto/PDF/Word/tekstbestand (max. 5MB)
+      Neem een foto, of kies een foto/PDF/Word/tekstbestand (max. 5MB per bestand)
     </div>
     <video id="${idFor(ns,'cam-video')}" autoplay playsinline></video>
     <canvas id="${idFor(ns,'cam-canvas')}"></canvas>
-    <img id="${idFor(ns,'foto-preview')}" alt="preview" />
-    <div id="${idFor(ns,'bestand-info')}" class="foto-hint" style="display:none;font-size:0.85rem;padding:8px 0"></div>
     <div class="cam-btn-rij" id="${idFor(ns,'cam-btns-idle')}">
       <button type="button" class="cam-btn cam-btn-primary" onclick="startCamera('${ns}')">📷 Camera openen</button>
-      <button type="button" class="cam-btn" onclick="document.getElementById('${idFor(ns,'foto-file')}').click()">📄 Bestand kiezen (foto, pdf, word, tekst)</button>
+      <button type="button" class="cam-btn" onclick="document.getElementById('${idFor(ns,'foto-file')}').click()">📄 Bestand kiezen</button>
       <input type="file" id="${idFor(ns,'foto-file')}" accept="${accept}" style="display:none" onchange="fotoUitBestand(event, '${ns}')" />
     </div>
     <div class="cam-btn-rij" id="${idFor(ns,'cam-btns-live')}" style="display:none">
       <button type="button" class="cam-btn cam-btn-primary" onclick="fotoNemen('${ns}')">📸 Neem foto</button>
       <button type="button" class="cam-btn" onclick="stopCamera('${ns}')">✕ Annuleer</button>
     </div>
-    <div class="cam-btn-rij" id="${idFor(ns,'cam-btns-preview')}" style="display:none">
-      <button type="button" class="cam-btn cam-btn-green" onclick="fotoBevestigen('${ns}')">✓ Gebruik dit bestand</button>
-      <button type="button" class="cam-btn" onclick="fotoOpnieuw('${ns}')">↩ Opnieuw</button>
-    </div>
   </div>`;
+}
+
+function renderMediaLijst(ns) {
+  const lijst = huidigeMedia[ns] || [];
+  const el = document.getElementById(idFor(ns,'media-lijst'));
+  if (el) {
+    el.innerHTML = lijst.map((m, i) => `
+      <div class="media-chip">
+        ${m.foto_klein ? `<img src="${m.foto_klein}" alt="foto" />` : `<span class="media-chip-doc">📄<br>${(m.bestandsnaam||'bestand').slice(0,10)}</span>`}
+        <button type="button" onclick="verwijderMediaChip('${ns}', ${i})">✕</button>
+      </div>`).join('');
+  }
+  const zone = document.getElementById(idFor(ns,'camera-zone'));
+  if (zone) zone.style.display = lijst.length >= MAX_MEDIA ? 'none' : 'block';
+}
+
+function verwijderMediaChip(ns, index) {
+  if (!huidigeMedia[ns]) return;
+  huidigeMedia[ns].splice(index, 1);
+  renderMediaLijst(ns);
+}
+
+function voegMediaToe(ns, item) {
+  if (!huidigeMedia[ns]) huidigeMedia[ns] = [];
+  if (huidigeMedia[ns].length >= MAX_MEDIA) { alert(`Je kunt maximaal ${MAX_MEDIA} foto's/bestanden per bericht toevoegen.`); return; }
+  huidigeMedia[ns].push(item);
+  renderMediaLijst(ns);
 }
 
 async function startCamera(ns) {
@@ -1450,7 +1488,6 @@ async function startCamera(ns) {
   document.getElementById(idFor(ns,'cam-placeholder')).style.display = 'none';
   document.getElementById(idFor(ns,'cam-btns-idle')).style.display   = 'none';
   document.getElementById(idFor(ns,'cam-btns-live')).style.display   = 'flex';
-  document.getElementById(idFor(ns,'foto-preview')).style.display    = 'none';
   const video = document.getElementById(idFor(ns,'cam-video'));
   video.style.display = 'block';
   try {
@@ -1469,14 +1506,12 @@ function stopCamera(ns) {
   if (!ns) return;
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   const v = document.getElementById(idFor(ns,'cam-video'));
-  if (!v) { cameraNS = null; return; }
-  v.style.display = 'none';
-  document.getElementById(idFor(ns,'cam-btns-live')).style.display    = 'none';
-  document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'none';
-  document.getElementById(idFor(ns,'cam-btns-idle')).style.display    = 'flex';
-  document.getElementById(idFor(ns,'cam-placeholder')).style.display  = 'block';
-  if (!huidigeFoto[ns]) document.getElementById(idFor(ns,'foto-preview')).style.display = 'none';
   cameraNS = null;
+  if (!v) return;
+  v.style.display = 'none';
+  document.getElementById(idFor(ns,'cam-btns-live')).style.display = 'none';
+  document.getElementById(idFor(ns,'cam-btns-idle')).style.display = 'flex';
+  document.getElementById(idFor(ns,'cam-placeholder')).style.display = 'block';
 }
 
 function maakThumbnail(bronCanvas) {
@@ -1502,18 +1537,10 @@ function fotoNemen(ns) {
   canvas.width  = breedte;
   canvas.height = hoogte;
   canvas.getContext('2d').drawImage(video, 0, 0, breedte, hoogte);
-  huidigeFoto[ns] = canvas.toDataURL('image/jpeg', 0.60);
-  huidigeFotoKlein[ns] = maakThumbnail(canvas);
-  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  cameraNS = null;
-  document.getElementById(idFor(ns,'cam-video')).style.display        = 'none';
-  document.getElementById(idFor(ns,'cam-btns-live')).style.display    = 'none';
-  document.getElementById(idFor(ns,'cam-btns-idle')).style.display    = 'none';
-  document.getElementById(idFor(ns,'cam-placeholder')).style.display  = 'none';
-  const prev = document.getElementById(idFor(ns,'foto-preview'));
-  prev.src = huidigeFoto[ns];
-  prev.style.display = 'block';
-  document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'flex';
+  const foto = canvas.toDataURL('image/jpeg', 0.60);
+  const fotoKlein = maakThumbnail(canvas);
+  stopCamera(ns);
+  voegMediaToe(ns, { foto, foto_klein: fotoKlein, bestandsnaam: null });
 }
 
 function comprimeerAfbeelding(file, callback) {
@@ -1538,22 +1565,6 @@ function comprimeerAfbeelding(file, callback) {
   reader.readAsDataURL(file);
 }
 
-function toonBestandPreview(ns, isAfbeelding, bestandsnaam) {
-  document.getElementById(idFor(ns,'cam-placeholder')).style.display  = 'none';
-  document.getElementById(idFor(ns,'cam-btns-idle')).style.display    = 'none';
-  const prev = document.getElementById(idFor(ns,'foto-preview'));
-  const info = document.getElementById(idFor(ns,'bestand-info'));
-  if (isAfbeelding) {
-    prev.src = huidigeFoto[ns];
-    prev.style.display = 'block';
-    if (info) info.style.display = 'none';
-  } else {
-    prev.style.display = 'none';
-    if (info) { info.textContent = '📄 ' + bestandsnaam; info.style.display = 'block'; }
-  }
-  document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'flex';
-}
-
 function fotoUitBestand(e, ns) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1562,42 +1573,19 @@ function fotoUitBestand(e, ns) {
     e.target.value = '';
     return;
   }
-  huidigeBestandsnaam[ns] = file.name;
   if (file.type.startsWith('image/')) {
     comprimeerAfbeelding(file, (dataUrl, thumbnail) => {
-      huidigeFoto[ns] = dataUrl;
-      huidigeFotoKlein[ns] = thumbnail;
-      toonBestandPreview(ns, true, file.name);
+      voegMediaToe(ns, { foto: dataUrl, foto_klein: thumbnail, bestandsnaam: null });
+      e.target.value = '';
     });
   } else {
     const reader = new FileReader();
     reader.onload = ev => {
-      huidigeFoto[ns] = ev.target.result;
-      toonBestandPreview(ns, false, file.name);
+      voegMediaToe(ns, { foto: ev.target.result, foto_klein: null, bestandsnaam: file.name });
+      e.target.value = '';
     };
     reader.readAsDataURL(file);
   }
-}
-
-function fotoBevestigen(ns) {
-  document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'none';
-  document.getElementById(idFor(ns,'camera-zone')).style.borderColor  = '#166534';
-}
-
-function fotoOpnieuw(ns) {
-  huidigeFoto[ns] = null;
-  huidigeFotoKlein[ns] = null;
-  huidigeBestandsnaam[ns] = null;
-  const fileInput = document.getElementById(idFor(ns,'foto-file'));
-  if (fileInput) fileInput.value = '';
-  const preview = document.getElementById(idFor(ns,'foto-preview'));
-  if (preview) preview.style.display = 'none';
-  const info = document.getElementById(idFor(ns,'bestand-info'));
-  if (info) info.style.display = 'none';
-  document.getElementById(idFor(ns,'cam-btns-preview')).style.display = 'none';
-  document.getElementById(idFor(ns,'cam-placeholder')).style.display  = 'block';
-  document.getElementById(idFor(ns,'cam-btns-idle')).style.display    = 'flex';
-  document.getElementById(idFor(ns,'camera-zone')).style.borderColor  = '';
 }
 
 // ── MELDINGEN ──
@@ -1610,11 +1598,21 @@ function renderTypeKnoppen() {
 }
 function kiesType(id){ gekozenType=id; renderTypeKnoppen(); }
 
+function mediaVoorOpslag(ns) {
+  const lijst = huidigeMedia[ns] || [];
+  if (!lijst.length) return { media_klein: null, media_vol: null };
+  return {
+    media_klein: lijst.map(m => ({ klein: m.foto_klein || null, bestandsnaam: m.bestandsnaam || null })),
+    media_vol: lijst.map(m => m.foto),
+  };
+}
+
 async function verstuurMelding() {
   const naam    = mijnNaam();
   const bericht = document.getElementById('inp-bericht').value.trim();
+  const media   = mediaVoorOpslag('melding');
   if(!naam){ toonAuthScherm('login'); return; }
-  if(!bericht && !huidigeFoto['melding']){ alert('Voeg een bericht of foto toe.'); return; }
+  if(!bericht && !media.media_klein){ alert('Voeg een bericht of foto toe.'); return; }
   const t = MELDING_TYPES.find(x=>x.id===gekozenType) || MELDING_TYPES.find(x=>x.id==='algemeen');
   const btn = document.getElementById('verstuur-btn');
   btn.disabled = true; btn.textContent = 'Bezig...';
@@ -1622,16 +1620,16 @@ async function verstuurMelding() {
     const {error} = await sb.from('meldingen').insert([{
       naam, type: gekozenType, label: t.label,
       bericht: bericht || null,
-      foto: huidigeFoto['melding'] || null,
-      foto_klein: huidigeFotoKlein['melding'] || null,
-      bestandsnaam: huidigeBestandsnaam['melding'] || null,
+      media_klein: media.media_klein,
+      media_vol: media.media_vol,
       kleur: t.kleur, bg: t.bg,
       tijd: new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})
     }]);
     if(error) { alert('Fout bij versturen: ' + error.message); }
   }
   document.getElementById('inp-bericht').value = '';
-  fotoOpnieuw('melding');
+  huidigeMedia['melding'] = [];
+  renderMediaLijst('melding');
   btn.disabled = false;
   btn.textContent = 'Versturen → verschijnt direct op alle schermen';
 }
@@ -1652,36 +1650,46 @@ function tijdWeergave(momentString, reserveTekst) {
   return reserveTekst || '';
 }
 
-function meldingMediaPlaatshouder(m) {
-  if (m.foto_klein) {
-    return `<div class="melding-foto-wrap">
-      <img class="melding-foto-thumb melding-foto-klein" src="${m.foto_klein}" alt="foto" />
-      <div class="foto-hint laden">⏳ Foto verscherpen…</div>
-    </div>`;
-  }
-  if (m.bestandsnaam) {
-    return `<div style="display:inline-flex;align-items:center;gap:8px;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px;opacity:0.6">
-      <span style="font-size:1.3rem">📄</span>
-      <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam} — ⏳ laden…</span>
-    </div>`;
-  }
-  return '';
+function mediaPlaatshouder(item) {
+  const kleinLijst = item.media_klein || [];
+  if (!kleinLijst.length) return '';
+  return `<div class="media-rij">
+    ${kleinLijst.map((m, i) => {
+      if (m.klein) {
+        return `<div class="melding-foto-wrap ${i===0?'media-groot':'media-klein'}">
+          <img class="melding-foto-thumb melding-foto-klein" src="${m.klein}" alt="foto" />
+          <div class="foto-hint laden">⏳</div>
+        </div>`;
+      }
+      return `<div class="media-doc-chip" style="opacity:0.6">
+        <span>📄</span><span>${m.bestandsnaam || 'bestand'} — ⏳</span>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
-function meldingMediaVolledig(m) {
-  if (!m.foto) return '';
-  const isAfbeelding = m.foto.startsWith('data:image/');
-  if (isAfbeelding) {
-    return `<div class="melding-foto-wrap" onclick="openLightbox(this)">
-      <img class="melding-foto-thumb" src="${m.foto}" alt="foto" />
-      <div class="foto-hint">🔍 Tik om te vergroten</div>
-    </div>`;
-  }
-  return `<a href="${m.foto}" download="${m.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
-    <span style="font-size:1.3rem">📄</span>
-    <span style="font-size:0.78rem;color:var(--text)">${m.bestandsnaam || 'Document'} — tik om te downloaden</span>
-  </a>`;
+function mediaVolledig(item) {
+  const kleinLijst = item.media_klein || [];
+  const volLijst = item.media_vol || [];
+  if (!kleinLijst.length) return '';
+  return `<div class="media-rij">
+    ${kleinLijst.map((m, i) => {
+      const vol = volLijst[i];
+      if (m.klein) {
+        return `<div class="melding-foto-wrap ${i===0?'media-groot':'media-klein'}" onclick="openLightbox(this)">
+          <img class="melding-foto-thumb" src="${vol || m.klein}" alt="foto" />
+          <div class="foto-hint">🔍</div>
+        </div>`;
+      }
+      return `<a class="media-doc-chip" href="${vol || ''}" download="${m.bestandsnaam || 'bestand'}">
+        <span>📄</span><span>${m.bestandsnaam || 'Document'}</span>
+      </a>`;
+    }).join('')}
+  </div>`;
 }
+
+function meldingMediaPlaatshouder(m) { return mediaPlaatshouder(m); }
+function meldingMediaVolledig(m) { return mediaVolledig(m); }
 
 function meldingHTML(m) {
   const magBewerken = m.naam === mijnNaam();
@@ -1701,36 +1709,38 @@ function meldingHTML(m) {
 
 let meldingenCache = {};
 
-function bewerkMeldingTekst(id) {
+async function bewerkMeldingTekst(id) {
   const m = meldingenCache[id];
   if (!m) return;
   const ns = 'bewerk-melding-' + id;
-  const huidigeFotoWeergave = (m.foto_klein || m.foto)
-    ? `<label>Huidige foto</label><img src="${m.foto_klein || m.foto}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;margin-bottom:12px" />`
-    : '';
+  if (!m.media_vol && m.media_klein && m.media_klein.length) {
+    const {data} = await sb.from('meldingen').select('media_vol').eq('id', id).maybeSingle();
+    if (data) m.media_vol = data.media_vol;
+  }
+  huidigeMedia[ns] = (m.media_klein || []).map((k, i) => ({
+    foto: (m.media_vol && m.media_vol[i]) || k.klein,
+    foto_klein: k.klein,
+    bestandsnaam: k.bestandsnaam,
+  }));
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ Bericht bewerken</h2>
     <div class="melding-form" style="margin-top:4px">
       <label>Tekst</label>
       <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
-      ${huidigeFotoWeergave}
-      ${cameraZoneHTML(ns)}
-      <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Kies alleen een nieuw bestand als je de foto wilt vervangen — anders blijft de huidige foto staan.</p>
+      ${mediaZoneHTML(ns)}
+      <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, of voeg er nieuwe aan toe (max. ${MAX_MEDIA}).</p>
       <button class="verstuur-btn" onclick="bevestigBewerkMelding(${id}, '${ns}')">Opslaan →</button>
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
+  renderMediaLijst(ns);
 }
 
 async function bevestigBewerkMelding(id, ns) {
   const nieuweTekst = document.getElementById('bewerk-melding-tekst').value.trim();
-  const updateData = { bericht: nieuweTekst || null };
-  if (huidigeFoto[ns]) {
-    updateData.foto = huidigeFoto[ns];
-    updateData.foto_klein = huidigeFotoKlein[ns] || null;
-    updateData.bestandsnaam = huidigeBestandsnaam[ns] || null;
-  }
-  huidigeFoto[ns] = null; huidigeFotoKlein[ns] = null; huidigeBestandsnaam[ns] = null;
+  const media = mediaVoorOpslag(ns);
+  const updateData = { bericht: nieuweTekst || null, media_klein: media.media_klein, media_vol: media.media_vol };
+  huidigeMedia[ns] = [];
   sluitGPModal();
   if (!supabaseActief) return;
   const {error} = await sb.from('meldingen').update(updateData).eq('id', id);
@@ -2231,36 +2241,38 @@ const EXTRA_PLACEHOLDERS = {
 
 let extraItemsCache = {};
 
-function bewerkExtraItemTekst(id, categorie) {
+async function bewerkExtraItemTekst(id, categorie) {
   const item = extraItemsCache[id];
   if (!item) return;
   const ns = 'bewerk-extra-' + id;
-  const huidigeFotoWeergave = (item.foto_klein || item.foto)
-    ? `<label>Huidige foto</label><img src="${item.foto_klein || item.foto}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;margin-bottom:12px" />`
-    : '';
+  if (!item.media_vol && item.media_klein && item.media_klein.length) {
+    const {data} = await sb.from('extra_items').select('media_vol').eq('id', id).maybeSingle();
+    if (data) item.media_vol = data.media_vol;
+  }
+  huidigeMedia[ns] = (item.media_klein || []).map((k, i) => ({
+    foto: (item.media_vol && item.media_vol[i]) || k.klein,
+    foto_klein: k.klein,
+    bestandsnaam: k.bestandsnaam,
+  }));
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ Bericht bewerken</h2>
     <div class="melding-form" style="margin-top:4px">
       <label>Tekst</label>
       <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
-      ${huidigeFotoWeergave}
-      ${cameraZoneHTML(ns)}
-      <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Kies alleen een nieuw bestand als je de foto wilt vervangen — anders blijft de huidige foto staan.</p>
+      ${mediaZoneHTML(ns)}
+      <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, of voeg er nieuwe aan toe (max. ${MAX_MEDIA}).</p>
       <button class="verstuur-btn" onclick="bevestigBewerkExtraItem(${id}, '${categorie}', '${ns}')">Opslaan →</button>
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
+  renderMediaLijst(ns);
 }
 
 async function bevestigBewerkExtraItem(id, categorie, ns) {
   const nieuweTekst = document.getElementById('bewerk-extra-tekst').value.trim();
-  const updateData = { tekst: nieuweTekst };
-  if (huidigeFoto[ns]) {
-    updateData.foto = huidigeFoto[ns];
-    updateData.foto_klein = huidigeFotoKlein[ns] || null;
-    updateData.bestandsnaam = huidigeBestandsnaam[ns] || null;
-  }
-  huidigeFoto[ns] = null; huidigeFotoKlein[ns] = null; huidigeBestandsnaam[ns] = null;
+  const media = mediaVoorOpslag(ns);
+  const updateData = { tekst: nieuweTekst, media_klein: media.media_klein, media_vol: media.media_vol };
+  huidigeMedia[ns] = [];
   sluitGPModal();
   if (!supabaseActief) return;
   const {error} = await sb.from('extra_items').update(updateData).eq('id', id);
@@ -2268,36 +2280,8 @@ async function bevestigBewerkExtraItem(id, categorie, ns) {
   laadExtraItems(categorie);
 }
 
-function extraMediaPlaatshouder(item) {
-  if (item.foto_klein) {
-    return `<div class="melding-foto-wrap">
-      <img class="melding-foto-thumb melding-foto-klein" src="${item.foto_klein}" alt="foto" />
-      <div class="foto-hint laden">⏳ Foto verscherpen…</div>
-    </div>`;
-  }
-  if (item.bestandsnaam) {
-    return `<div style="display:inline-flex;align-items:center;gap:8px;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px;opacity:0.6">
-      <span style="font-size:1.3rem">📄</span>
-      <span style="font-size:0.78rem;color:var(--text)">${item.bestandsnaam} — ⏳ laden…</span>
-    </div>`;
-  }
-  return '';
-}
-
-function extraMediaVolledig(item) {
-  if (!item.foto) return '';
-  const isAfbeelding = item.foto.startsWith('data:image/');
-  if (isAfbeelding) {
-    return `<div class="melding-foto-wrap" onclick="openLightbox(this)">
-      <img class="melding-foto-thumb" src="${item.foto}" alt="foto" />
-      <div class="foto-hint">🔍 Tik om te vergroten</div>
-    </div>`;
-  }
-  return `<a href="${item.foto}" download="${item.bestandsnaam || 'bestand'}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;background:var(--surface2);padding:8px 12px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
-    <span style="font-size:1.3rem">📄</span>
-    <span style="font-size:0.78rem;color:var(--text)">${item.bestandsnaam || 'Document'} — tik om te downloaden</span>
-  </a>`;
-}
+function extraMediaPlaatshouder(item) { return mediaPlaatshouder(item); }
+function extraMediaVolledig(item) { return mediaVolledig(item); }
 
 function extraItemKaartHTML(item, categorie) {
   const magBewerken = item.naam === mijnNaam();
@@ -2321,9 +2305,9 @@ async function laadExtraItems(categorie) {
   el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p>';
   if (!supabaseActief) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Supabase niet actief.</p>'; return; }
 
-  // Fase 1: snel — alleen tekst en piepklein miniatuurtje, geen zware volledige foto's
+  // Fase 1: snel — alleen tekst en piepkleine miniatuurtjes, geen zware volledige foto's
   const {data, error} = await sb.from('extra_items')
-    .select('id, naam, tekst, bestandsnaam, foto_klein, created_at')
+    .select('id, naam, tekst, media_klein, created_at')
     .eq('categorie', categorie).order('created_at', {ascending:false}).limit(50);
   if (error) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--warn)">Fout bij laden: ' + error.message + '</p>'; return; }
 
@@ -2333,10 +2317,10 @@ async function laadExtraItems(categorie) {
   // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
   const alleIds = (data || []).map(item => item.id);
   if (alleIds.length) {
-    const {data: fotoData} = await sb.from('extra_items').select('id, foto').in('id', alleIds).not('foto', 'is', null);
+    const {data: fotoData} = await sb.from('extra_items').select('id, media_vol').in('id', alleIds).not('media_vol', 'is', null);
     (fotoData || []).forEach(rij => {
-      if (!rij.foto) return;
-      if (extraItemsCache[rij.id]) extraItemsCache[rij.id].foto = rij.foto;
+      if (!rij.media_vol) return;
+      if (extraItemsCache[rij.id]) extraItemsCache[rij.id].media_vol = rij.media_vol;
       const plek = document.getElementById('extra-media-' + rij.id);
       if (plek) plek.innerHTML = extraMediaVolledig(extraItemsCache[rij.id]);
     });
@@ -2347,16 +2331,15 @@ async function voegExtraItemToe(categorie) {
   const tekstEl = document.getElementById('extra-tekst-' + categorie);
   const naam  = mijnNaam();
   const tekst = tekstEl.value.trim();
-  const foto  = huidigeFoto[categorie] || null;
-  const fotoKlein = huidigeFotoKlein[categorie] || null;
-  const bestandsnaam = huidigeBestandsnaam[categorie] || null;
+  const media = mediaVoorOpslag(categorie);
   if (!naam)  { toonAuthScherm('login'); return; }
-  if (!tekst && !foto) { alert('Vul een bericht of bestand in.'); return; }
+  if (!tekst && !media.media_klein) { alert('Vul een bericht of bestand in.'); return; }
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
-  const {error} = await sb.from('extra_items').insert([{ categorie, naam, tekst: tekst || '', foto, foto_klein: fotoKlein, bestandsnaam }]);
+  const {error} = await sb.from('extra_items').insert([{ categorie, naam, tekst: tekst || '', media_klein: media.media_klein, media_vol: media.media_vol }]);
   if (error) { alert('Fout bij plaatsen: ' + error.message); return; }
   tekstEl.value = '';
-  fotoOpnieuw(categorie);
+  huidigeMedia[categorie] = [];
+  renderMediaLijst(categorie);
   laadExtraItems(categorie);
 }
 
@@ -2537,7 +2520,7 @@ function openGP(key) {
           ${identiteitBlok}
           <label>Bericht</label>
           <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
-          ${cameraZoneHTML(key)}
+          ${mediaZoneHTML(key)}
           <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
         </div>
       </details>`;
@@ -2552,7 +2535,7 @@ function openGP(key) {
     ${extraHtml}
   `;
   document.getElementById('gp-overlay').classList.add('open');
-  if (interactief) { laadExtraItems(key); luisterExtraLive(key); }
+  if (interactief) { huidigeMedia[key] = []; renderMediaLijst(key); laadExtraItems(key); luisterExtraLive(key); }
 }
 
 function sluitGPModal() {
@@ -2560,11 +2543,12 @@ function sluitGPModal() {
   if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   cameraNS = null;
-  EXTRA_CATEGORIEEN.forEach(c => { huidigeFoto[c] = null; huidigeFotoKlein[c] = null; huidigeBestandsnaam[c] = null; });
+  EXTRA_CATEGORIEEN.forEach(c => { huidigeMedia[c] = []; });
 }
 
 // ── INIT ──
-document.getElementById('melding-camera-plek').innerHTML = cameraZoneHTML('melding');
+document.getElementById('melding-camera-plek').innerHTML = mediaZoneHTML('melding');
+renderMediaLijst('melding');
 renderTypeKnoppen();
 renderVandaag();
 renderWeek();
