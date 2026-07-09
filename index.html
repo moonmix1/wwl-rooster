@@ -326,10 +326,14 @@
   .gp-sub { font-size: 0.74rem; color: var(--muted); }
   .gp-deel-rij { max-width: 900px; margin: 0 auto 10px; padding: 0 16px; }
   #gp-deel-btn {
-    width: 100%; background: linear-gradient(180deg, #1d4ed8, #1e3a8a); color: white;
-    border: 1px solid #2d4a7a; border-radius: 10px; padding: 10px 16px;
+    width: 100%; background: #1e2733; color: var(--text);
+    border: 1.5px solid #3b4a5e; border-radius: 10px; padding: 10px 16px;
     font-size: 0.85rem; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
   }
+  #gp-deel-btn:hover { border-color: var(--bank); }
+  #gp-deel-btn .gp-deel-logos { display: flex; align-items: center; gap: 5px; }
+  #gp-deel-btn .gp-deel-logos svg { width: 18px; height: 18px; }
   .gp-beheer-rij { max-width: 900px; margin: 0 auto 12px; padding: 0 16px; display: flex; justify-content: flex-end; gap: 8px; }
 
   .deel-icoon-rij { display: flex; gap: 10px; margin-bottom: 14px; }
@@ -434,7 +438,13 @@
 
 <div id="geavanceerd-paneel">
   <div class="gp-deel-rij">
-    <button id="gp-deel-btn" onclick="toonDeelScherm()">📱 App delen</button>
+    <button id="gp-deel-btn" onclick="toonDeelScherm()">
+      <span class="gp-deel-logos">
+        <svg viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.086.539 4.14 1.563 5.943L.057 24l6.192-1.484A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.9 9.9 0 01-5.038-1.377l-.362-.214-3.741.897.906-3.727-.235-.373A9.921 9.921 0 012.062 12C2.062 6.51 6.51 2.062 12 2.062S21.938 6.51 21.938 12 17.49 21.938 12 21.938z"/></svg>
+        <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </span>
+      <span>App delen</span>
+    </button>
   </div>
   <div class="gp-beheer-rij">
     <button id="gp-nieuw-btn" style="display:none" onclick="toonNieuwOnderwerpForm()">➕ Nieuw onderwerp</button>
