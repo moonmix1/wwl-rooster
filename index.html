@@ -1893,7 +1893,7 @@ async function bewerkMeldingTekst(id) {
         <span>Tekst</span>
         <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-melding-tekst')}</span>
       </label>
-      <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
+      <textarea id="bewerk-melding-tekst" rows="5">${m.bericht || ''}</textarea>
       ${mediaZoneHTML(ns)}
       <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, gebruik ◀ ▶ om de volgorde te wijzigen, of voeg een nieuwe toe (max. ${MAX_MEDIA}).</p>
       <button class="verstuur-btn" onclick="bevestigBewerkMelding(${id}, '${ns}')">Opslaan →</button>
@@ -2690,7 +2690,7 @@ async function bewerkExtraItemTekst(id, categorie) {
         <span>Tekst</span>
         <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-extra-tekst')}</span>
       </label>
-      <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
+      <textarea id="bewerk-extra-tekst" rows="5">${item.tekst || ''}</textarea>
       ${mediaZoneHTML(ns)}
       <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, gebruik ◀ ▶ om de volgorde te wijzigen, of voeg een nieuwe toe (max. ${MAX_MEDIA}).</p>
       <button class="verstuur-btn" onclick="bevestigBewerkExtraItem(${id}, '${categorie}', '${ns}')">Opslaan →</button>
@@ -3059,7 +3059,7 @@ function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
         <span>Uitleg (intro-tekst)</span>
         <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-onderwerp-intro')}</span>
       </label>
-      <textarea id="bewerk-onderwerp-intro" rows="4">${escHtml(w.intro)}</textarea>
+      <textarea id="bewerk-onderwerp-intro" rows="8">${escHtml(w.intro)}</textarea>
       <button class="verstuur-btn" onclick="bevestigBewerkOnderwerp('${key}')">Opslaan →</button>
     </div>
   `;
