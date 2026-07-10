@@ -140,6 +140,12 @@
     cursor: pointer; }
   .icoon-picker-item:hover, .icoon-picker-item:active { border-color: var(--bank); background: var(--bank-bg); }
   .icoon-picker-leeg { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 20px 0; }
+
+  .kleur-kies-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .kleur-kies-item { display: flex; align-items: center; gap: 6px; padding: 10px 8px; border-radius: 10px;
+    cursor: pointer; font-size: 0.75rem; font-weight: 700; border: 2px solid transparent; }
+  .kleur-kies-item.actief { border-color: white; }
+  .kleur-kies-swatch { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
   .type-btn { padding: 12px 8px; border-radius: 12px; border: 2px solid #2d4a7a;
               font-size: 0.8rem; font-weight: 700; cursor: pointer; text-align: center;
               background: #0f1f35; color: #7eb8f7; transition: all 0.15s; }
@@ -1773,8 +1779,8 @@ function meldingMediaPlaatshouder(m) { return mediaPlaatshouder(m); }
 function meldingMediaVolledig(m) { return mediaVolledig(m, 'melding'); }
 
 function meldingHTML(m) {
-  const magBewerken = m.naam === mijnNaam();
-  const magVerwijderen = magBewerken || gpBeheerActief();
+  const magBewerken = m.naam === mijnNaam() || gpBeheerActief();
+  const magVerwijderen = magBewerken;
   return `<div class="melding-item">
     <div class="melding-item-top">
       <span class="melding-badge" style="background:${m.bg};color:${m.kleur}">${m.label}</span>
@@ -1784,7 +1790,7 @@ function meldingHTML(m) {
     </div>
     <div class="melding-naam">${m.naam}</div>
     <div id="melding-media-${m.id}">${meldingMediaPlaatshouder(m)}</div>
-    ${m.bericht?`<div class="melding-tekst">${m.bericht}</div>`:''}
+    ${m.bericht?`<div class="melding-tekst">${berichtTekstHtml(m.bericht)}</div>`:''}
   </div>`;
 }
 
@@ -2117,16 +2123,16 @@ const GP_INHOUD = {
 const GP_PAGINA_GROOTTE = 5;
 
 const GP_STANDAARD = [
-  { key:'dringend',     icon:'🛒', titel:'Dringend nodig', sub:'Bijna op: koffiefilters, wc-papier, stofzuigerzakken', actief:true },
-  { key:'ideeen',       icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true },
-  { key:'prikbord',     icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true },
-  { key:'klussen',      icon:'🧰', titel:'Klussen &amp; onderhoud', sub:'Meld kapotte of kapotte dingen', actief:true },
-  { key:'verjaardag',   icon:'🎉', titel:'Verjaardagen', sub:'Zet je verjaardag erbij', actief:true },
-  { key:'activiteiten', icon:'📅', titel:'Activiteiten', sub:'Wat is er te doen in huis?', actief:true },
-  { key:'contacten',    icon:'📞', titel:'Belangrijke contacten', sub:'Huisarts, loodgieter, beheerder', actief:true },
-  { key:'documenten',   icon:'🗂️', titel:'Documenten', sub:'Deel een foto van een document', actief:true },
-  { key:'huisregels',   icon:'📖', titel:'Huisregels (volledig)', sub:'Alle regels op een rij', actief:true },
-  { key:'instellingen', icon:'⚙️', titel:'Instellingen', sub:'Bewonerslijst beheren', actief:true },
+  { key:'dringend',     icon:'🛒', titel:'Dringend nodig', sub:'Bijna op: koffiefilters, wc-papier, stofzuigerzakken', actief:true, kleur:'rood' },
+  { key:'ideeen',       icon:'💡', titel:'Ideeën &amp; wensen voor WWL', sub:'Slimme, goedkope verbeteringen', actief:true, kleur:'geel' },
+  { key:'prikbord',     icon:'📌', titel:'Prikbord', sub:'Te koop · te ruil · gezocht', actief:true, kleur:'blauw' },
+  { key:'klussen',      icon:'🧰', titel:'Klussen &amp; onderhoud', sub:'Meld kapotte of kapotte dingen', actief:true, kleur:'oranje' },
+  { key:'verjaardag',   icon:'🎉', titel:'Verjaardagen', sub:'Zet je verjaardag erbij', actief:true, kleur:'roze' },
+  { key:'activiteiten', icon:'📅', titel:'Activiteiten', sub:'Wat is er te doen in huis?', actief:true, kleur:'paars' },
+  { key:'contacten',    icon:'📞', titel:'Belangrijke contacten', sub:'Huisarts, loodgieter, beheerder', actief:true, kleur:'turquoise' },
+  { key:'documenten',   icon:'🗂️', titel:'Documenten', sub:'Deel een foto van een document', actief:true, kleur:'groen' },
+  { key:'huisregels',   icon:'📖', titel:'Huisregels (volledig)', sub:'Alle regels op een rij', actief:true, kleur:'grijs' },
+  { key:'instellingen', icon:'⚙️', titel:'Instellingen', sub:'Bewonerslijst beheren', actief:true, kleur:'grijs' },
 ];
 
 const GP_VOLGORDE_ID = 1;
@@ -2181,12 +2187,13 @@ function renderGPPaginas() {
     <div class="gp-page">
       ${lijst.map((item, i) => {
         const globalIndex = paginaIdx * GP_PAGINA_GROOTTE + i;
+        const c = onderwerpKleur(item.kleur || 'grijs');
         return `
-        <div class="gp-item ${item.actief?'':'gp-binnenkort'}">
+        <div class="gp-item ${item.actief?'':'gp-binnenkort'}" style="${item.actief?`border-color:${c.rand}`:''}">
           <button class="gp-item-klik" onclick="openGP('${item.actief?item.key:'placeholder'}')">
             <span class="gp-icon">${item.icon}</span>
             <span class="gp-tekst">
-              <span class="gp-titel">${item.titel}</span>
+              <span class="gp-titel" style="${item.actief?`color:${c.tekst}`:''}">${item.titel}</span>
               <span class="gp-sub">${item.sub}</span>
             </span>
           </button>
@@ -2216,6 +2223,25 @@ function renderGPNieuwKnop() {
 function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+function berichtTekstHtml(s) {
+  return escHtml(s).replace(/\n/g, '<br>');
+}
+// ── ONDERWERP-KLEUREN ────────────────────────────────────────────────────
+const ONDERWERP_KLEUREN = {
+  blauw:    { naam: 'Blauw',    tekst: '#7eb8f7', rand: '#2d4a7a', bg: '#13233d' },
+  groen:    { naam: 'Groen',    tekst: '#6ee7a8', rand: '#1f5c3f', bg: '#0f2a1f' },
+  paars:    { naam: 'Paars',    tekst: '#c4a7f7', rand: '#5b3a8a', bg: '#251a3d' },
+  oranje:   { naam: 'Oranje',   tekst: '#f7b96e', rand: '#8a5a1f', bg: '#3d2a13' },
+  rood:     { naam: 'Rood',     tekst: '#f79999', rand: '#8a2f2f', bg: '#3d1717' },
+  geel:     { naam: 'Geel',     tekst: '#e8d478', rand: '#8a7a1f', bg: '#332e13' },
+  roze:     { naam: 'Roze',     tekst: '#f7a7d4', rand: '#8a3a6a', bg: '#3d1a2c' },
+  turquoise:{ naam: 'Turquoise',tekst: '#7ee0dd', rand: '#1f7a75', bg: '#0f2e2c' },
+  grijs:    { naam: 'Grijs',    tekst: '#a8b4c4', rand: '#3d4a5c', bg: '#1a222d' },
+};
+function onderwerpKleur(key) {
+  return ONDERWERP_KLEUREN[key] || ONDERWERP_KLEUREN.grijs;
+}
+
 const ICOON_GROEPEN = [
   { titel: 'Wonen & huis', iconen: [
     ['🏠','huis wonen'], ['🛋️','bank huiskamer'], ['🛏️','bed slaapkamer'], ['🚪','deur'],
@@ -2225,7 +2251,13 @@ const ICOON_GROEPEN = [
   { titel: 'Klussen & gereedschap', iconen: [
     ['🧰','gereedschapskist klussen'], ['🔧','moersleutel klus'], ['🔨','hamer klus'], ['🪚','zaag'],
     ['🪛','schroevendraaier'], ['🎨','verf schilderen'], ['🧱','steen bouw'], ['🚧','werk in uitvoering'],
-    ['⚡','elektra stroom'], ['🚰','waterkraan loodgieter'],
+    ['⚡','elektra stroom elektricien'], ['🚰','waterkraan loodgieter'],
+  ]},
+  { titel: 'Beroepen & vakmensen', iconen: [
+    ['👷','bouwvakker bouw'], ['🧑‍🔧','monteur klusser reparateur technicus'], ['🧑‍💻','computer reparateur programmeur it'],
+    ['🎧','dj geluidstechnicus muziek koptelefoon'], ['🎚️','geluidstechnicus mixer audio'], ['🖌️','behanger schilder verf'],
+    ['📐','timmerman meten'], ['🪑','meubelmaker timmerman'], ['🧑‍🏭','vakman fabriek werk'], ['🧑‍🎨','kunstenaar ontwerper'],
+    ['🧑‍🍳','kok chef koken'], ['🧑‍🌾','tuinman tuinieren'],
   ]},
   { titel: 'Eten & keuken', iconen: [
     ['🍽️','eten bord koken'], ['🍳','koken bakken ei'], ['☕','koffie'], ['🍞','brood'],
@@ -2299,6 +2331,7 @@ function kiesIcoon(doelVeldId, emoji) {
       titel: document.getElementById('nieuw-onderwerp-titel')?.value || '',
       sub: document.getElementById('nieuw-onderwerp-sub')?.value || '',
       intro: document.getElementById('nieuw-onderwerp-intro')?.value || '',
+      kleur: document.getElementById('nieuw-onderwerp-kleur')?.value || 'blauw',
     };
     toonNieuwOnderwerpForm(w);
     return;
@@ -2313,6 +2346,12 @@ function kiesIcoon(doelVeldId, emoji) {
 function toonNieuwOnderwerpForm(bestaandeWaarden) {
   const w = bestaandeWaarden || {};
   const icoon = w.icoon || '📌';
+  const kleur = w.kleur || 'blauw';
+  const kleurSwatches = Object.entries(ONDERWERP_KLEUREN).map(([key, c]) => `
+    <div class="kleur-kies-item ${key === kleur ? 'actief' : ''}" style="background:${c.bg}" onclick="kiesOnderwerpKleur('${key}')">
+      <span class="kleur-kies-swatch" style="background:${c.tekst}"></span>${c.naam}
+    </div>
+  `).join('');
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>➕ Nieuw onderwerp</h2>
     <p class="gp-modal-intro">Maak een nieuw prikbord-achtig onderwerp. Het werkt daarna hetzelfde als Prikbord of Ideeën: iedereen kan er berichten (met eventueel een foto) op plaatsen.</p>
@@ -2320,9 +2359,12 @@ function toonNieuwOnderwerpForm(bestaandeWaarden) {
       <label>Icoon</label>
       <div class="icoon-kies-veld">
         <div class="icoon-kies-preview" id="nieuw-onderwerp-icoon-preview">${icoon}</div>
-        <button type="button" class="icoon-kies-btn" onclick="toonIconenKiezer('nieuw-onderwerp-icoon', {icoon: document.getElementById('nieuw-onderwerp-icoon').value, titel: document.getElementById('nieuw-onderwerp-titel').value, sub: document.getElementById('nieuw-onderwerp-sub').value, intro: document.getElementById('nieuw-onderwerp-intro').value})">Kies een icoon…</button>
+        <button type="button" class="icoon-kies-btn" onclick="toonIconenKiezer('nieuw-onderwerp-icoon', {icoon: document.getElementById('nieuw-onderwerp-icoon').value, titel: document.getElementById('nieuw-onderwerp-titel').value, sub: document.getElementById('nieuw-onderwerp-sub').value, intro: document.getElementById('nieuw-onderwerp-intro').value, kleur: document.getElementById('nieuw-onderwerp-kleur').value})">Kies een icoon…</button>
       </div>
       <input type="hidden" id="nieuw-onderwerp-icoon" value="${icoon}">
+      <label>Kleur (voor koptekst en berichtranden van dit onderwerp)</label>
+      <input type="hidden" id="nieuw-onderwerp-kleur" value="${kleur}">
+      <div class="kleur-kies-grid" id="nieuw-onderwerp-kleur-grid">${kleurSwatches}</div>
       <label>Titel</label>
       <input type="text" id="nieuw-onderwerp-titel" placeholder="bijv. Muziekinstrumenten" value="${escHtml(w.titel)}">
       <label>Korte ondertitel</label>
@@ -2335,11 +2377,19 @@ function toonNieuwOnderwerpForm(bestaandeWaarden) {
   document.getElementById('gp-overlay').classList.add('open');
 }
 
+function kiesOnderwerpKleur(key) {
+  document.getElementById('nieuw-onderwerp-kleur').value = key;
+  document.querySelectorAll('#nieuw-onderwerp-kleur-grid .kleur-kies-item').forEach(el => el.classList.remove('actief'));
+  const idx = Object.keys(ONDERWERP_KLEUREN).indexOf(key);
+  document.querySelectorAll('#nieuw-onderwerp-kleur-grid .kleur-kies-item')[idx]?.classList.add('actief');
+}
+
 async function maakNieuwOnderwerpAan() {
   const icoon = document.getElementById('nieuw-onderwerp-icoon').value.trim() || '📌';
   const titel = document.getElementById('nieuw-onderwerp-titel').value.trim();
   const sub   = document.getElementById('nieuw-onderwerp-sub').value.trim() || 'Nieuw onderwerp';
   const intro = document.getElementById('nieuw-onderwerp-intro').value.trim() || 'Deel hier je bericht.';
+  const kleur = document.getElementById('nieuw-onderwerp-kleur').value || 'blauw';
   if (!titel) { alert('Vul een titel in.'); return; }
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
 
@@ -2347,11 +2397,11 @@ async function maakNieuwOnderwerpAan() {
   const {error} = await sb.from('gp_items_info').insert([{ sleutel: key, icoon, titel, sub, intro }]);
   if (error) { alert('Aanmaken mislukt: ' + error.message); return; }
 
-  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro };
+  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro, kleur };
   if (!EXTRA_CATEGORIEEN.includes(key)) EXTRA_CATEGORIEEN.push(key);
 
   const items = getGPVolgorde();
-  items.push({ key, icon: icoon, titel, sub, actief: true });
+  items.push({ key, icon: icoon, titel, sub, actief: true, kleur });
   await opslaanGPVolgorde(items);
 
   sluitGPModal();
@@ -2554,18 +2604,21 @@ function extraMediaPlaatshouder(item) { return mediaPlaatshouder(item); }
 function extraMediaVolledig(item) { return mediaVolledig(item, 'extra'); }
 
 function extraItemKaartHTML(item, categorie) {
-  const magBewerken = item.naam === mijnNaam();
-  const magVerwijderen = magBewerken || gpBeheerActief();
+  const magBewerken = item.naam === mijnNaam() || gpBeheerActief();
+  const magVerwijderen = magBewerken;
+  const kleurKey = (gpVolgordeCache.find(x => x.key === categorie) || {}).kleur
+    || (gpAangepasteOnderwerpen[categorie] || {}).kleur || 'grijs';
+  const c = onderwerpKleur(kleurKey);
   return `
-    <div class="melding-item">
+    <div class="melding-item" style="border-color:${c.rand};background:${c.bg}">
       <div class="melding-item-top">
         <span class="melding-tijd">${tijdWeergave(item.created_at)}</span>
         ${magBewerken ? `<button class="verwijder-btn" onclick="bewerkExtraItemTekst(${item.id}, '${categorie}')">✏️</button>` : ''}
         ${magVerwijderen ? `<button class="verwijder-btn" onclick="verwijderExtraItem(${item.id}, '${categorie}')">✕</button>` : ''}
       </div>
-      <div class="melding-naam">${item.naam}</div>
+      <div class="melding-naam" style="color:${c.tekst}">${escHtml(item.naam)}</div>
       <div id="extra-media-${item.id}">${extraMediaPlaatshouder(item)}</div>
-      ${item.tekst?`<div class="melding-tekst">${item.tekst}</div>`:''}
+      ${item.tekst?`<div class="melding-tekst">${berichtTekstHtml(item.tekst)}</div>`:''}
     </div>`;
 }
 
