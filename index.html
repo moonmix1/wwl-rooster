@@ -35,6 +35,43 @@
          display: inline-flex; align-items: center; gap: 5px; }
   .tab.actief { color: var(--bank); border-bottom-color: var(--bank); }
   .tab:hover:not(.actief) { color: var(--muted); }
+  #prive-tab-badge { background: #ef4444; color: white; border-radius: 99px; font-size: 0.65rem;
+    font-weight: 800; padding: 1px 6px; min-width: 16px; text-align: center; }
+
+  /* ── PRIVÉBERICHTEN ── */
+  .gesprek-item { display: flex; align-items: center; gap: 12px; width: 100%; background: #162032;
+    border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+    cursor: pointer; text-align: left; }
+  .gesprek-item:hover { border-color: var(--bank); }
+  .gesprek-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--bank-bg);
+    color: var(--bank); display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+  .gesprek-info { flex: 1; min-width: 0; }
+  .gesprek-naam { font-weight: 800; color: white; font-size: 0.9rem; }
+  .gesprek-laatste { font-size: 0.78rem; color: var(--subtle); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+  .gesprek-ongelezen { background: #ef4444; color: white; border-radius: 99px; font-size: 0.68rem;
+    font-weight: 800; padding: 2px 7px; flex-shrink: 0; }
+  .gesprek-nieuw-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px dashed var(--bank);
+    background: transparent; color: var(--bank); font-weight: 800; font-size: 0.85rem; cursor: pointer;
+    margin-bottom: 14px; }
+
+  .chat-scherm { display: flex; flex-direction: column; height: 70vh; max-height: 600px; }
+  .chat-berichten { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+    padding: 4px 2px 10px; }
+  .chat-bel { max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 0.85rem;
+    line-height: 1.4; word-break: break-word; }
+  .chat-bel-eigen { align-self: flex-end; background: var(--bank-bg); border: 1px solid var(--bank-border);
+    color: white; border-bottom-right-radius: 4px; }
+  .chat-bel-ander { align-self: flex-start; background: #1e2733; border: 1px solid var(--border);
+    color: white; border-bottom-left-radius: 4px; }
+  .chat-bel img { max-width: 100%; border-radius: 8px; margin-top: 4px; display: block; }
+  .chat-bel-tijd { font-size: 0.62rem; color: var(--subtle); margin-top: 3px; text-align: right; }
+  .chat-invoer-rij { display: flex; gap: 8px; align-items: flex-end; padding-top: 8px;
+    border-top: 1px solid var(--border); }
+  .chat-invoer-rij textarea { flex: 1; resize: none; }
+  .chat-verstuur-btn { background: var(--bank); color: #0f1f35; border: none; border-radius: 10px;
+    padding: 10px 16px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
   .content { padding: 20px; max-width: 900px; margin: 0 auto; }
   .sectie { display: none; }
   .sectie.actief { display: block; }
@@ -512,6 +549,7 @@
   <div class="tab" onclick="toon('rotatie',this)">🔄 Rotatie</div>
   <div class="tab" onclick="toon('regels',this)">📋 Regels</div>
   <div class="tab" onclick="toon('meldingen',this)">💬 Meldingen</div>
+  <div class="tab" onclick="toon('prive',this)">📩 Privé<span id="prive-tab-badge" style="display:none"></span></div>
 </div>
 
 <div class="content">
@@ -659,6 +697,13 @@
     </div>
     <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen</div>
     <div id="mel-lijst" class="melding-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p></div>
+  </div>
+
+  <div id="s-prive" class="sectie">
+    <div class="info-box">
+      Privéberichten zijn <strong>alleen zichtbaar voor jou en de ontvanger</strong> — niet voor andere bewoners.
+    </div>
+    <div id="prive-gesprekken-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Laden…</p></div>
   </div>
 
 </div>
@@ -938,6 +983,10 @@ function starApp() {
   luisterGPOnderwerpenLive();
   laadGoedkeuringenTeller();
   luisterGoedkeuringenLive();
+  herstelLaatsteTab();
+  laadAlleProfielen();
+  laadPriveGesprekken();
+  luisterPriveOverzichtLive();
 }
 
 function toonAuthScherm(soort) {
@@ -1231,12 +1280,24 @@ function toon(id, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('actief'));
   document.getElementById('s-'+id).classList.add('actief');
   el.classList.add('actief');
+  try { localStorage.setItem('wwl_laatste_tab', id); } catch(e) {}
   if(id==='vandaag')     renderVandaag();
   if(id==='weekrooster') renderWeek();
   if(id==='rotatie')     renderRotatie();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
   if(id==='regels')      renderRegelsBeheerKnop();
+  if(id==='prive')       laadPriveGesprekken();
   stopCamera();
+}
+
+function herstelLaatsteTab() {
+  let laatsteTab;
+  try { laatsteTab = localStorage.getItem('wwl_laatste_tab'); } catch(e) { return; }
+  if (!laatsteTab || laatsteTab === 'vandaag') return; // 'vandaag' is toch al de standaard weergave
+  const tabEl = Array.from(document.querySelectorAll('.tab')).find(t => t.getAttribute('onclick') === `toon('${laatsteTab}',this)`);
+  const sectieEl = document.getElementById('s-' + laatsteTab);
+  if (!tabEl || !sectieEl) return;
+  toon(laatsteTab, tabEl);
 }
 
 function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
@@ -3014,6 +3075,8 @@ async function bevestigBewerkOnderwerp(key) {
 function sluitGPModal() {
   document.getElementById('gp-overlay').classList.remove('open');
   if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
+  if (priveGesprekChannel) { sb.removeChannel(priveGesprekChannel); priveGesprekChannel = null; }
+  huidigGesprekMetId = null;
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   cameraNS = null;
   EXTRA_CATEGORIEEN.forEach(c => { huidigeMedia[c] = []; });
@@ -3027,7 +3090,209 @@ renderVandaag();
 renderWeek();
 renderRotatie();
 renderPoll();
+// ── PRIVÉBERICHTEN ──────────────────────────────────────────────────────
+let alleProfielen = []; // [{id, naam}]
+let priveGesprekChannel = null;
+let huidigGesprekMetId = null;
+let huidigeMediaPrive = [];
+
+async function laadAlleProfielen() {
+  if (!supabaseActief) return;
+  const { data, error } = await sb.from('profielen').select('id, naam').order('naam', {ascending:true});
+  if (!error && data) alleProfielen = data;
+}
+
+function priveAvatarLetter(naam) { return (naam || '?').charAt(0).toUpperCase(); }
+
+async function laadPriveGesprekken() {
+  const el = document.getElementById('prive-gesprekken-lijst');
+  if (!el || !supabaseActief || !huidigProfiel) return;
+  if (!alleProfielen.length) await laadAlleProfielen();
+
+  const { data, error } = await sb
+    .from('prive_berichten')
+    .select('*')
+    .or(`van_id.eq.${huidigProfiel.id},naar_id.eq.${huidigProfiel.id}`)
+    .order('created_at', { ascending: false });
+
+  if (error) { el.innerHTML = `<p style="font-size:0.8rem;color:var(--warn)">Kon gesprekken niet laden: ${error.message}</p>`; return; }
+
+  // Groepeer per gesprekspartner, houd het laatste bericht + ongelezen-aantal per gesprek bij.
+  const gesprekken = {}; // partnerId -> {laatste, ongelezen}
+  (data || []).forEach(b => {
+    const partnerId = b.van_id === huidigProfiel.id ? b.naar_id : b.van_id;
+    if (!gesprekken[partnerId]) gesprekken[partnerId] = { laatste: b, ongelezen: 0 };
+    if (b.naar_id === huidigProfiel.id && !b.gelezen) gesprekken[partnerId].ongelezen++;
+  });
+
+  const rijen = Object.entries(gesprekken).map(([partnerId, info]) => {
+    const partner = alleProfielen.find(p => p.id === partnerId);
+    const naam = partner ? partner.naam : 'Onbekend';
+    const laatsteTekst = info.laatste.tekst || (info.laatste.media_klein ? '📷 Foto' : '');
+    return `
+      <button class="gesprek-item" onclick="openPriveGesprek('${partnerId}', '${escHtml(naam)}')">
+        <div class="gesprek-avatar">${priveAvatarLetter(naam)}</div>
+        <div class="gesprek-info">
+          <div class="gesprek-naam">${escHtml(naam)}</div>
+          <div class="gesprek-laatste">${escHtml(laatsteTekst)}</div>
+        </div>
+        ${info.ongelezen > 0 ? `<div class="gesprek-ongelezen">${info.ongelezen}</div>` : ''}
+      </button>`;
+  }).join('');
+
+  const totaalOngelezen = Object.values(gesprekken).reduce((s, g) => s + g.ongelezen, 0);
+  const badge = document.getElementById('prive-tab-badge');
+  if (badge) {
+    if (totaalOngelezen > 0) { badge.textContent = totaalOngelezen; badge.style.display = 'inline-block'; }
+    else { badge.style.display = 'none'; }
+  }
+
+  el.innerHTML = `
+    <button class="gesprek-nieuw-btn" onclick="toonNieuwPriveGesprek()">+ Nieuw gesprek starten</button>
+    ${rijen || '<p style="font-size:0.82rem;color:var(--subtle)">Nog geen privéberichten.</p>'}
+  `;
+}
+
+async function toonNieuwPriveGesprek() {
+  if (!alleProfielen.length) await laadAlleProfielen();
+  const opties = alleProfielen
+    .filter(p => p.id !== huidigProfiel?.id)
+    .map(p => `<option value="${p.id}">${escHtml(p.naam)}</option>`).join('');
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>📩 Nieuw gesprek</h2>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Met wie wil je praten?</label>
+      <select id="prive-nieuw-partner">${opties}</select>
+      <button class="verstuur-btn" onclick="startPriveGesprekVanuitKeuze()">Gesprek openen →</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+function startPriveGesprekVanuitKeuze() {
+  const select = document.getElementById('prive-nieuw-partner');
+  const partnerId = select.value;
+  const naam = select.options[select.selectedIndex].textContent;
+  sluitGPModal();
+  openPriveGesprek(partnerId, naam);
+}
+
+async function openPriveGesprek(partnerId, partnerNaam) {
+  huidigGesprekMetId = partnerId;
+  huidigeMediaPrive = [];
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>${priveAvatarLetter(partnerNaam)} ${escHtml(partnerNaam)}</h2>
+    <div class="chat-scherm">
+      <div class="chat-berichten" id="chat-berichten-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Laden…</p></div>
+      <div id="chat-media-lijst" class="media-lijst"></div>
+      <div class="chat-invoer-rij">
+        <textarea id="chat-invoer-tekst" rows="1" placeholder="Typ een bericht…"></textarea>
+        <button type="button" class="chat-verstuur-btn" style="background:var(--surface2);color:var(--text)" onclick="document.getElementById('chat-camera-input').click()">📷</button>
+        <input type="file" id="chat-camera-input" accept="image/*" style="display:none" onchange="priveFotoGekozen(event)">
+        <button class="chat-verstuur-btn" onclick="verstuurPriveBericht('${partnerId}')">Sturen</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+  await laadPriveBerichten(partnerId);
+  luisterPriveGesprekLive(partnerId);
+  await markeerGesprekGelezen(partnerId);
+}
+
+async function laadPriveBerichten(partnerId) {
+  const el = document.getElementById('chat-berichten-lijst');
+  if (!el || !supabaseActief || !huidigProfiel) return;
+  const { data, error } = await sb
+    .from('prive_berichten')
+    .select('*')
+    .or(`and(van_id.eq.${huidigProfiel.id},naar_id.eq.${partnerId}),and(van_id.eq.${partnerId},naar_id.eq.${huidigProfiel.id})`)
+    .order('created_at', { ascending: true });
+  if (error) { el.innerHTML = `<p style="font-size:0.8rem;color:var(--warn)">Kon berichten niet laden: ${error.message}</p>`; return; }
+  renderChatBerichten(data || []);
+}
+
+function renderChatBerichten(berichten) {
+  const el = document.getElementById('chat-berichten-lijst');
+  if (!el) return;
+  if (!berichten.length) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen berichten. Zeg hallo!</p>'; return; }
+  el.innerHTML = berichten.map(b => {
+    const eigen = b.van_id === huidigProfiel?.id;
+    const fotoHtml = (b.media_vol && b.media_vol[0]) ? `<img src="${b.media_vol[0]}" alt="foto">` : '';
+    return `
+      <div class="chat-bel ${eigen ? 'chat-bel-eigen' : 'chat-bel-ander'}">
+        ${b.tekst ? introTekstHtml(b.tekst) : ''}
+        ${fotoHtml}
+        <div class="chat-bel-tijd">${tijdWeergave(b.created_at)}</div>
+      </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function priveFotoGekozen(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    huidigeMediaPrive = [{ foto: reader.result, foto_klein: reader.result, bestandsnaam: file.name }];
+    const lijstEl = document.getElementById('chat-media-lijst');
+    if (lijstEl) lijstEl.innerHTML = `
+      <div class="media-chip"><img src="${reader.result}" alt="foto">
+        <button type="button" class="media-chip-remove" onclick="huidigeMediaPrive=[];document.getElementById('chat-media-lijst').innerHTML=''">✕</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function verstuurPriveBericht(partnerId) {
+  const tekstVeld = document.getElementById('chat-invoer-tekst');
+  const tekst = tekstVeld.value.trim();
+  if (!tekst && !huidigeMediaPrive.length) return;
+  if (!supabaseActief || !huidigProfiel) return;
+
+  const media_klein = huidigeMediaPrive.length ? huidigeMediaPrive.map(m => ({ klein: m.foto_klein, bestandsnaam: m.bestandsnaam })) : null;
+  const media_vol = huidigeMediaPrive.length ? huidigeMediaPrive.map(m => m.foto) : null;
+
+  tekstVeld.value = '';
+  huidigeMediaPrive = [];
+  const mediaLijstEl = document.getElementById('chat-media-lijst');
+  if (mediaLijstEl) mediaLijstEl.innerHTML = '';
+
+  const { error } = await sb.from('prive_berichten').insert([{
+    van_id: huidigProfiel.id, naar_id: partnerId, tekst: tekst || null, media_klein, media_vol,
+  }]);
+  if (error) { alert('Versturen mislukt: ' + error.message); return; }
+  await laadPriveBerichten(partnerId);
+}
+
+function luisterPriveGesprekLive(partnerId) {
+  if (priveGesprekChannel) { sb.removeChannel(priveGesprekChannel); priveGesprekChannel = null; }
+  if (!supabaseActief) return;
+  priveGesprekChannel = sb.channel('prive-gesprek-' + partnerId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'prive_berichten' }, () => {
+      laadPriveBerichten(partnerId);
+      markeerGesprekGelezen(partnerId);
+    }).subscribe();
+}
+
+async function markeerGesprekGelezen(partnerId) {
+  if (!supabaseActief || !huidigProfiel) return;
+  await sb.from('prive_berichten').update({ gelezen: true })
+    .eq('van_id', partnerId).eq('naar_id', huidigProfiel.id).eq('gelezen', false);
+  laadPriveGesprekken();
+}
+
+let priveOverzichtChannel = null;
+function luisterPriveOverzichtLive() {
+  if (!supabaseActief || priveOverzichtChannel) return;
+  priveOverzichtChannel = sb.channel('prive-overzicht-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'prive_berichten' }, () => {
+      laadPriveGesprekken();
+    }).subscribe();
+}
+
 initSupabase();
+
+
 </script>
 </body>
 </html>
