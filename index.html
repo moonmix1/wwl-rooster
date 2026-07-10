@@ -1299,12 +1299,15 @@ function toon(id, el) {
 
 function herstelLaatsteTab() {
   let laatsteTab;
-  try { laatsteTab = localStorage.getItem('wwl_laatste_tab'); } catch(e) { return; }
-  if (!laatsteTab || laatsteTab === 'vandaag') return; // 'vandaag' is toch al de standaard weergave
-  const tabEl = Array.from(document.querySelectorAll('.tab')).find(t => t.getAttribute('onclick') === `toon('${laatsteTab}',this)`);
-  const sectieEl = document.getElementById('s-' + laatsteTab);
-  if (!tabEl || !sectieEl) return;
-  toon(laatsteTab, tabEl);
+  try { laatsteTab = localStorage.getItem('wwl_laatste_tab'); } catch(e) { laatsteTab = null; }
+  if (laatsteTab && laatsteTab !== 'vandaag') {
+    const tabEl = Array.from(document.querySelectorAll('.tab')).find(t => t.getAttribute('onclick') === `toon('${laatsteTab}',this)`);
+    const sectieEl = document.getElementById('s-' + laatsteTab);
+    if (tabEl && sectieEl) toon(laatsteTab, tabEl);
+  }
+  try {
+    if (localStorage.getItem('wwl_geavanceerd_open') === '1') toggleGeavanceerd();
+  } catch(e) {}
 }
 
 function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
@@ -2118,6 +2121,7 @@ function toggleGeavanceerd() {
   const btn = document.getElementById('geavanceerd-btn');
   paneel.classList.toggle('open');
   btn.classList.toggle('actief');
+  try { localStorage.setItem('wwl_geavanceerd_open', paneel.classList.contains('open') ? '1' : '0'); } catch(e) {}
   if (paneel.classList.contains('open')) {
     verversBeheerderUI();
     laadGPVolgorde();
