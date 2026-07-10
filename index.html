@@ -2172,7 +2172,7 @@ function luisterGPVolgordeLive() {
 async function opslaanGPVolgorde(items) {
   gpVolgordeCache = items;
   if (!supabaseActief) return;
-  const {error} = await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, items });
+  const {error} = await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, items, pagina1: [], pagina2: [] });
   if (error) {
     alert('Let op: de volgorde/wijziging is NIET opgeslagen in de database (' + error.message + '). Ververs de pagina en probeer het opnieuw — mogelijk moet je opnieuw inloggen.');
   }
