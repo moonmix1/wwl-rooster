@@ -69,7 +69,8 @@
   .chat-bel-tijd { font-size: 0.62rem; color: var(--subtle); margin-top: 3px; text-align: right; }
   .chat-invoer-rij { display: flex; gap: 8px; align-items: flex-end; padding-top: 8px;
     border-top: 1px solid var(--border); }
-  .chat-invoer-rij textarea { flex: 1; resize: none; }
+  .chat-invoer-rij textarea { flex: 1; resize: none; min-height: 40px; max-height: 120px;
+    overflow-y: auto; line-height: 1.4; }
   .chat-verstuur-btn { background: var(--bank); color: #0f1f35; border: none; border-radius: 10px;
     padding: 10px 16px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
   .content { padding: 20px; max-width: 900px; margin: 0 auto; }
@@ -3181,12 +3182,15 @@ async function openPriveGesprek(partnerId, partnerNaam) {
   huidigGesprekMetId = partnerId;
   huidigeMediaPrive = [];
   document.getElementById('gp-modal-inhoud').innerHTML = `
-    <h2>${priveAvatarLetter(partnerNaam)} ${escHtml(partnerNaam)}</h2>
+    <div style="display:flex;align-items:center;gap:10px;padding-right:46px">
+      <div class="gesprek-avatar" style="flex-shrink:0">${priveAvatarLetter(partnerNaam)}</div>
+      <h2 style="margin:0">${escHtml(partnerNaam)}</h2>
+    </div>
     <div class="chat-scherm">
       <div class="chat-berichten" id="chat-berichten-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Laden…</p></div>
       <div id="chat-media-lijst" class="media-lijst"></div>
       <div class="chat-invoer-rij">
-        <textarea id="chat-invoer-tekst" rows="1" placeholder="Typ een bericht…"></textarea>
+        <textarea id="chat-invoer-tekst" rows="2" placeholder="Typ een bericht…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
         <button type="button" class="chat-verstuur-btn" style="background:var(--surface2);color:var(--text)" onclick="document.getElementById('chat-camera-input').click()">📷</button>
         <input type="file" id="chat-camera-input" accept="image/*" style="display:none" onchange="priveFotoGekozen(event)">
         <button class="chat-verstuur-btn" onclick="verstuurPriveBericht('${partnerId}')">Sturen</button>
