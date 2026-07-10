@@ -1070,10 +1070,6 @@ async function registreren() {
   if (!email) { alert('Vul je e-mailadres in.'); return; }
   if (!wachtwoord || wachtwoord.length < 6) { alert('Wachtwoord moet minimaal 6 tekens zijn.'); return; }
 
-  const { data: naamGeldig, error: naamError } = await sb.rpc('is_geldige_bewonersnaam', { te_checken_naam: naam });
-  if (naamError) { alert('Er ging iets mis bij het controleren van je naam: ' + naamError.message); return; }
-  if (!naamGeldig) { alert('Deze naam staat niet in de bewonerslijst. Check de spelling (hoofdletter, exact zoals gebruikelijk) of vraag de beheerder om je naam eerst toe te voegen.'); return; }
-
   const { data, error } = await sb.auth.signUp({
     email, password: wachtwoord,
     options: { data: { naam } }
@@ -1151,8 +1147,8 @@ document.addEventListener('click', (e) => {
 
 function resetMijnNaam() {
   if (!confirm('Weet je zeker dat je een andere naam wilt kiezen?')) return;
-  const nieuweNaam = prompt('Kies je nieuwe naam exact zoals in de bewonerslijst:');
-  if (!nieuweNaam || !bewonersCache.includes(nieuweNaam)) { alert('Deze naam staat niet in de bewonerslijst.'); return; }
+  const nieuweNaam = prompt('Kies je nieuwe naam:');
+  if (!nieuweNaam) return;
   sb.rpc('wijzig_eigen_naam', { nieuwe_naam: nieuweNaam }).then(({error}) => {
     if (error) { alert('Wijzigen mislukt: ' + error.message); return; }
     huidigProfiel.naam = nieuweNaam;
@@ -1233,8 +1229,33 @@ function initSupabase() {
   try {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     supabaseActief = true;
+    checkNetBevestigd();
     checkAuthStatus();
   } catch(e) { console.error('Supabase fout:', e); }
+}
+
+function checkNetBevestigd() {
+  // Supabase zet na het klikken op de bevestigingslink info in de URL (hash of query), afhankelijk van de flow.
+  const hash = window.location.hash || '';
+  const zoek = window.location.search || '';
+  const isBevestiging = hash.includes('type=signup') || zoek.includes('type=signup') || hash.includes('type=email_change');
+  if (isBevestiging) {
+    sessionStorage.setItem('wwl_net_bevestigd', '1');
+    // Hash opschonen zodat de melding niet blijft terugkomen bij verversen.
+    history.replaceState(null, '', window.location.pathname + window.location.search.replace(/([&?])type=signup[^&]*/, ''));
+    toonWelkomMelding();
+  }
+}
+
+function toonWelkomMelding() {
+  if (sessionStorage.getItem('wwl_net_bevestigd') !== '1') return;
+  sessionStorage.removeItem('wwl_net_bevestigd');
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>🎉 Welkom bij WWL!</h2>
+    <p class="gp-modal-intro">Je e-mailadres is bevestigd en je account is aangemaakt. Een beheerder moet je aanvraag nog goedkeuren voordat je de app kunt gebruiken — dat duurt meestal niet lang. Je krijgt vanzelf toegang zodra dat is gebeurd.</p>
+    <button class="verstuur-btn" onclick="sluitGPModal()">Begrepen →</button>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
 }
 
 async function laadMeldingen() {
