@@ -118,6 +118,28 @@
     background: #0f1f35; color: var(--text); }
   .melding-form input:focus, .melding-form select:focus, .melding-form textarea:focus { border-color: #60a5fa; }
   .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+
+  /* ── ICOONKIEZER ── */
+  .icoon-kies-veld { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .icoon-kies-preview { width: 50px; height: 50px; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 1.6rem; background: #0f1f35; border: 2px solid #2d4a7a;
+    border-radius: 10px; }
+  .icoon-kies-btn { flex: 1; padding: 12px 16px; border: 2px solid #2d4a7a; border-radius: 10px;
+    background: #0f1f35; color: #7eb8f7; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    text-align: left; }
+  .icoon-kies-btn:hover { border-color: var(--bank); }
+  .icoon-picker-zoek { width: 100%; padding: 12px 16px; border: 2px solid #2d4a7a; border-radius: 10px;
+    font-size: 0.9rem; outline: none; margin-bottom: 14px; font-family: inherit;
+    background: #0f1f35; color: var(--text); }
+  .icoon-picker-zoek:focus { border-color: #60a5fa; }
+  .icoon-picker-groep-titel { font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--muted); margin: 14px 0 8px; }
+  .icoon-picker-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .icoon-picker-item { aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; background: #0f1f35; border: 2px solid #2d4a7a; border-radius: 10px;
+    cursor: pointer; }
+  .icoon-picker-item:hover, .icoon-picker-item:active { border-color: var(--bank); background: var(--bank-bg); }
+  .icoon-picker-leeg { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 20px 0; }
   .type-btn { padding: 12px 8px; border-radius: 12px; border: 2px solid #2d4a7a;
               font-size: 0.8rem; font-weight: 700; cursor: pointer; text-align: center;
               background: #0f1f35; color: #7eb8f7; transition: all 0.15s; }
@@ -2190,19 +2212,123 @@ function renderGPNieuwKnop() {
   if (btn) btn.style.display = gpBeheerActief() ? 'inline-block' : 'none';
 }
 
-function toonNieuwOnderwerpForm() {
+// ── ICOONKIEZER ──────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+const ICOON_GROEPEN = [
+  { titel: 'Wonen & huis', iconen: [
+    ['🏠','huis wonen'], ['🛋️','bank huiskamer'], ['🛏️','bed slaapkamer'], ['🚪','deur'],
+    ['🪟','raam'], ['🧹','schoonmaken bezem'], ['🧺','wasmand wasgoed'], ['🔑','sleutel'],
+    ['🔒','slot beveiliging'], ['💡','lamp licht idee'], ['🔥','vuur kachel'], ['🚿','douche'],
+  ]},
+  { titel: 'Klussen & gereedschap', iconen: [
+    ['🧰','gereedschapskist klussen'], ['🔧','moersleutel klus'], ['🔨','hamer klus'], ['🪚','zaag'],
+    ['🪛','schroevendraaier'], ['🎨','verf schilderen'], ['🧱','steen bouw'], ['🚧','werk in uitvoering'],
+    ['⚡','elektra stroom'], ['🚰','waterkraan loodgieter'],
+  ]},
+  { titel: 'Eten & keuken', iconen: [
+    ['🍽️','eten bord koken'], ['🍳','koken bakken ei'], ['☕','koffie'], ['🍞','brood'],
+    ['🛒','boodschappen winkelwagen'], ['🧊','ijs koelkast'], ['🍽️','diner'], ['🥘','maaltijd koken'],
+  ]},
+  { titel: 'Mensen & hulp', iconen: [
+    ['🧑‍🚒','brandweer brandweerman'], ['👮','politie'], ['🚑','ambulance zorg'], ['🩺','dokter zorg gezondheid'],
+    ['🧑‍⚕️','verpleegkundige zorg'], ['🤝','samenwerken afspraak'], ['🗣️','praten overleg'], ['👥','groep mensen'],
+  ]},
+  { titel: 'Verkeer & buiten', iconen: [
+    ['🚲','fiets'], ['🚗','auto'], ['🚌','bus'], ['🚶','wandelen lopen'],
+    ['🌳','boom buiten tuin'], ['☀️','zon weer'], ['🌧️','regen weer'], ['🅿️','parkeren'],
+  ]},
+  { titel: 'Vrije tijd', iconen: [
+    ['🎸','gitaar muziek'], ['🎮','gamen spelletje'], ['⚽','voetbal sport'], ['📚','boeken lezen'],
+    ['🎬','film video'], ['🎲','spelletje bordspel'], ['🐶','hond huisdier'], ['🐱','kat huisdier'],
+  ]},
+  { titel: 'Documenten & info', iconen: [
+    ['📌','prikbord algemeen'], ['📋','regels lijst'], ['📄','document papier'], ['📢','mededeling aankondiging'],
+    ['❗','belangrijk let op'], ['✅','klaar afgerond'], ['🎂','verjaardag'], ['📅','kalender datum'],
+  ]},
+];
+
+function toonIconenKiezer(doelVeldId, formContext) {
+  const alleGroepen = () => ICOON_GROEPEN.map(g => `
+    <div class="icoon-picker-groep-titel">${g.titel}</div>
+    <div class="icoon-picker-grid">
+      ${g.iconen.map(([e]) => `<div class="icoon-picker-item" onclick="kiesIcoon('${doelVeldId}','${e}')">${e}</div>`).join('')}
+    </div>
+  `).join('');
+
+  window._iconPickerContext = formContext || null;
+
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>Kies een icoon</h2>
+    <input type="text" class="icoon-picker-zoek" id="icoon-picker-zoekveld"
+           placeholder="Zoek, bijv. 'brandweer', 'eten', 'fiets'…"
+           oninput="filterIconenKiezer('${doelVeldId}')">
+    <div id="icoon-picker-resultaat">${alleGroepen()}</div>
+    ${formContext ? `<button type="button" class="icoon-kies-btn" style="margin-top:8px" onclick="toonNieuwOnderwerpForm(window._iconPickerContext)">← Terug zonder te wijzigen</button>` : ''}
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('icoon-picker-zoekveld')?.focus(), 100);
+}
+
+function filterIconenKiezer(doelVeldId) {
+  const q = document.getElementById('icoon-picker-zoekveld').value.trim().toLowerCase();
+  const resultaat = document.getElementById('icoon-picker-resultaat');
+  if (!q) {
+    resultaat.innerHTML = ICOON_GROEPEN.map(g => `
+      <div class="icoon-picker-groep-titel">${g.titel}</div>
+      <div class="icoon-picker-grid">
+        ${g.iconen.map(([e]) => `<div class="icoon-picker-item" onclick="kiesIcoon('${doelVeldId}','${e}')">${e}</div>`).join('')}
+      </div>
+    `).join('');
+    return;
+  }
+  const treffers = [];
+  ICOON_GROEPEN.forEach(g => g.iconen.forEach(([e, trefwoorden]) => {
+    if (trefwoorden.includes(q)) treffers.push(e);
+  }));
+  resultaat.innerHTML = treffers.length
+    ? `<div class="icoon-picker-grid">${treffers.map(e => `<div class="icoon-picker-item" onclick="kiesIcoon('${doelVeldId}','${e}')">${e}</div>`).join('')}</div>`
+    : `<div class="icoon-picker-leeg">Geen icoon gevonden voor "${q}". Probeer een ander woord.</div>`;
+}
+
+function kiesIcoon(doelVeldId, emoji) {
+  if (doelVeldId === 'nieuw-onderwerp-icoon') {
+    const w = {
+      icoon: emoji,
+      titel: document.getElementById('nieuw-onderwerp-titel')?.value || '',
+      sub: document.getElementById('nieuw-onderwerp-sub')?.value || '',
+      intro: document.getElementById('nieuw-onderwerp-intro')?.value || '',
+    };
+    toonNieuwOnderwerpForm(w);
+    return;
+  }
+  const veld = document.getElementById(doelVeldId);
+  if (veld) veld.value = emoji;
+  const previewEl = document.getElementById(doelVeldId + '-preview');
+  if (previewEl) previewEl.textContent = emoji;
+  sluitGPModal();
+}
+
+function toonNieuwOnderwerpForm(bestaandeWaarden) {
+  const w = bestaandeWaarden || {};
+  const icoon = w.icoon || '📌';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>➕ Nieuw onderwerp</h2>
     <p class="gp-modal-intro">Maak een nieuw prikbord-achtig onderwerp. Het werkt daarna hetzelfde als Prikbord of Ideeën: iedereen kan er berichten (met eventueel een foto) op plaatsen.</p>
     <div class="melding-form" style="margin-top:4px">
-      <label>Icoon (emoji)</label>
-      <input type="text" id="nieuw-onderwerp-icoon" placeholder="bijv. 🎸" maxlength="4">
+      <label>Icoon</label>
+      <div class="icoon-kies-veld">
+        <div class="icoon-kies-preview" id="nieuw-onderwerp-icoon-preview">${icoon}</div>
+        <button type="button" class="icoon-kies-btn" onclick="toonIconenKiezer('nieuw-onderwerp-icoon', {icoon: document.getElementById('nieuw-onderwerp-icoon').value, titel: document.getElementById('nieuw-onderwerp-titel').value, sub: document.getElementById('nieuw-onderwerp-sub').value, intro: document.getElementById('nieuw-onderwerp-intro').value})">Kies een icoon…</button>
+      </div>
+      <input type="hidden" id="nieuw-onderwerp-icoon" value="${icoon}">
       <label>Titel</label>
-      <input type="text" id="nieuw-onderwerp-titel" placeholder="bijv. Muziekinstrumenten">
+      <input type="text" id="nieuw-onderwerp-titel" placeholder="bijv. Muziekinstrumenten" value="${escHtml(w.titel)}">
       <label>Korte ondertitel</label>
-      <input type="text" id="nieuw-onderwerp-sub" placeholder="bijv. Te leen of te ruil">
+      <input type="text" id="nieuw-onderwerp-sub" placeholder="bijv. Te leen of te ruil" value="${escHtml(w.sub)}">
       <label>Uitleg (intro-tekst)</label>
-      <textarea id="nieuw-onderwerp-intro" rows="3" placeholder="Wat is de bedoeling van dit onderwerp?"></textarea>
+      <textarea id="nieuw-onderwerp-intro" rows="3" placeholder="Wat is de bedoeling van dit onderwerp?">${escHtml(w.intro)}</textarea>
       <button class="verstuur-btn" onclick="maakNieuwOnderwerpAan()">Aanmaken →</button>
     </div>
   `;
