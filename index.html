@@ -648,7 +648,10 @@
       <div id="melding-naam-weergave"></div>
       <label>Type melding</label>
       <div class="type-grid" id="type-grid"></div>
-      <label>Toelichting (optioneel)</label>
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Toelichting (optioneel)</span>
+        <button type="button" onclick="maakVetGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+      </label>
       <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
       <div id="melding-camera-plek"></div>
       <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen → verschijnt direct op alle schermen</button>
@@ -1796,7 +1799,7 @@ function meldingHTML(m) {
     </div>
     <div class="melding-naam">${m.naam}</div>
     <div id="melding-media-${m.id}">${meldingMediaPlaatshouder(m)}</div>
-    ${m.bericht?`<div class="melding-tekst">${berichtTekstHtml(m.bericht)}</div>`:''}
+    ${m.bericht?`<div class="melding-tekst">${introTekstHtml(m.bericht)}</div>`:''}
   </div>`;
 }
 
@@ -1818,7 +1821,10 @@ async function bewerkMeldingTekst(id) {
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ Bericht bewerken</h2>
     <div class="melding-form" style="margin-top:4px">
-      <label>Tekst</label>
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Tekst</span>
+        <button type="button" onclick="maakVetGeselecteerd('bewerk-melding-tekst')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+      </label>
       <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
       ${mediaZoneHTML(ns)}
       <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, gebruik ◀ ▶ om de volgorde te wijzigen, of voeg een nieuwe toe (max. ${MAX_MEDIA}).</p>
@@ -2235,6 +2241,13 @@ function escHtml(s) {
 function berichtTekstHtml(s) {
   return escHtml(s).replace(/\n/g, '<br>');
 }
+function introTekstHtml(s) {
+  // Escaped alles behalve <strong>/</strong> (toegestaan via het B-knopje), en behoudt regeleindes.
+  const escaped = escHtml(s)
+    .replace(/&lt;strong&gt;/g, '<strong>')
+    .replace(/&lt;\/strong&gt;/g, '</strong>');
+  return escaped.replace(/\n/g, '<br>');
+}
 // ── ONDERWERP-KLEUREN ────────────────────────────────────────────────────
 const ONDERWERP_KLEUREN = {
   blauw:    { naam: 'Blauw',    tekst: '#7eb8f7', rand: '#2d4a7a', bg: '#13233d' },
@@ -2601,7 +2614,10 @@ async function bewerkExtraItemTekst(id, categorie) {
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ Bericht bewerken</h2>
     <div class="melding-form" style="margin-top:4px">
-      <label>Tekst</label>
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Tekst</span>
+        <button type="button" onclick="maakVetGeselecteerd('bewerk-extra-tekst')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+      </label>
       <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
       ${mediaZoneHTML(ns)}
       <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, gebruik ◀ ▶ om de volgorde te wijzigen, of voeg een nieuwe toe (max. ${MAX_MEDIA}).</p>
@@ -2642,7 +2658,7 @@ function extraItemKaartHTML(item, categorie) {
       </div>
       <div class="melding-naam" style="color:${c.tekst}">${escHtml(item.naam)}</div>
       <div id="extra-media-${item.id}">${extraMediaPlaatshouder(item)}</div>
-      ${item.tekst?`<div class="melding-tekst">${berichtTekstHtml(item.tekst)}</div>`:''}
+      ${item.tekst?`<div class="melding-tekst">${introTekstHtml(item.tekst)}</div>`:''}
     </div>`;
 }
 
@@ -2851,7 +2867,7 @@ function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
   const standaardItem = GP_STANDAARD.find(x => x.key === key);
   const data = custom
-    ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: berichtTekstHtml(custom.intro || ''), footer: '' }
+    ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: introTekstHtml(custom.intro || ''), footer: '' }
     : (GP_INHOUD[key] || GP_INHOUD.placeholder);
   const interactief = EXTRA_CATEGORIEEN.includes(key);
   const kanBewerkOnderwerp = gpBeheerActief() && (custom || standaardItem) && key !== 'instellingen' && key !== 'huisregels';
@@ -2867,7 +2883,10 @@ function openGP(key) {
         <summary style="font-size:0.85rem;color:#818cf8;cursor:pointer;font-weight:800">+ Nieuw bericht plaatsen</summary>
         <div class="melding-form" style="margin-top:12px">
           ${identiteitBlok}
-          <label>Bericht</label>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>Bericht</span>
+            <button type="button" onclick="maakVetGeselecteerd('extra-tekst-${key}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+          </label>
           <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
           ${mediaZoneHTML(key)}
           <button class="verstuur-btn" onclick="voegExtraItemToe('${key}')">Plaatsen →</button>
@@ -2891,6 +2910,25 @@ function openGP(key) {
 }
 
 // ── ONDERWERP ZELF BEWERKEN (titel/sub/intro/icoon/kleur, ook voor standaardonderwerpen) ──
+// ── VETGEDRUKT MAKEN IN TEXTAREA ─────────────────────────────────────────
+function maakVetGeselecteerd(veldId) {
+  const veld = document.getElementById(veldId);
+  if (!veld) return;
+  const start = veld.selectionStart;
+  const eind = veld.selectionEnd;
+  if (start === eind) {
+    alert('Selecteer eerst een stukje tekst (houd je vinger op de tekst en sleep) en tik daarna op B.');
+    return;
+  }
+  const voor = veld.value.slice(0, start);
+  const geselecteerd = veld.value.slice(start, eind);
+  const na = veld.value.slice(eind);
+  veld.value = `${voor}<strong>${geselecteerd}</strong>${na}`;
+  veld.focus();
+  const nieuweCursor = start + `<strong>${geselecteerd}</strong>`.length;
+  veld.setSelectionRange(nieuweCursor, nieuweCursor);
+}
+
 function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
   window._bewerkOnderwerpKey = key;
   const custom = gpAangepasteOnderwerpen[key];
@@ -2924,7 +2962,10 @@ function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
       <input type="text" id="bewerk-onderwerp-titel" value="${escHtml(w.titel)}">
       <label>Korte ondertitel</label>
       <input type="text" id="bewerk-onderwerp-sub" value="${escHtml(w.sub)}">
-      <label>Uitleg (intro-tekst)</label>
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Uitleg (intro-tekst)</span>
+        <button type="button" onclick="maakVetGeselecteerd('bewerk-onderwerp-intro')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+      </label>
       <textarea id="bewerk-onderwerp-intro" rows="4">${escHtml(w.intro)}</textarea>
       <button class="verstuur-btn" onclick="bevestigBewerkOnderwerp('${key}')">Opslaan →</button>
     </div>
