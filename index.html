@@ -2878,7 +2878,7 @@ function openGP(key) {
     extraHtml = `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>`;
   }
   document.getElementById('gp-modal-inhoud').innerHTML = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-right:46px">
       <h2 style="margin:0">${data.titel}</h2>
       ${kanBewerkOnderwerp ? `<button class="verwijder-btn" style="flex-shrink:0" onclick="toonBewerkOnderwerpForm('${key}')">✏️</button>` : ''}
     </div>
