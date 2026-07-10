@@ -885,7 +885,12 @@ function mijnNaam() { return huidigProfiel ? huidigProfiel.naam : null; }
 
 async function checkAuthStatus() {
   if (!supabaseActief) return;
-  const { data: { session } } = await sb.auth.getSession();
+  let { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    // Mogelijk een tijdelijke hapering (netwerk/Supabase-storing) — probeer één keer te vernieuwen voordat we opgeven.
+    const { data: refreshed } = await sb.auth.refreshSession();
+    session = refreshed && refreshed.session;
+  }
   if (!session) { toonAuthScherm('login'); return; }
   await laadEigenProfiel();
 }
@@ -2166,7 +2171,10 @@ function luisterGPVolgordeLive() {
 async function opslaanGPVolgorde(items) {
   gpVolgordeCache = items;
   if (!supabaseActief) return;
-  await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, items });
+  const {error} = await sb.from('gp_volgorde').upsert({ id: GP_VOLGORDE_ID, items });
+  if (error) {
+    alert('Let op: de volgorde/wijziging is NIET opgeslagen in de database (' + error.message + '). Ververs de pagina en probeer het opnieuw — mogelijk moet je opnieuw inloggen.');
+  }
 }
 
 function getGPVolgorde() { return gpVolgordeCache; }
@@ -2290,6 +2298,9 @@ function toonIconenKiezer(doelVeldId, formContext) {
   `).join('');
 
   window._iconPickerContext = formContext || null;
+  const terugActie = doelVeldId === 'bewerk-onderwerp-icoon'
+    ? `toonBewerkOnderwerpForm('${window._bewerkOnderwerpKey}', {key:'${window._bewerkOnderwerpKey}', icoon: document.getElementById('bewerk-onderwerp-icoon-preview')?.textContent, titel: document.getElementById('bewerk-onderwerp-titel')?.value, sub: document.getElementById('bewerk-onderwerp-sub')?.value, intro: document.getElementById('bewerk-onderwerp-intro')?.value, kleur: document.getElementById('bewerk-onderwerp-kleur')?.value})`
+    : (formContext ? `toonNieuwOnderwerpForm(window._iconPickerContext)` : null);
 
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>Kies een icoon</h2>
@@ -2297,7 +2308,7 @@ function toonIconenKiezer(doelVeldId, formContext) {
            placeholder="Zoek, bijv. 'brandweer', 'eten', 'fiets'…"
            oninput="filterIconenKiezer('${doelVeldId}')">
     <div id="icoon-picker-resultaat">${alleGroepen()}</div>
-    ${formContext ? `<button type="button" class="icoon-kies-btn" style="margin-top:8px" onclick="toonNieuwOnderwerpForm(window._iconPickerContext)">← Terug zonder te wijzigen</button>` : ''}
+    ${terugActie ? `<button type="button" class="icoon-kies-btn" style="margin-top:8px" onclick="${terugActie}">← Terug zonder te wijzigen</button>` : ''}
   `;
   document.getElementById('gp-overlay').classList.add('open');
   setTimeout(() => document.getElementById('icoon-picker-zoekveld')?.focus(), 100);
@@ -2334,6 +2345,18 @@ function kiesIcoon(doelVeldId, emoji) {
       kleur: document.getElementById('nieuw-onderwerp-kleur')?.value || 'blauw',
     };
     toonNieuwOnderwerpForm(w);
+    return;
+  }
+  if (doelVeldId === 'bewerk-onderwerp-icoon') {
+    const w = {
+      key: window._bewerkOnderwerpKey,
+      icoon: emoji,
+      titel: document.getElementById('bewerk-onderwerp-titel')?.value || '',
+      sub: document.getElementById('bewerk-onderwerp-sub')?.value || '',
+      intro: document.getElementById('bewerk-onderwerp-intro')?.value || '',
+      kleur: document.getElementById('bewerk-onderwerp-kleur')?.value || 'blauw',
+    };
+    toonBewerkOnderwerpFormMetWaarden(w);
     return;
   }
   const veld = document.getElementById(doelVeldId);
@@ -2825,10 +2848,12 @@ async function toggleBeheerderswoning(naam) {
 
 function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
+  const standaardItem = GP_STANDAARD.find(x => x.key === key);
   const data = custom
     ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: custom.intro || '', footer: '' }
     : (GP_INHOUD[key] || GP_INHOUD.placeholder);
   const interactief = EXTRA_CATEGORIEEN.includes(key);
+  const kanBewerkOnderwerp = gpBeheerActief() && (custom || standaardItem) && key !== 'instellingen' && key !== 'huisregels';
   let extraHtml = '';
   if (interactief) {
     const identiteitBlok = mijnNaam()
@@ -2853,12 +2878,95 @@ function openGP(key) {
     extraHtml = `<p style="font-size:0.72rem;color:var(--subtle);font-style:italic">${data.footer}</p>`;
   }
   document.getElementById('gp-modal-inhoud').innerHTML = `
-    <h2>${data.titel}</h2>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+      <h2 style="margin:0">${data.titel}</h2>
+      ${kanBewerkOnderwerp ? `<button class="verwijder-btn" style="flex-shrink:0" onclick="toonBewerkOnderwerpForm('${key}')">✏️</button>` : ''}
+    </div>
     <p class="gp-modal-intro">${data.intro}</p>
     ${extraHtml}
   `;
   document.getElementById('gp-overlay').classList.add('open');
   if (interactief) { huidigeMedia[key] = []; renderMediaLijst(key); laadExtraItems(key); luisterExtraLive(key); }
+}
+
+// ── ONDERWERP ZELF BEWERKEN (titel/sub/intro/icoon/kleur, ook voor standaardonderwerpen) ──
+function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
+  window._bewerkOnderwerpKey = key;
+  const custom = gpAangepasteOnderwerpen[key];
+  const standaardItem = GP_STANDAARD.find(x => x.key === key);
+  const volgordeItem = gpVolgordeCache.find(x => x.key === key);
+  const w = bestaandeWaarden || {
+    icoon: (volgordeItem && volgordeItem.icon) || custom?.icon || standaardItem?.icon || '📌',
+    titel: custom?.titel || standaardItem?.titel || '',
+    sub: (volgordeItem && volgordeItem.sub) || custom?.sub || standaardItem?.sub || '',
+    intro: custom?.intro || (GP_INHOUD[key] && GP_INHOUD[key].intro.replace(/<[^>]+>/g, '')) || '',
+    kleur: (volgordeItem && volgordeItem.kleur) || custom?.kleur || 'blauw',
+  };
+  const kleurSwatches = Object.entries(ONDERWERP_KLEUREN).map(([k, c]) => `
+    <div class="kleur-kies-item ${k === w.kleur ? 'actief' : ''}" style="background:${c.bg}" onclick="kiesBewerkOnderwerpKleur('${k}')">
+      <span class="kleur-kies-swatch" style="background:${c.tekst}"></span>${c.naam}
+    </div>
+  `).join('');
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>✏️ Onderwerp bewerken</h2>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Icoon</label>
+      <div class="icoon-kies-veld">
+        <div class="icoon-kies-preview" id="bewerk-onderwerp-icoon-preview">${w.icoon}</div>
+        <button type="button" class="icoon-kies-btn" onclick="toonIconenKiezer('bewerk-onderwerp-icoon')">Kies een icoon…</button>
+      </div>
+      <input type="hidden" id="bewerk-onderwerp-icoon" value="${w.icoon}">
+      <label>Kleur</label>
+      <input type="hidden" id="bewerk-onderwerp-kleur" value="${w.kleur}">
+      <div class="kleur-kies-grid" id="bewerk-onderwerp-kleur-grid">${kleurSwatches}</div>
+      <label>Titel</label>
+      <input type="text" id="bewerk-onderwerp-titel" value="${escHtml(w.titel)}">
+      <label>Korte ondertitel</label>
+      <input type="text" id="bewerk-onderwerp-sub" value="${escHtml(w.sub)}">
+      <label>Uitleg (intro-tekst)</label>
+      <textarea id="bewerk-onderwerp-intro" rows="4">${escHtml(w.intro)}</textarea>
+      <button class="verstuur-btn" onclick="bevestigBewerkOnderwerp('${key}')">Opslaan →</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+function toonBewerkOnderwerpFormMetWaarden(w) { toonBewerkOnderwerpForm(w.key, w); }
+
+function kiesBewerkOnderwerpKleur(key) {
+  document.getElementById('bewerk-onderwerp-kleur').value = key;
+  document.querySelectorAll('#bewerk-onderwerp-kleur-grid .kleur-kies-item').forEach(el => el.classList.remove('actief'));
+  const idx = Object.keys(ONDERWERP_KLEUREN).indexOf(key);
+  document.querySelectorAll('#bewerk-onderwerp-kleur-grid .kleur-kies-item')[idx]?.classList.add('actief');
+}
+
+async function bevestigBewerkOnderwerp(key) {
+  const icoon = document.getElementById('bewerk-onderwerp-icoon').value.trim() || '📌';
+  const titel = document.getElementById('bewerk-onderwerp-titel').value.trim();
+  const sub   = document.getElementById('bewerk-onderwerp-sub').value.trim();
+  const intro = document.getElementById('bewerk-onderwerp-intro').value.trim();
+  const kleur = document.getElementById('bewerk-onderwerp-kleur').value || 'blauw';
+  if (!titel) { alert('Vul een titel in.'); return; }
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+
+  // gp_items_info bijwerken (insert als nog niet bestaat, anders update) — dit maakt ook standaardonderwerpen aanpasbaar
+  const {error} = await sb.from('gp_items_info').upsert([{ sleutel: key, icoon, titel, sub, intro }]);
+  if (error) { alert('Opslaan mislukt: ' + error.message); return; }
+
+  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro, kleur };
+
+  // ook de volgorde-lijst bijwerken zodat icoon/titel/sub/kleur overal kloppen (overzicht, berichtkleuren)
+  const items = getGPVolgorde();
+  const idx = items.findIndex(x => x.key === key);
+  if (idx >= 0) {
+    items[idx] = { ...items[idx], icon: icoon, titel, sub, kleur };
+  } else {
+    items.push({ key, icon: icoon, titel, sub, actief: true, kleur });
+  }
+  await opslaanGPVolgorde(items);
+
+  sluitGPModal();
+  renderGPPaginas();
+  openGP(key);
 }
 
 function sluitGPModal() {
