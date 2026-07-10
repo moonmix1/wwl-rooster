@@ -486,6 +486,8 @@
   .gp-modal h2 { font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 8px; padding-right: 30px; }
   .gp-modal-intro { font-size: 0.85rem; color: #b0c4de; line-height: 1.6; margin-bottom: 18px; }
   .gp-modal-intro strong { color: white; }
+  .gp-modal-intro small, .melding-tekst small, .chat-bel small { font-size: 0.82em; opacity: 0.8; }
+  .gp-modal-intro em, .melding-tekst em, .chat-bel em { font-style: italic; }
 
   @media (max-width: 480px) {
     .kaart-grid { grid-template-columns: 1fr; }
@@ -689,7 +691,11 @@
       <div class="type-grid" id="type-grid"></div>
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Toelichting (optioneel)</span>
-        <button type="button" onclick="maakVetGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">
+          <button type="button" onclick="maakVetGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+          <button type="button" onclick="maakCursiefGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0;font-style:italic">I</button>
+          <button type="button" onclick="maakKleinGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0">S</button>
+        </span>
       </label>
       <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
       <div id="melding-camera-plek"></div>
@@ -1885,7 +1891,7 @@ async function bewerkMeldingTekst(id) {
     <div class="melding-form" style="margin-top:4px">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Tekst</span>
-        <button type="button" onclick="maakVetGeselecteerd('bewerk-melding-tekst')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-melding-tekst')}</span>
       </label>
       <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
       ${mediaZoneHTML(ns)}
@@ -2304,10 +2310,14 @@ function berichtTekstHtml(s) {
   return escHtml(s).replace(/\n/g, '<br>');
 }
 function introTekstHtml(s) {
-  // Escaped alles behalve <strong>/</strong> (toegestaan via het B-knopje), en behoudt regeleindes.
-  const escaped = escHtml(s)
-    .replace(/&lt;strong&gt;/g, '<strong>')
-    .replace(/&lt;\/strong&gt;/g, '</strong>');
+  // Escaped alles behalve <strong>/<em>/<small> (toegestaan via de B/I/S-knoppen), en behoudt regeleindes.
+  const toegestaan = ['strong', 'em', 'small'];
+  let escaped = escHtml(s);
+  toegestaan.forEach(tag => {
+    escaped = escaped
+      .replace(new RegExp(`&lt;${tag}&gt;`, 'g'), `<${tag}>`)
+      .replace(new RegExp(`&lt;/${tag}&gt;`, 'g'), `</${tag}>`);
+  });
   return escaped.replace(/\n/g, '<br>');
 }
 // ── ONDERWERP-KLEUREN ────────────────────────────────────────────────────
@@ -2678,7 +2688,7 @@ async function bewerkExtraItemTekst(id, categorie) {
     <div class="melding-form" style="margin-top:4px">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Tekst</span>
-        <button type="button" onclick="maakVetGeselecteerd('bewerk-extra-tekst')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-extra-tekst')}</span>
       </label>
       <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
       ${mediaZoneHTML(ns)}
@@ -2928,6 +2938,9 @@ async function toggleBeheerderswoning(naam) {
 function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
   const standaardItem = GP_STANDAARD.find(x => x.key === key);
+  const volgordeItem = gpVolgordeCache.find(x => x.key === key);
+  const titelruimte = (volgordeItem && volgordeItem.titelruimte) || custom?.titelruimte || 'normaal';
+  const titelMarge = { compact: '4px', normaal: '8px', ruim: '20px' }[titelruimte] || '8px';
   const data = custom
     ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: introTekstHtml(custom.intro || ''), footer: '' }
     : (GP_INHOUD[key] || GP_INHOUD.placeholder);
@@ -2947,7 +2960,7 @@ function openGP(key) {
           ${identiteitBlok}
           <label style="display:flex;align-items:center;justify-content:space-between">
             <span>Bericht</span>
-            <button type="button" onclick="maakVetGeselecteerd('extra-tekst-${key}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+            <span style="display:flex;gap:4px">${opmaakKnoppenHtml('extra-tekst-' + key)}</span>
           </label>
           <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
           ${mediaZoneHTML(key)}
@@ -2961,7 +2974,7 @@ function openGP(key) {
   }
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-right:46px">
-      <h2 style="margin:0">${data.titel}</h2>
+      <h2 style="margin:0 0 ${titelMarge} 0">${data.titel}</h2>
       ${kanBewerkOnderwerp ? `<button class="verwijder-btn" style="flex-shrink:0" onclick="toonBewerkOnderwerpForm('${key}')">✏️</button>` : ''}
     </div>
     <p class="gp-modal-intro">${data.intro}</p>
@@ -2973,22 +2986,33 @@ function openGP(key) {
 
 // ── ONDERWERP ZELF BEWERKEN (titel/sub/intro/icoon/kleur, ook voor standaardonderwerpen) ──
 // ── VETGEDRUKT MAKEN IN TEXTAREA ─────────────────────────────────────────
-function maakVetGeselecteerd(veldId) {
+function maakOpmaakGeselecteerd(veldId, tag) {
   const veld = document.getElementById(veldId);
   if (!veld) return;
   const start = veld.selectionStart;
   const eind = veld.selectionEnd;
   if (start === eind) {
-    alert('Selecteer eerst een stukje tekst (houd je vinger op de tekst en sleep) en tik daarna op B.');
+    alert('Selecteer eerst een stukje tekst (houd je vinger op de tekst en sleep) en tik daarna op de knop.');
     return;
   }
   const voor = veld.value.slice(0, start);
   const geselecteerd = veld.value.slice(start, eind);
   const na = veld.value.slice(eind);
-  veld.value = `${voor}<strong>${geselecteerd}</strong>${na}`;
+  const stuk = `<${tag}>${geselecteerd}</${tag}>`;
+  veld.value = `${voor}${stuk}${na}`;
   veld.focus();
-  const nieuweCursor = start + `<strong>${geselecteerd}</strong>`.length;
+  const nieuweCursor = start + stuk.length;
   veld.setSelectionRange(nieuweCursor, nieuweCursor);
+}
+function maakVetGeselecteerd(veldId) { maakOpmaakGeselecteerd(veldId, 'strong'); }
+function maakCursiefGeselecteerd(veldId) { maakOpmaakGeselecteerd(veldId, 'em'); }
+function maakKleinGeselecteerd(veldId) { maakOpmaakGeselecteerd(veldId, 'small'); }
+function opmaakKnoppenHtml(veldId) {
+  const btnStijl = 'background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0';
+  return `
+    <button type="button" onclick="maakVetGeselecteerd('${veldId}')" style="${btnStijl}">B</button>
+    <button type="button" onclick="maakCursiefGeselecteerd('${veldId}')" style="${btnStijl}font-style:italic">I</button>
+    <button type="button" onclick="maakKleinGeselecteerd('${veldId}')" style="${btnStijl}font-size:0.65rem">S</button>`;
 }
 
 function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
@@ -3002,6 +3026,7 @@ function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
     sub: (volgordeItem && volgordeItem.sub) || custom?.sub || standaardItem?.sub || '',
     intro: custom?.intro || (GP_INHOUD[key] && GP_INHOUD[key].intro.replace(/<[^>]+>/g, '')) || '',
     kleur: (volgordeItem && volgordeItem.kleur) || custom?.kleur || 'blauw',
+    titelruimte: (volgordeItem && volgordeItem.titelruimte) || custom?.titelruimte || 'normaal',
   };
   const kleurSwatches = Object.entries(ONDERWERP_KLEUREN).map(([k, c]) => `
     <div class="kleur-kies-item ${k === w.kleur ? 'actief' : ''}" style="background:${c.bg}" onclick="kiesBewerkOnderwerpKleur('${k}')">
@@ -3024,9 +3049,15 @@ function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
       <input type="text" id="bewerk-onderwerp-titel" value="${escHtml(w.titel)}">
       <label>Korte ondertitel</label>
       <input type="text" id="bewerk-onderwerp-sub" value="${escHtml(w.sub)}">
+      <label>Ruimte onder de titel</label>
+      <select id="bewerk-onderwerp-titelruimte">
+        <option value="compact" ${w.titelruimte==='compact'?'selected':''}>Compact</option>
+        <option value="normaal" ${w.titelruimte==='normaal'?'selected':''}>Normaal</option>
+        <option value="ruim" ${w.titelruimte==='ruim'?'selected':''}>Ruim</option>
+      </select>
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Uitleg (intro-tekst)</span>
-        <button type="button" onclick="maakVetGeselecteerd('bewerk-onderwerp-intro')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-onderwerp-intro')}</span>
       </label>
       <textarea id="bewerk-onderwerp-intro" rows="4">${escHtml(w.intro)}</textarea>
       <button class="verstuur-btn" onclick="bevestigBewerkOnderwerp('${key}')">Opslaan →</button>
@@ -3049,6 +3080,7 @@ async function bevestigBewerkOnderwerp(key) {
   const sub   = document.getElementById('bewerk-onderwerp-sub').value.trim();
   const intro = document.getElementById('bewerk-onderwerp-intro').value.trim();
   const kleur = document.getElementById('bewerk-onderwerp-kleur').value || 'blauw';
+  const titelruimte = document.getElementById('bewerk-onderwerp-titelruimte').value || 'normaal';
   if (!titel) { alert('Vul een titel in.'); return; }
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
 
@@ -3056,15 +3088,15 @@ async function bevestigBewerkOnderwerp(key) {
   const {error} = await sb.from('gp_items_info').upsert([{ sleutel: key, icoon, titel, sub, intro }]);
   if (error) { alert('Opslaan mislukt: ' + error.message); return; }
 
-  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro, kleur };
+  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro, kleur, titelruimte };
 
   // ook de volgorde-lijst bijwerken zodat icoon/titel/sub/kleur overal kloppen (overzicht, berichtkleuren)
   const items = getGPVolgorde();
   const idx = items.findIndex(x => x.key === key);
   if (idx >= 0) {
-    items[idx] = { ...items[idx], icon: icoon, titel, sub, kleur };
+    items[idx] = { ...items[idx], icon: icoon, titel, sub, kleur, titelruimte };
   } else {
-    items.push({ key, icon: icoon, titel, sub, actief: true, kleur });
+    items.push({ key, icon: icoon, titel, sub, actief: true, kleur, titelruimte });
   }
   await opslaanGPVolgorde(items);
 
