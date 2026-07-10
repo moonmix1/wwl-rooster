@@ -2851,7 +2851,7 @@ function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
   const standaardItem = GP_STANDAARD.find(x => x.key === key);
   const data = custom
-    ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: custom.intro || '', footer: '' }
+    ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: berichtTekstHtml(custom.intro || ''), footer: '' }
     : (GP_INHOUD[key] || GP_INHOUD.placeholder);
   const interactief = EXTRA_CATEGORIEEN.includes(key);
   const kanBewerkOnderwerp = gpBeheerActief() && (custom || standaardItem) && key !== 'instellingen' && key !== 'huisregels';
