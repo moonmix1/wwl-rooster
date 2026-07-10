@@ -190,11 +190,11 @@
   .type-btn.actief { border-color: var(--bank); background: var(--bank-bg); color: var(--bank);
                      box-shadow: 0 0 12px rgba(167,139,250,0.3); }
   .type-btn:hover:not(.actief) { border-color: #5b7fc4; }
-  .verstuur-btn { width: 100%; padding: 15px; background: #4f46e5; color: white;
+  .verstuur-btn { width: 100%; padding: 15px; background: #2563eb; color: white;
                   border: none; border-radius: 12px; font-size: 1rem; font-weight: 800;
                   cursor: pointer; margin-bottom: 12px; transition: all 0.15s;
-                  box-shadow: 0 4px 15px rgba(79,70,229,0.4); }
-  .verstuur-btn:hover { background: #6366f1; }
+                  box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+  .verstuur-btn:hover { background: #3b76f0; }
   .verstuur-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
   .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px;
             width: 100%; padding: 13px; background: #075e54; color: white;
@@ -693,7 +693,7 @@
       </label>
       <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
       <div id="melding-camera-plek"></div>
-      <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen → verschijnt direct op alle schermen</button>
+      <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen — zichtbaar voor iedereen</button>
       <a class="wa-btn" href="#" onclick="return waSturen()">📲 Sturen via WhatsApp</a>
     </div>
     <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen</div>
@@ -1791,7 +1791,7 @@ async function verstuurMelding() {
   huidigeMedia['melding'] = [];
   renderMediaLijst('melding');
   btn.disabled = false;
-  btn.textContent = 'Versturen → verschijnt direct op alle schermen';
+  btn.textContent = 'Versturen — zichtbaar voor iedereen';
 }
 
 async function verwijderMelding(id) {
