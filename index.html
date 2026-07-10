@@ -2204,7 +2204,7 @@ function renderGPPaginas() {
         const globalIndex = paginaIdx * GP_PAGINA_GROOTTE + i;
         const c = onderwerpKleur(item.kleur || 'grijs');
         return `
-        <div class="gp-item ${item.actief?'':'gp-binnenkort'}" style="${item.actief?`border-color:${c.rand}`:''}">
+        <div class="gp-item ${item.actief?'':'gp-binnenkort'}" style="${item.actief?`border-color:${c.rand};background:${c.rand}14`:''}">
           <button class="gp-item-klik" onclick="openGP('${item.actief?item.key:'placeholder'}')">
             <span class="gp-icon">${item.icon}</span>
             <span class="gp-tekst">
