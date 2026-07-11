@@ -125,6 +125,8 @@
   .pr-cel-vw   { background: #0039ba; }
   .pr-cel-gast { background: #de1c39; }
   .pr-cel-gvdw { background: #028e74; }
+  .pr-cel-oud  { background: #c99a1e; }
+  .pr-cel-ext  { background: #7c3aed; }
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
@@ -141,6 +143,8 @@
   .pr-uren-status-vw   { background: #0039ba; }
   .pr-uren-status-gast { background: #de1c39; }
   .pr-uren-status-gvdw { background: #028e74; }
+  .pr-uren-status-oud  { background: #c99a1e; }
+  .pr-uren-status-ext  { background: #7c3aed; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
@@ -3548,21 +3552,18 @@ async function renderPapierRooster() {
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
-  const statusMap = weekData._status || {}; // naam -> 'gast' | 'gast_week' (afwezig = vrijwilliger)
+  const statusMap = weekData._status || {}; // naam -> 'vrijwilliger' | 'gast' | 'gast_week' | 'oud_bewoner' | 'extern'
 
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
-  const statusKlasse = (status) => status === 'gast' ? 'pr-cel-gast' : (status === 'gast_week' ? 'pr-cel-gvdw' : 'pr-cel-vw');
-  const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
-
-  const CEL_LABEL_TEKST = { kok: 'kok', oud_bewoner: 'oud bewoner', extern: 'extern' };
-  // Label dat de status vervangt (oud_bewoner/extern) vs. label dat naast de status komt (kok).
-  const isVervangLabel = (celLabel) => celLabel === 'oud_bewoner' || celLabel === 'extern';
+  const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
+  const statusKlasse = (status) => STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
+  const statusLabelTekst = (status) => STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger;
 
   const naamRegelHtml = (naam, status, celLabel) => {
-    const statusTekst = isVervangLabel(celLabel) ? CEL_LABEL_TEKST[celLabel] : statusLabelTekst(status);
-    const kokExtra = (celLabel === 'kok') ? ` · ${CEL_LABEL_TEKST.kok}` : '';
-    return `<span class="pr-naam-regel">${escHtml(naam)}<span class="pr-cel-label">${statusTekst}${kokExtra}</span></span>`;
+    const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
+    return `<span class="pr-naam-regel">${escHtml(naam)}<span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span></span>`;
   };
 
   const maakRij = (dagNaam, i) => {
@@ -3638,20 +3639,25 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return a.localeCompare(b, 'nl'); // bij gelijke uren (incl. 0): alfabetisch
   });
 
-  const statusOpties = (naam, huidigeStatus) => `
+  const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
+
+  const statusOpties = (huidigeStatus) => `
     <option value="vrijwilliger" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
     <option value="gast" ${huidigeStatus==='gast'?'selected':''}>gast</option>
-    <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>`;
+    <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
+    <option value="oud_bewoner" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
+    <option value="extern" ${huidigeStatus==='extern'?'selected':''}>extern persoon</option>`;
 
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
     : namen.map(naam => {
     const status = statusMap[naam] || 'vrijwilliger';
-    const klasse = status === 'gast' ? 'pr-uren-status-gast' : (status === 'gast_week' ? 'pr-uren-status-gvdw' : 'pr-uren-status-vw');
+    const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
     const naamVeilig = naam.replace(/'/g,"\\'");
     const statusVeld = beheer
-      ? `<select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(naam, status)}</select>`
-      : `<span class="pr-status-label" style="margin-top:0">${status === 'vrijwilliger' ? 'vrijwilliger' : (status === 'gast' ? 'gast' : 'gast van de week')}</span>`;
+      ? `<select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(status)}</select>`
+      : `<span class="pr-status-label" style="margin-top:0">${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-naam">${escHtml(naam)}</span>
@@ -3686,12 +3692,10 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
   const info = (weekData[dagKey] && weekData[dagKey][dienstKey]) || {};
   const labelOpties = (huidig) => `
     <option value="" ${!huidig?'selected':''}>— geen label —</option>
-    <option value="kok" ${huidig==='kok'?'selected':''}>🍳 kok</option>
-    <option value="oud_bewoner" ${huidig==='oud_bewoner'?'selected':''}>oud bewoner</option>
-    <option value="extern" ${huidig==='extern'?'selected':''}>extern persoon</option>`;
+    <option value="kok" ${huidig==='kok'?'selected':''}>🍳 kok</option>`;
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
-    <p class="gp-modal-intro">${dagKey}</p>
+    <p class="gp-modal-intro">${dagKey}<br><span style="font-size:0.75rem;color:var(--subtle)">Status (vrijwilliger/gast/oud bewoner/etc.) stel je in bij "Uren deze week" rechts.</span></p>
     <div class="melding-form" style="margin-top:4px">
       <label>Naam 1</label>
       <select id="pr-cel-naam1" onchange="prCheckNieuweNaam(this,'1')">${prNaamOpties(info.naam1 || '')}</select>
