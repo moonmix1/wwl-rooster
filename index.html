@@ -168,6 +168,8 @@
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0; }
   .pr-uren-huisje { flex-shrink: 0; width: 12px; font-size: 0.62rem; text-align: center; }
+  .pr-uren-huisje-toggle { cursor: pointer; font-size: 0.75rem; opacity: 0.85; padding: 2px; }
+  .pr-uren-huisje-toggle:active { opacity: 1; }
   .pr-gasten-hint { font-size: 0.66rem; color: #888; margin-top: 8px; }
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
@@ -3579,7 +3581,8 @@ async function renderPapierRooster() {
 
   const naamRegelHtml = (naam, status, celLabel) => {
     const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
-    return `<span class="pr-naam-regel">${escHtml(naam)}<span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span></span>`;
+    const huisje = bewonersBeheerSet.has(naam) ? ' 🏠' : '';
+    return `<span class="pr-naam-regel">${escHtml(naam)}${huisje}<span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span></span>`;
   };
 
   const maakRij = (dagNaam, i) => {
@@ -3677,8 +3680,11 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const naamVeilig = naam.replace(/'/g,"\\'");
     const heeftHuisje = bewonersBeheerSet.has(naam);
     const statusVeld = beheer
-      ? `<select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(status)}</select>`
-      : `<span class="pr-status-label" style="margin-top:0">${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}</span>`;
+      ? `<div style="display:flex;align-items:center;gap:6px">
+           <select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(status)}</select>
+           <span class="pr-uren-huisje-toggle" onclick="prToggleHuisjeInUrenkolom('${naamVeilig}')" title="Beheerderswoning aan/uit">${heeftHuisje ? '🏠' : '🏚️'}</span>
+         </div>`
+      : `<span class="pr-status-label" style="margin-top:0">${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}${heeftHuisje ? ' · 🏠' : ''}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
@@ -3692,6 +3698,11 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   const kolomClass = namen.length > 6 ? 'pr-uren-lijst-wrap pr-2kol' : 'pr-uren-lijst-wrap';
   el.innerHTML = `<div class="${kolomClass}">${lijstHtml}</div>`;
+}
+
+async function prToggleHuisjeInUrenkolom(naam) {
+  await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
+  renderPapierRooster();
 }
 
 async function prZetStatus(weekKey, naam, status) {
