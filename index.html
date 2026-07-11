@@ -120,7 +120,11 @@
   .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.82rem; }
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
-  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 20px; }
+  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 20px;
+    margin: -8px -12px; padding: 8px 12px; border-radius: 4px; }
+  .pr-cel-vw   { background: linear-gradient(135deg, #2563eb, #1a4fc7); }
+  .pr-cel-gast { background: linear-gradient(135deg, #ef4444, #c62f2f); }
+  .pr-cel-gvdw { background: linear-gradient(135deg, #22c55e, #189a48); }
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
@@ -128,10 +132,7 @@
   .pr-cel:hover { background: #232323; }
 
   /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
-  .pr-status-vw   { background: radial-gradient(circle at 30% 30%, #4a90f088, #2563eb44); border-radius: 6px; padding: 3px 6px; }
-  .pr-status-gast { background: radial-gradient(circle at 30% 30%, #f0707088, #ef444444); border-radius: 6px; padding: 3px 6px; }
-  .pr-status-gvdw { background: radial-gradient(circle at 30% 30%, #5fd88a88, #22c55e44); border-radius: 6px; padding: 3px 6px; }
-  .pr-status-label { display: block; font-size: 0.58rem; opacity: 0.85; margin-top: 1px; }
+  .pr-status-label { display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 1px; color: #fff; }
 
   .pr-uren-status-vw   { background: radial-gradient(circle at 30% 30%, #4a90f066, #2563eb33); border: 1px solid #6ea8f0; }
   .pr-uren-status-gast { background: radial-gradient(circle at 30% 30%, #f0707066, #ef444433); border: 1px solid #f09090; }
@@ -3547,13 +3548,8 @@ async function renderPapierRooster() {
 
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
-  const naamMetStatus = (naam) => {
-    const status = statusMap[naam] || 'vrijwilliger';
-    if (status === 'vrijwilliger') return escHtml(naam);
-    const klasse = status === 'gast' ? 'pr-status-gast' : 'pr-status-gvdw';
-    const label = status === 'gast' ? 'gast' : 'gast van de week';
-    return `<span class="${klasse}">${escHtml(naam)}<span class="pr-status-label">${label}</span></span>`;
-  };
+  const statusKlasse = (status) => status === 'gast' ? 'pr-cel-gast' : (status === 'gast_week' ? 'pr-cel-gvdw' : 'pr-cel-vw');
+  const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : '');
 
   const maakRij = (dagNaam, i) => {
     const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
@@ -3562,11 +3558,31 @@ async function renderPapierRooster() {
     const dagData = weekData[dagKey] || {};
     const cellen = PR_DIENSTEN.map(dienstKey => {
       const info = dagData[dienstKey] || {};
-      const namenHtml = info.naam1
-        ? `<span class="pr-naam">${naamMetStatus(info.naam1)}${info.naam2 ? ' &amp; ' + naamMetStatus(info.naam2) : ''}</span>${info.opmerking ? `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>` : ''}`
-        : `<span class="pr-leeg">—</span>`;
+      let cellHtml, cellClasses = '';
+      if (!info.naam1) {
+        cellHtml = `<span class="pr-leeg">—</span>`;
+      } else {
+        const status1 = statusMap[info.naam1] || 'vrijwilliger';
+        const status2 = info.naam2 ? (statusMap[info.naam2] || 'vrijwilliger') : null;
+        if (!status2 || status1 === status2) {
+          // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
+          cellClasses = statusKlasse(status1);
+          const label = statusLabelTekst(status1);
+          cellHtml = `<span class="pr-naam">${escHtml(info.naam1)}${info.naam2 ? ' &amp; ' + escHtml(info.naam2) : ''}</span>${label ? `<span class="pr-status-label">${label}</span>` : ''}`;
+        } else {
+          // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
+          cellHtml = `
+            <div class="${statusKlasse(status1)}" style="margin:-4px -6px 2px;padding:4px 6px;border-radius:4px">
+              <span class="pr-naam">${escHtml(info.naam1)}</span>${statusLabelTekst(status1) ? `<span class="pr-status-label">${statusLabelTekst(status1)}</span>` : ''}
+            </div>
+            <div class="${statusKlasse(status2)}" style="margin:2px -6px -4px;padding:4px 6px;border-radius:4px">
+              <span class="pr-naam">${escHtml(info.naam2)}</span>${statusLabelTekst(status2) ? `<span class="pr-status-label">${statusLabelTekst(status2)}</span>` : ''}
+            </div>`;
+        }
+        if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
+      }
       const klik = beheer ? `onclick="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
-      return `<td><div class="pr-cel" ${klik}>${namenHtml}</div></td>`;
+      return `<td><div class="pr-cel ${cellClasses}" ${klik}>${cellHtml}</div></td>`;
     }).join('');
     return `<tr>
       <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}${isVandaag?' 📍':''}</span><span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
