@@ -126,6 +126,7 @@
   .pr-cel-gast { background: #de1c39; }
   .pr-cel-gvdw { background: #028e74; }
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
+  .pr-cel-label { font-size: 0.68rem; font-weight: 500; opacity: 0.85; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
     border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
@@ -3552,6 +3553,9 @@ async function renderPapierRooster() {
   const statusKlasse = (status) => status === 'gast' ? 'pr-cel-gast' : (status === 'gast_week' ? 'pr-cel-gvdw' : 'pr-cel-vw');
   const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
 
+  const CEL_LABEL_TEKST = { kok: '🍳 kok', oud_bewoner: 'oud bewoner', extern: 'extern' };
+  const naamMetCelLabel = (naam, celLabel) => celLabel ? `${escHtml(naam)} <span class="pr-cel-label">(${CEL_LABEL_TEKST[celLabel]})</span>` : escHtml(naam);
+
   const maakRij = (dagNaam, i) => {
     const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
     const dagKey = prDatumKey(datum);
@@ -3569,16 +3573,18 @@ async function renderPapierRooster() {
           // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
           cellClasses = statusKlasse(status1);
           const label = statusLabelTekst(status1);
-          const naamTekst = info.naam2 ? `${escHtml(info.naam1)} &amp; ${escHtml(info.naam2)}` : escHtml(info.naam1);
+          const naamTekst = info.naam2
+            ? `${naamMetCelLabel(info.naam1, info.label1)} &amp; ${naamMetCelLabel(info.naam2, info.label2)}`
+            : naamMetCelLabel(info.naam1, info.label1);
           cellHtml = `<span class="pr-naam" style="${info.naam2?'font-size:0.76rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
           cellHtml = `
             <div class="${statusKlasse(status1)}" style="margin:-4px -6px 1px;padding:2px 6px;border-radius:4px;line-height:1.15">
-              <span class="pr-naam" style="font-size:0.76rem">${escHtml(info.naam1)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status1)}</span>
+              <span class="pr-naam" style="font-size:0.76rem">${naamMetCelLabel(info.naam1, info.label1)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status1)}</span>
             </div>
             <div class="${statusKlasse(status2)}" style="margin:1px -6px -4px;padding:2px 6px;border-radius:4px;line-height:1.15">
-              <span class="pr-naam" style="font-size:0.76rem">${escHtml(info.naam2)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status2)}</span>
+              <span class="pr-naam" style="font-size:0.76rem">${naamMetCelLabel(info.naam2, info.label2)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status2)}</span>
             </div>`;
         }
         if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
@@ -3669,6 +3675,11 @@ function prNaamOpties(huidigeWaarde) {
 function prBewerkCel(weekKey, dagKey, dienstKey) {
   const weekData = papierRoosterCache[weekKey] || {};
   const info = (weekData[dagKey] && weekData[dagKey][dienstKey]) || {};
+  const labelOpties = (huidig) => `
+    <option value="" ${!huidig?'selected':''}>— geen label —</option>
+    <option value="kok" ${huidig==='kok'?'selected':''}>🍳 kok</option>
+    <option value="oud_bewoner" ${huidig==='oud_bewoner'?'selected':''}>oud bewoner</option>
+    <option value="extern" ${huidig==='extern'?'selected':''}>extern persoon</option>`;
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
     <p class="gp-modal-intro">${dagKey}</p>
@@ -3678,11 +3689,15 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
       <div id="pr-nieuwe-naam1-veld" style="display:none">
         <input type="text" id="pr-nieuwe-naam1-input" placeholder="Nieuwe naam">
       </div>
+      <label>Label bij naam 1 (optioneel)</label>
+      <select id="pr-cel-label1">${labelOpties(info.label1 || '')}</select>
       <label>Naam 2 (optioneel)</label>
       <select id="pr-cel-naam2" onchange="prCheckNieuweNaam(this,'2')">${prNaamOpties(info.naam2 || '')}</select>
       <div id="pr-nieuwe-naam2-veld" style="display:none">
         <input type="text" id="pr-nieuwe-naam2-input" placeholder="Nieuwe naam">
       </div>
+      <label>Label bij naam 2 (optioneel)</label>
+      <select id="pr-cel-label2">${labelOpties(info.label2 || '')}</select>
       <label>Opmerking (optioneel, geel briefje)</label>
       <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
       <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
@@ -3723,10 +3738,16 @@ async function prHaalNaamOp(nummer) {
 async function prBevestigCel(weekKey, dagKey, dienstKey) {
   const naam1 = await prHaalNaamOp('1');
   const naam2 = await prHaalNaamOp('2');
+  const label1 = document.getElementById('pr-cel-label1').value;
+  const label2 = document.getElementById('pr-cel-label2').value;
   const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
   const weekData = papierRoosterCache[weekKey] || {};
   if (!weekData[dagKey]) weekData[dagKey] = {};
-  if (naam1) weekData[dagKey][dienstKey] = { naam1, naam2: naam2 || undefined, opmerking: opmerking || undefined };
+  if (naam1) weekData[dagKey][dienstKey] = {
+    naam1, naam2: naam2 || undefined,
+    label1: label1 || undefined, label2: label2 || undefined,
+    opmerking: opmerking || undefined,
+  };
   else delete weekData[dagKey][dienstKey];
   await prOpslaanWeek(weekKey, weekData);
   sluitGPModal();
