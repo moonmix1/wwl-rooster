@@ -103,6 +103,28 @@
   .week-tabel tr:hover td { background: var(--surface2); }
   .dag-label { font-weight: 700; color: white; font-size: 0.85rem; }
   .kantoor-label { font-size: 0.65rem; color: var(--subtle); font-style: italic; }
+
+  /* ── PAPIEREN-STIJL ROOSTER (sober, grijs/zwart-wit) ── */
+  .pr-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
+    padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+  .pr-nav-btn:hover { background: #3a3a3a; }
+  .pr-week-label { font-weight: 700; color: #ddd; font-size: 0.85rem; text-align: center; }
+  .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; }
+  .pr-tabel th { background: #2a2a2a; color: #aaa; padding: 9px 12px; text-align: left;
+    font-size: 0.68rem; font-weight: 700; border: 1px solid #3a3a3a; }
+  .pr-tijd { font-weight: 400; font-size: 0.62rem; color: #777; }
+  .pr-tabel td { padding: 8px 12px; border: 1px solid #3a3a3a; vertical-align: top; }
+  .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.82rem; }
+  .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
+  .pr-dag-label.pr-vandaag { color: #fff; }
+  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 20px; }
+  .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
+  .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
+  .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
+    border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
+  .pr-cel:hover { background: #232323; }
+
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
           padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
   .pill-naam { display: block; }
@@ -587,6 +609,25 @@
     </p>
   </div>
 
+  <div id="s-papierrooster" class="sectie">
+    <div class="pr-nav">
+      <button class="pr-nav-btn" onclick="prWeekNavigeer(-1)">◀ Vorige week</button>
+      <div class="pr-week-label" id="pr-week-label"></div>
+      <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="pr-tabel">
+        <thead><tr>
+          <th>Dag</th>
+          <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
+          <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
+          <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
+        </tr></thead>
+        <tbody id="pr-body"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div id="s-rotatie" class="sectie">
     <div class="sectie-titel">Rotatieschema – laatste 4 weken</div>
     <input type="text" id="naam-zoek-rotatie" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
@@ -971,7 +1012,7 @@ async function laadEigenProfiel() {
 }
 
 let appGestart = false;
-function starApp() {
+async function starApp() {
   if (appGestart) return;
   appGestart = true;
   verversBeheerderUI();
@@ -990,6 +1031,7 @@ function starApp() {
   luisterGPOnderwerpenLive();
   laadGoedkeuringenTeller();
   luisterGoedkeuringenLive();
+  await laadActiefRoosterType();
   herstelLaatsteTab();
   laadAlleProfielen();
   laadPriveGesprekken();
@@ -1310,7 +1352,7 @@ function toon(id, el) {
   el.classList.add('actief');
   try { localStorage.setItem('wwl_laatste_tab', id); } catch(e) {}
   if(id==='vandaag')     renderVandaag();
-  if(id==='weekrooster') renderWeek();
+  if(id==='weekrooster') renderWeekVolgensInstelling();
   if(id==='rotatie')     renderRotatie();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
   if(id==='regels')      renderRegelsBeheerKnop();
@@ -2947,6 +2989,16 @@ function renderBewonersModalInhoud() {
         <button class="cam-btn cam-btn-primary" style="margin-top:10px" onclick="verkleinOudeFotos()">Oude foto's verkleinen</button>
         <div id="onderhoud-voortgang" style="font-size:0.78rem;color:var(--muted);margin-top:8px"></div>
       </div>` : ''}
+    ${beheerder ? `
+      <div class="rust-box" style="margin-bottom:16px">
+        <strong style="font-size:0.82rem">🗓️ Actief rooster</strong><br>
+        <span style="font-size:0.75rem;color:var(--subtle)">Welk rooster zien bewoners op het Week-tabblad?</span>
+        <div style="display:flex;gap:8px;margin-top:8px" id="rooster-keuze-knoppen">
+          <button class="cam-btn" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('a')">Digitaal rooster</button>
+          <button class="cam-btn" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('b')">Papieren-stijl rooster</button>
+        </div>
+        <div id="rooster-keuze-status" style="font-size:0.72rem;color:var(--subtle);margin-top:6px"></div>
+      </div>` : ''}
     <div class="sectie-titel"><span class="live-dot"></span>Bewonerslijst voor keuzemenu's (${bewonersCache.length})</div>
     <div id="bewoners-lijst" class="melding-lijst" style="gap:8px">${lijstHtml}</div>
   `;
@@ -3351,7 +3403,168 @@ function luisterPriveOverzichtLive() {
     }).subscribe();
 }
 
+// ── PAPIEREN-STIJL ROOSTER (rooster B) ──────────────────────────────────
+let actiefRoosterType = 'a';
+let prWeekOffset = 0; // 0 = deze week, -1 = vorige, +1 = volgende
+const PR_DAGEN = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
+const PR_DIENSTEN = ['dag', 'avond', 'nacht'];
+
+function prMaandagVanWeek(offsetWeken) {
+  const nu = new Date();
+  const dagNu = (nu.getDay() + 6) % 7; // 0 = maandag
+  const maandagDezeWeek = new Date(nu);
+  maandagDezeWeek.setHours(0,0,0,0);
+  maandagDezeWeek.setDate(nu.getDate() - dagNu + offsetWeken * 7);
+  return maandagDezeWeek;
+}
+
+function prDatumKey(datum) {
+  return datum.toISOString().slice(0, 10);
+}
+
+function prFormatDatum(datum) {
+  return datum.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+}
+
+async function laadActiefRoosterType() {
+  if (!supabaseActief) return;
+  const { data } = await sb.from('rooster_instelling').select('actief_rooster').eq('id', 1).maybeSingle();
+  actiefRoosterType = (data && data.actief_rooster) || 'a';
+  toonJuisteRoosterSectie();
+}
+
+function toonJuisteRoosterSectie() {
+  const weekTab = document.querySelector('.tab[onclick*="weekrooster"]');
+  if (weekTab) weekTab.textContent = actiefRoosterType === 'b' ? '🗓 Week' : '🗓 Week';
+  // Beide secties bestaan; welke getoond wordt bepalen we bij het openen van het Week-tabblad.
+}
+
+async function zetActiefRooster(type) {
+  if (!supabaseActief) return;
+  const statusEl = document.getElementById('rooster-keuze-status');
+  const { error } = await sb.from('rooster_instelling').update({ actief_rooster: type }).eq('id', 1);
+  if (error) { if (statusEl) statusEl.textContent = '⚠️ Opslaan mislukt: ' + error.message; return; }
+  actiefRoosterType = type;
+  if (statusEl) statusEl.textContent = `✅ Ingesteld op: ${type === 'a' ? 'Digitaal rooster' : 'Papieren-stijl rooster'}`;
+}
+
+function renderWeekVolgensInstelling() {
+  const digitaalEl = document.getElementById('s-weekrooster');
+  const papierEl = document.getElementById('s-papierrooster');
+  if (!digitaalEl || !papierEl) return;
+  if (actiefRoosterType === 'b') {
+    digitaalEl.classList.remove('actief');
+    papierEl.classList.add('actief');
+    renderPapierRooster();
+  } else {
+    papierEl.classList.remove('actief');
+    digitaalEl.classList.add('actief');
+    renderWeek();
+  }
+}
+
+function prWeekNavigeer(richting) {
+  prWeekOffset += richting;
+  renderPapierRooster();
+}
+
+let papierRoosterCache = {}; // { 'maandag-datum-key': { dag: {naam, opmerking}, avond: {...}, nacht: {...} } }
+
+async function renderPapierRooster() {
+  const maandag = prMaandagVanWeek(prWeekOffset);
+  const zondag = new Date(maandag); zondag.setDate(maandag.getDate() + 6);
+  const weekKey = prDatumKey(maandag);
+
+  const labelEl = document.getElementById('pr-week-label');
+  if (labelEl) {
+    const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
+    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:400;font-size:0.7rem;color:#888">${prFormatDatum(maandag)} – ${prFormatDatum(zondag)}</span>`;
+  }
+
+  const body = document.getElementById('pr-body');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">⏳ Laden…</td></tr>';
+
+  let weekData = {};
+  if (supabaseActief) {
+    const { data } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
+    weekData = (data && data.dagen) || {};
+  }
+  papierRoosterCache[weekKey] = weekData;
+
+  const beheer = gpBeheerActief();
+  const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
+
+  body.innerHTML = PR_DAGEN.map((dagNaam, i) => {
+    const datum = new Date(maandag); datum.setDate(maandag.getDate() + i);
+    const dagKey = prDatumKey(datum);
+    const isVandaag = dagKey === vandaagKey;
+    const dagData = weekData[dagKey] || {};
+    const cellen = PR_DIENSTEN.map(dienstKey => {
+      const info = dagData[dienstKey] || {};
+      const inhoud = info.naam
+        ? `<span class="pr-naam">${escHtml(info.naam)}</span>${info.opmerking ? `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>` : ''}`
+        : `<span class="pr-leeg">—</span>`;
+      const klik = beheer ? `onclick="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
+      return `<td><div class="pr-cel" ${klik}>${inhoud}</div></td>`;
+    }).join('');
+    return `<tr>
+      <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}${isVandaag?' 📍':''}</span><span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
+      ${cellen}
+    </tr>`;
+  }).join('');
+}
+
+const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
+
+function prBewerkCel(weekKey, dagKey, dienstKey) {
+  const weekData = papierRoosterCache[weekKey] || {};
+  const info = (weekData[dagKey] && weekData[dagKey][dienstKey]) || {};
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
+    <p class="gp-modal-intro">${dagKey}</p>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Naam</label>
+      <input type="text" id="pr-cel-naam" placeholder="Naam invullen…" value="${escHtml(info.naam || '')}">
+      <label>Opmerking (optioneel, geel briefje)</label>
+      <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
+      <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
+      ${info.naam ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="prVerwijderCel('${weekKey}','${dagKey}','${dienstKey}')">🗑 Leegmaken</button>` : ''}
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+async function prOpslaanWeek(weekKey, weekData) {
+  papierRoosterCache[weekKey] = weekData;
+  if (!supabaseActief) return;
+  const { error } = await sb.from('papieren_rooster').upsert({ week_start: weekKey, dagen: weekData, updated_at: new Date().toISOString() });
+  if (error) { alert('Opslaan mislukt: ' + error.message); }
+}
+
+async function prBevestigCel(weekKey, dagKey, dienstKey) {
+  const naam = document.getElementById('pr-cel-naam').value.trim();
+  const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
+  const weekData = papierRoosterCache[weekKey] || {};
+  if (!weekData[dagKey]) weekData[dagKey] = {};
+  if (naam) weekData[dagKey][dienstKey] = { naam, opmerking: opmerking || undefined };
+  else delete weekData[dagKey][dienstKey];
+  await prOpslaanWeek(weekKey, weekData);
+  sluitGPModal();
+  renderPapierRooster();
+}
+
+async function prVerwijderCel(weekKey, dagKey, dienstKey) {
+  const weekData = papierRoosterCache[weekKey] || {};
+  if (weekData[dagKey]) delete weekData[dagKey][dienstKey];
+  await prOpslaanWeek(weekKey, weekData);
+  sluitGPModal();
+  renderPapierRooster();
+}
+
 initSupabase();
+
+
 
 
 </script>
