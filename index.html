@@ -636,16 +636,29 @@
       <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
     </div>
     <div class="pr-layout">
-      <div style="overflow-x:auto">
-        <table class="pr-tabel">
-          <thead><tr>
-            <th>Dag</th>
-            <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
-            <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
-            <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
-          </tr></thead>
-          <tbody id="pr-body"></tbody>
-        </table>
+      <div style="min-width:0;flex:1 1 340px">
+        <div style="overflow-x:auto">
+          <table class="pr-tabel">
+            <thead><tr>
+              <th>Dag</th>
+              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
+              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
+              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
+            </tr></thead>
+            <tbody id="pr-dinsdag-body"></tbody>
+          </table>
+        </div>
+        <div style="overflow-x:auto;margin-top:14px">
+          <table class="pr-tabel">
+            <thead><tr>
+              <th>Dag</th>
+              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
+              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
+              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
+            </tr></thead>
+            <tbody id="pr-body"></tbody>
+          </table>
+        </div>
       </div>
       <div class="pr-uren-kolom">
         <div class="pr-uren-titel">Uren deze week</div>
@@ -3433,16 +3446,16 @@ function luisterPriveOverzichtLive() {
 // ── PAPIEREN-STIJL ROOSTER (rooster B) ──────────────────────────────────
 let actiefRoosterType = 'a';
 let prWeekOffset = 0; // 0 = deze week, -1 = vorige, +1 = volgende
-const PR_DAGEN = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
+const PR_DAGEN = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
 const PR_DIENSTEN = ['dag', 'avond', 'nacht'];
 
-function prMaandagVanWeek(offsetWeken) {
+function prDinsdagVanWeek(offsetWeken) {
   const nu = new Date();
-  const dagNu = (nu.getDay() + 6) % 7; // 0 = maandag
-  const maandagDezeWeek = new Date(nu);
-  maandagDezeWeek.setHours(0,0,0,0);
-  maandagDezeWeek.setDate(nu.getDate() - dagNu + offsetWeken * 7);
-  return maandagDezeWeek;
+  const dagNu = (nu.getDay() + 5) % 7; // 0 = dinsdag, 1 = woensdag, ... 6 = maandag
+  const dinsdagDezeWeek = new Date(nu);
+  dinsdagDezeWeek.setHours(0,0,0,0);
+  dinsdagDezeWeek.setDate(nu.getDate() - dagNu + offsetWeken * 7);
+  return dinsdagDezeWeek;
 }
 
 function prDatumKey(datum) {
@@ -3498,19 +3511,20 @@ function prWeekNavigeer(richting) {
 let papierRoosterCache = {}; // { 'maandag-datum-key': { dag: {naam, opmerking}, avond: {...}, nacht: {...} } }
 
 async function renderPapierRooster() {
-  const maandag = prMaandagVanWeek(prWeekOffset);
-  const zondag = new Date(maandag); zondag.setDate(maandag.getDate() + 6);
-  const weekKey = prDatumKey(maandag);
+  const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
+  const weekKey = prDatumKey(dinsdag);
 
   const labelEl = document.getElementById('pr-week-label');
   if (labelEl) {
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
-    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:400;font-size:0.7rem;color:#888">${prFormatDatum(maandag)} – ${prFormatDatum(zondag)}</span>`;
+    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:400;font-size:0.7rem;color:#888">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
   }
 
-  const body = document.getElementById('pr-body');
-  if (!body) return;
-  body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">⏳ Laden…</td></tr>';
+  const dinsdagBody = document.getElementById('pr-dinsdag-body');
+  const restBody = document.getElementById('pr-body');
+  if (!dinsdagBody || !restBody) return;
+  restBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">⏳ Laden…</td></tr>';
 
   let weekData = {};
   if (supabaseActief) {
@@ -3530,8 +3544,8 @@ async function renderPapierRooster() {
     return isGast ? `<span class="pr-gast">${escHtml(naam)}*</span>` : escHtml(naam);
   };
 
-  body.innerHTML = PR_DAGEN.map((dagNaam, i) => {
-    const datum = new Date(maandag); datum.setDate(maandag.getDate() + i);
+  const maakRij = (dagNaam, i) => {
+    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
     const dagKey = prDatumKey(datum);
     const isVandaag = dagKey === vandaagKey;
     const dagData = weekData[dagKey] || {};
@@ -3547,7 +3561,10 @@ async function renderPapierRooster() {
       <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}${isVandaag?' 📍':''}</span><span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
       ${cellen}
     </tr>`;
-  }).join('');
+  };
+
+  dinsdagBody.innerHTML = maakRij(PR_DAGEN[0], 0);
+  restBody.innerHTML = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('');
 }
 
 const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
