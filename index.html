@@ -168,12 +168,12 @@
   .pr-uren-nr { flex-shrink: 0; width: 11px; height: 11px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.4rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  .pr-uren-uur { flex-shrink: 0; width: 13px; height: 13px; background: #111; color: #fff;
-    border-radius: 2px; font-size: 0.42rem; font-weight: 800; display: flex; align-items: center;
+  .pr-uren-uur { flex-shrink: 0; width: 20px; height: 20px; background: #111; color: #f5d800;
+    border-radius: 3px; font-size: 0.62rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0; }
-  .pr-uren-huisje { flex-shrink: 0; width: 14px; font-size: 0.72rem; text-align: center; }
+  .pr-uren-huisje { flex-shrink: 0; width: 11px; font-size: 0.55rem; text-align: center; }
   .pr-gasten-hint { font-size: 0.66rem; color: #888; margin-top: 8px; }
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
@@ -3699,8 +3699,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
-        <span class="pr-uren-naam">${escHtml(naam)}</span>
         <span class="pr-uren-huisje">${heeftHuisje ? '🏠' : ''}</span>
+        <span class="pr-uren-naam">${escHtml(naam)}</span>
         <span class="pr-uren-uur">${uren[naam]}</span>
       </div>
       ${statusVeld}
