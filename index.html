@@ -3556,9 +3556,14 @@ async function renderPapierRooster() {
   const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
 
   const CEL_LABEL_TEKST = { kok: 'kok', oud_bewoner: 'oud bewoner', extern: 'extern' };
-  const naamMetCelLabel = (naam, celLabel) => celLabel
-    ? `<span class="pr-naam-regel">${escHtml(naam)}<span class="pr-cel-label">${CEL_LABEL_TEKST[celLabel]}</span></span>`
-    : `<span class="pr-naam-regel">${escHtml(naam)}</span>`;
+  // Label dat de status vervangt (oud_bewoner/extern) vs. label dat naast de status komt (kok).
+  const isVervangLabel = (celLabel) => celLabel === 'oud_bewoner' || celLabel === 'extern';
+
+  const naamRegelHtml = (naam, status, celLabel) => {
+    const statusTekst = isVervangLabel(celLabel) ? CEL_LABEL_TEKST[celLabel] : statusLabelTekst(status);
+    const kokExtra = (celLabel === 'kok') ? ` · ${CEL_LABEL_TEKST.kok}` : '';
+    return `<span class="pr-naam-regel">${escHtml(naam)}<span class="pr-cel-label">${statusTekst}${kokExtra}</span></span>`;
+  };
 
   const maakRij = (dagNaam, i) => {
     const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
@@ -3576,20 +3581,19 @@ async function renderPapierRooster() {
         if (!status2 || status1 === status2) {
           // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
           cellClasses = statusKlasse(status1);
-          const label = statusLabelTekst(status1);
-          const heeftLabel = info.label1 || (info.naam2 && info.label2);
+          const heeftExtra = info.label1 || (info.naam2 && info.label2);
           const naamTekst = info.naam2
-            ? `${naamMetCelLabel(info.naam1, info.label1)}${naamMetCelLabel(info.naam2, info.label2)}`
-            : naamMetCelLabel(info.naam1, info.label1);
-          cellHtml = `<span class="pr-naam" style="${info.naam2||heeftLabel?'font-size:0.74rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
+            ? `${naamRegelHtml(info.naam1, status1, info.label1)}${naamRegelHtml(info.naam2, status2, info.label2)}`
+            : naamRegelHtml(info.naam1, status1, info.label1);
+          cellHtml = `<span class="pr-naam" style="${info.naam2||heeftExtra?'font-size:0.74rem':''}">${naamTekst}</span>`;
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
           cellHtml = `
             <div class="${statusKlasse(status1)}" style="margin:-4px -6px 1px;padding:2px 6px;border-radius:4px;line-height:1.15">
-              <span class="pr-naam" style="font-size:0.76rem">${naamMetCelLabel(info.naam1, info.label1)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status1)}</span>
+              <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
             </div>
             <div class="${statusKlasse(status2)}" style="margin:1px -6px -4px;padding:2px 6px;border-radius:4px;line-height:1.15">
-              <span class="pr-naam" style="font-size:0.76rem">${naamMetCelLabel(info.naam2, info.label2)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status2)}</span>
+              <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
             </div>`;
         }
         if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
