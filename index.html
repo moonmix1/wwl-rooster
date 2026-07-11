@@ -3574,7 +3574,7 @@ async function renderPapierRooster() {
           cellClasses = statusKlasse(status1);
           const label = statusLabelTekst(status1);
           const naamTekst = info.naam2
-            ? `${naamMetCelLabel(info.naam1, info.label1)} &amp; ${naamMetCelLabel(info.naam2, info.label2)}`
+            ? `${naamMetCelLabel(info.naam1, info.label1)}<br>${naamMetCelLabel(info.naam2, info.label2)}`
             : naamMetCelLabel(info.naam1, info.label1);
           cellHtml = `<span class="pr-naam" style="${info.naam2?'font-size:0.76rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
         } else {
