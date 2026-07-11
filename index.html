@@ -155,9 +155,9 @@
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
   .pr-uren-kolom { flex: 0 0 260px; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
-  .pr-uren-lijst-wrap { column-count: 1; column-gap: 14px; }
-  .pr-uren-lijst-wrap.pr-2kol { column-rule: 1px solid #3a3a3a; }
-  .pr-uren-lijst-wrap.pr-2kol { column-count: 2; }
+  .pr-uren-lijst-wrap { display: flex; gap: 14px; }
+  .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
+  .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { display: flex; flex-direction: column; gap: 2px;
@@ -3717,10 +3717,21 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       </div>
       ${statusVeld}
     </div>`;
-  }).join('');
+  });
 
-  const kolomClass = namen.length > 6 ? 'pr-uren-lijst-wrap pr-2kol' : 'pr-uren-lijst-wrap';
-  el.innerHTML = `<div class="${kolomClass}">${lijstHtml}</div>`;
+  const gebruikt2Kolommen = Array.isArray(lijstHtml) && lijstHtml.length > 6;
+  let eindHtml;
+  if (!Array.isArray(lijstHtml)) {
+    eindHtml = `<div class="pr-uren-lijst-wrap"><div class="pr-uren-lijst-kolom">${lijstHtml}</div></div>`;
+  } else if (gebruikt2Kolommen) {
+    const helft = Math.ceil(lijstHtml.length / 2);
+    const kol1 = lijstHtml.slice(0, helft).join('');
+    const kol2 = lijstHtml.slice(helft).join('');
+    eindHtml = `<div class="pr-uren-lijst-wrap pr-2kol"><div class="pr-uren-lijst-kolom">${kol1}</div><div class="pr-uren-lijst-kolom">${kol2}</div></div>`;
+  } else {
+    eindHtml = `<div class="pr-uren-lijst-wrap"><div class="pr-uren-lijst-kolom">${lijstHtml.join('')}</div></div>`;
+  }
+  el.innerHTML = eindHtml;
 }
 
 async function prVerwerkUrenKeuze(weekKey, naam, selectEl) {
