@@ -130,11 +130,13 @@
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
-  .pr-uren-kolom { flex: 0 0 180px; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
+  .pr-uren-kolom { flex: 0 0 260px; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
+  .pr-uren-lijst-wrap { column-count: 1; column-gap: 14px; }
+  .pr-uren-lijst-wrap.pr-2kol { column-count: 2; }
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { display: flex; align-items: center; gap: 6px;
-    padding: 5px 0; border-bottom: 1px solid #2e2e2e; }
+    padding: 5px 0; border-bottom: 1px solid #2e2e2e; break-inside: avoid; }
   .pr-uren-rij:last-child { border-bottom: none; }
   .pr-uren-naam { font-size: 0.78rem; color: #ddd; overflow: hidden; text-overflow: ellipsis;
     white-space: nowrap; flex: 1; min-width: 0; }
@@ -3611,7 +3613,8 @@ function renderPrUrenKolom(weekKey, weekData, gasten, beheer) {
     </div>`;
   }).join('');
 
-  el.innerHTML = lijstHtml + (beheer ? `
+  const kolomClass = namen.length > 6 ? 'pr-uren-lijst-wrap pr-2kol' : 'pr-uren-lijst-wrap';
+  el.innerHTML = `<div class="${kolomClass}">${lijstHtml}</div>` + (beheer ? `
     <div style="margin-top:8px">
       <select id="pr-uren-nieuwe-naam" style="width:100%;font-size:0.76rem;padding:5px 6px">
         <option value="">+ Iemand toevoegen…</option>
