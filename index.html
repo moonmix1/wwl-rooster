@@ -126,7 +126,8 @@
   .pr-cel-gast { background: #de1c39; }
   .pr-cel-gvdw { background: #028e74; }
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
-  .pr-cel-label { font-size: 0.68rem; font-weight: 500; opacity: 0.85; white-space: nowrap; }
+  .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
+    text-transform: lowercase; white-space: nowrap; }
   .pr-naam-regel { white-space: nowrap; display: block; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
@@ -3554,9 +3555,9 @@ async function renderPapierRooster() {
   const statusKlasse = (status) => status === 'gast' ? 'pr-cel-gast' : (status === 'gast_week' ? 'pr-cel-gvdw' : 'pr-cel-vw');
   const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
 
-  const CEL_LABEL_TEKST = { kok: '🍳 kok', oud_bewoner: 'oud bewoner', extern: 'extern' };
+  const CEL_LABEL_TEKST = { kok: 'kok', oud_bewoner: 'oud bewoner', extern: 'extern' };
   const naamMetCelLabel = (naam, celLabel) => celLabel
-    ? `<span class="pr-naam-regel">${escHtml(naam)} <span class="pr-cel-label">(${CEL_LABEL_TEKST[celLabel]})</span></span>`
+    ? `<span class="pr-naam-regel">${escHtml(naam)}<span class="pr-cel-label">${CEL_LABEL_TEKST[celLabel]}</span></span>`
     : `<span class="pr-naam-regel">${escHtml(naam)}</span>`;
 
   const maakRij = (dagNaam, i) => {
