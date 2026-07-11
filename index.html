@@ -130,7 +130,10 @@
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
-  .pr-naam-regel { white-space: nowrap; display: block; }
+  .pr-naam-regel { display: block; overflow-wrap: break-word; }
+  .pr-naam-regel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+  .pr-naam-regel-naam { min-width: 0; overflow-wrap: break-word; }
+  .pr-naam-regel-huisje { flex-shrink: 0; font-size: 0.72rem; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
     border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
@@ -168,8 +171,6 @@
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0; }
   .pr-uren-huisje { flex-shrink: 0; width: 12px; font-size: 0.62rem; text-align: center; }
-  .pr-uren-huisje-toggle { cursor: pointer; font-size: 0.75rem; opacity: 0.85; padding: 2px; }
-  .pr-uren-huisje-toggle:active { opacity: 1; }
   .pr-gasten-hint { font-size: 0.66rem; color: #888; margin-top: 8px; }
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
@@ -3581,8 +3582,14 @@ async function renderPapierRooster() {
 
   const naamRegelHtml = (naam, status, celLabel) => {
     const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
-    const huisje = bewonersBeheerSet.has(naam) ? ' 🏠' : '';
-    return `<span class="pr-naam-regel">${escHtml(naam)}${huisje}<span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span></span>`;
+    const huisje = bewonersBeheerSet.has(naam) ? '🏠' : '';
+    return `<span class="pr-naam-regel">
+      <span class="pr-naam-regel-top">
+        <span class="pr-naam-regel-naam">${escHtml(naam)}</span>
+        <span class="pr-naam-regel-huisje">${huisje}</span>
+      </span>
+      <span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span>
+    </span>`;
   };
 
   const maakRij = (dagNaam, i) => {
@@ -3679,11 +3686,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
     const naamVeilig = naam.replace(/'/g,"\\'");
     const heeftHuisje = bewonersBeheerSet.has(naam);
+    const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
     const statusVeld = beheer
-      ? `<div style="display:flex;align-items:center;gap:6px">
-           <select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(status)}</select>
-           <span class="pr-uren-huisje-toggle" onclick="prToggleHuisjeInUrenkolom('${naamVeilig}')" title="Beheerderswoning aan/uit">${heeftHuisje ? '🏠' : '🏚️'}</span>
-         </div>`
+      ? `<select class="pr-uren-status-select" onchange="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}', this)">
+           ${statusOpties(status)}
+           <option value="__huisje__">${huisjeOptieTekst}</option>
+         </select>`
       : `<span class="pr-status-label" style="margin-top:0">${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}${heeftHuisje ? ' · 🏠' : ''}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
@@ -3700,9 +3708,14 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   el.innerHTML = `<div class="${kolomClass}">${lijstHtml}</div>`;
 }
 
-async function prToggleHuisjeInUrenkolom(naam) {
-  await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
-  renderPapierRooster();
+async function prVerwerkUrenKeuze(weekKey, naam, selectEl) {
+  const waarde = selectEl.value;
+  if (waarde === '__huisje__') {
+    await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
+    renderPapierRooster();
+    return;
+  }
+  await prZetStatus(weekKey, naam, waarde);
 }
 
 async function prZetStatus(weekKey, naam, status) {
