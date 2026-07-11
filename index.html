@@ -124,6 +124,15 @@
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
     border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
   .pr-cel:hover { background: #232323; }
+  .pr-gast { color: #6ea8f0; font-weight: 700; }
+  .pr-gasten-blok { background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
+  .pr-gasten-titel { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 8px; }
+  .pr-gasten-lijst { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pr-gast-chip { display: flex; align-items: center; gap: 5px; background: #2a2a2a; border: 1px solid #444;
+    border-radius: 99px; padding: 4px 10px; font-size: 0.76rem; color: #ccc; cursor: pointer; }
+  .pr-gast-chip.actief { background: #1e3a5f; border-color: #6ea8f0; color: #6ea8f0; font-weight: 700; }
+  .pr-gasten-hint { font-size: 0.68rem; color: #777; margin-top: 6px; }
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
           padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
@@ -615,6 +624,7 @@
       <div class="pr-week-label" id="pr-week-label"></div>
       <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
     </div>
+    <div id="pr-gasten-blok" style="margin-bottom:12px"></div>
     <div style="overflow-x:auto">
       <table class="pr-tabel">
         <thead><tr>
@@ -3494,6 +3504,14 @@ async function renderPapierRooster() {
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
+  const gasten = weekData._gasten || [];
+
+  renderPrGastenBlok(weekKey, gasten, beheer);
+
+  const naamMetGastMarkering = (naam) => {
+    const isGast = gasten.includes(naam);
+    return isGast ? `<span class="pr-gast">${escHtml(naam)}*</span>` : escHtml(naam);
+  };
 
   body.innerHTML = PR_DAGEN.map((dagNaam, i) => {
     const datum = new Date(maandag); datum.setDate(maandag.getDate() + i);
@@ -3502,11 +3520,11 @@ async function renderPapierRooster() {
     const dagData = weekData[dagKey] || {};
     const cellen = PR_DIENSTEN.map(dienstKey => {
       const info = dagData[dienstKey] || {};
-      const inhoud = info.naam
-        ? `<span class="pr-naam">${escHtml(info.naam)}</span>${info.opmerking ? `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>` : ''}`
+      const namenHtml = info.naam1
+        ? `<span class="pr-naam">${naamMetGastMarkering(info.naam1)}${info.naam2 ? ' &amp; ' + naamMetGastMarkering(info.naam2) : ''}</span>${info.opmerking ? `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>` : ''}`
         : `<span class="pr-leeg">—</span>`;
       const klik = beheer ? `onclick="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
-      return `<td><div class="pr-cel" ${klik}>${inhoud}</div></td>`;
+      return `<td><div class="pr-cel" ${klik}>${namenHtml}</div></td>`;
     }).join('');
     return `<tr>
       <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}${isVandaag?' 📍':''}</span><span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
@@ -3517,6 +3535,35 @@ async function renderPapierRooster() {
 
 const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
 
+function renderPrGastenBlok(weekKey, gasten, beheer) {
+  const el = document.getElementById('pr-gasten-blok');
+  if (!el) return;
+  if (!bewonersCache.length) { el.innerHTML = ''; return; }
+  const chips = bewonersCache.map(naam => {
+    const actief = gasten.includes(naam);
+    return beheer
+      ? `<div class="pr-gast-chip ${actief?'actief':''}" onclick="prToggleGast('${weekKey}','${naam.replace(/'/g,"\\'")}')">${actief?'✓ ':''}${escHtml(naam)}</div>`
+      : (actief ? `<div class="pr-gast-chip actief">${escHtml(naam)}</div>` : '');
+  }).join('');
+  if (!beheer && !gasten.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="pr-gasten-blok">
+      <div class="pr-gasten-titel">* Gast(en) van de week</div>
+      <div class="pr-gasten-lijst">${chips || '<span style="font-size:0.76rem;color:#777">Geen bewoners in de lijst.</span>'}</div>
+      ${beheer ? `<div class="pr-gasten-hint">Tik een naam aan om te (de)markeren als gast van de week.</div>` : ''}
+    </div>`;
+}
+
+async function prToggleGast(weekKey, naam) {
+  const weekData = papierRoosterCache[weekKey] || {};
+  const gasten = weekData._gasten || [];
+  const idx = gasten.indexOf(naam);
+  if (idx >= 0) gasten.splice(idx, 1); else gasten.push(naam);
+  weekData._gasten = gasten;
+  await prOpslaanWeek(weekKey, weekData);
+  renderPapierRooster();
+}
+
 function prBewerkCel(weekKey, dagKey, dienstKey) {
   const weekData = papierRoosterCache[weekKey] || {};
   const info = (weekData[dagKey] && weekData[dagKey][dienstKey]) || {};
@@ -3524,12 +3571,14 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
     <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
     <p class="gp-modal-intro">${dagKey}</p>
     <div class="melding-form" style="margin-top:4px">
-      <label>Naam</label>
-      <input type="text" id="pr-cel-naam" placeholder="Naam invullen…" value="${escHtml(info.naam || '')}">
+      <label>Naam 1</label>
+      <input type="text" id="pr-cel-naam1" placeholder="Naam invullen…" value="${escHtml(info.naam1 || '')}">
+      <label>Naam 2 (optioneel)</label>
+      <input type="text" id="pr-cel-naam2" placeholder="2e naam, indien van toepassing…" value="${escHtml(info.naam2 || '')}">
       <label>Opmerking (optioneel, geel briefje)</label>
       <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
       <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
-      ${info.naam ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="prVerwijderCel('${weekKey}','${dagKey}','${dienstKey}')">🗑 Leegmaken</button>` : ''}
+      ${info.naam1 ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="prVerwijderCel('${weekKey}','${dagKey}','${dienstKey}')">🗑 Leegmaken</button>` : ''}
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
@@ -3543,11 +3592,12 @@ async function prOpslaanWeek(weekKey, weekData) {
 }
 
 async function prBevestigCel(weekKey, dagKey, dienstKey) {
-  const naam = document.getElementById('pr-cel-naam').value.trim();
+  const naam1 = document.getElementById('pr-cel-naam1').value.trim();
+  const naam2 = document.getElementById('pr-cel-naam2').value.trim();
   const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
   const weekData = papierRoosterCache[weekKey] || {};
   if (!weekData[dagKey]) weekData[dagKey] = {};
-  if (naam) weekData[dagKey][dienstKey] = { naam, opmerking: opmerking || undefined };
+  if (naam1) weekData[dagKey][dienstKey] = { naam1, naam2: naam2 || undefined, opmerking: opmerking || undefined };
   else delete weekData[dagKey][dienstKey];
   await prOpslaanWeek(weekKey, weekData);
   sluitGPModal();
