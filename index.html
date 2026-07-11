@@ -126,7 +126,8 @@
   .pr-cel-gast { background: #de1c39; }
   .pr-cel-gvdw { background: #028e74; }
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
-  .pr-cel-label { font-size: 0.68rem; font-weight: 500; opacity: 0.85; }
+  .pr-cel-label { font-size: 0.68rem; font-weight: 500; opacity: 0.85; white-space: nowrap; }
+  .pr-naam-regel { white-space: nowrap; display: block; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
     border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
@@ -3554,7 +3555,9 @@ async function renderPapierRooster() {
   const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
 
   const CEL_LABEL_TEKST = { kok: '🍳 kok', oud_bewoner: 'oud bewoner', extern: 'extern' };
-  const naamMetCelLabel = (naam, celLabel) => celLabel ? `${escHtml(naam)} <span class="pr-cel-label">(${CEL_LABEL_TEKST[celLabel]})</span>` : escHtml(naam);
+  const naamMetCelLabel = (naam, celLabel) => celLabel
+    ? `<span class="pr-naam-regel">${escHtml(naam)} <span class="pr-cel-label">(${CEL_LABEL_TEKST[celLabel]})</span></span>`
+    : `<span class="pr-naam-regel">${escHtml(naam)}</span>`;
 
   const maakRij = (dagNaam, i) => {
     const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
@@ -3573,10 +3576,11 @@ async function renderPapierRooster() {
           // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
           cellClasses = statusKlasse(status1);
           const label = statusLabelTekst(status1);
+          const heeftLabel = info.label1 || (info.naam2 && info.label2);
           const naamTekst = info.naam2
-            ? `${naamMetCelLabel(info.naam1, info.label1)}<br>${naamMetCelLabel(info.naam2, info.label2)}`
+            ? `${naamMetCelLabel(info.naam1, info.label1)}${naamMetCelLabel(info.naam2, info.label2)}`
             : naamMetCelLabel(info.naam1, info.label1);
-          cellHtml = `<span class="pr-naam" style="${info.naam2?'font-size:0.76rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
+          cellHtml = `<span class="pr-naam" style="${info.naam2||heeftLabel?'font-size:0.74rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
           cellHtml = `
