@@ -167,6 +167,7 @@
     justify-content: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0; }
+  .pr-uren-huisje { flex-shrink: 0; width: 12px; font-size: 0.62rem; text-align: center; }
   .pr-gasten-hint { font-size: 0.66rem; color: #888; margin-top: 8px; }
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
@@ -3076,6 +3077,14 @@ async function toggleBeheerderswoning(naam) {
   laadBewoners();
 }
 
+async function zetBeheerderswoning(naam, aan) {
+  if (!supabaseActief || !naam) return;
+  if (bewonersBeheerSet.has(naam) === aan) return; // al goed, geen wijziging nodig
+  const {error} = await sb.from('bewoners').update({ beheerderswoning: aan }).eq('naam', naam);
+  if (error) { alert('Wijzigen beheerderswoning mislukt: ' + error.message); return; }
+  if (aan) bewonersBeheerSet.add(naam); else bewonersBeheerSet.delete(naam);
+}
+
 function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
   const standaardItem = GP_STANDAARD.find(x => x.key === key);
@@ -3673,7 +3682,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
-        <span class="pr-uren-naam">${escHtml(naam)}${heeftHuisje ? ' 🏠' : ''}</span>
+        <span class="pr-uren-naam">${escHtml(naam)}</span>
+        <span class="pr-uren-huisje">${heeftHuisje ? '🏠' : ''}</span>
         <span class="pr-uren-uur">${uren[naam]}</span>
       </div>
       ${statusVeld}
@@ -3706,6 +3716,10 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
   const labelOpties = (huidig) => `
     <option value="" ${!huidig?'selected':''}>— geen label —</option>
     <option value="kok" ${huidig==='kok'?'selected':''}>🍳 kok</option>`;
+  const huisjeCheckbox = (naam, veldId) => naam ? `
+      <label style="display:flex;align-items:center;gap:8px;margin:-6px 0 14px;font-weight:400;text-transform:none;font-size:0.82rem">
+        <input type="checkbox" id="${veldId}" ${bewonersBeheerSet.has(naam)?'checked':''} style="width:auto"> 🏠 ${escHtml(naam)} heeft een beheerderswoning
+      </label>` : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
     <p class="gp-modal-intro">${dagKey}<br><span style="font-size:0.75rem;color:var(--subtle)">Status (vrijwilliger/gast/oud bewoner/etc.) stel je in bij "Uren deze week" rechts.</span></p>
@@ -3717,6 +3731,7 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
       </div>
       <label>Label bij naam 1 (optioneel)</label>
       <select id="pr-cel-label1">${labelOpties(info.label1 || '')}</select>
+      ${huisjeCheckbox(info.naam1, 'pr-cel-huisje1')}
       <label>Naam 2 (optioneel)</label>
       <select id="pr-cel-naam2" onchange="prCheckNieuweNaam(this,'2')">${prNaamOpties(info.naam2 || '')}</select>
       <div id="pr-nieuwe-naam2-veld" style="display:none">
@@ -3724,6 +3739,7 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
       </div>
       <label>Label bij naam 2 (optioneel)</label>
       <select id="pr-cel-label2">${labelOpties(info.label2 || '')}</select>
+      ${huisjeCheckbox(info.naam2, 'pr-cel-huisje2')}
       <label>Opmerking (optioneel, geel briefje)</label>
       <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
       <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
@@ -3767,6 +3783,12 @@ async function prBevestigCel(weekKey, dagKey, dienstKey) {
   const label1 = document.getElementById('pr-cel-label1').value;
   const label2 = document.getElementById('pr-cel-label2').value;
   const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
+
+  const huisje1El = document.getElementById('pr-cel-huisje1');
+  const huisje2El = document.getElementById('pr-cel-huisje2');
+  if (huisje1El && naam1) await zetBeheerderswoning(naam1, huisje1El.checked);
+  if (huisje2El && naam2) await zetBeheerderswoning(naam2, huisje2El.checked);
+
   const weekData = papierRoosterCache[weekKey] || {};
   if (!weekData[dagKey]) weekData[dagKey] = {};
   if (naam1) weekData[dagKey][dienstKey] = {
