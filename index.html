@@ -159,7 +159,12 @@
   .pr-uren-rij-top { display: flex; align-items: center; gap: 6px; }
   .pr-uren-naam { font-size: 0.78rem; color: #ddd; overflow: hidden; text-overflow: ellipsis;
     white-space: nowrap; flex: 1; min-width: 0; }
-  .pr-uren-uur { font-size: 0.72rem; color: #999; flex-shrink: 0; width: 26px; text-align: right; }
+  .pr-uren-nr { flex-shrink: 0; width: 18px; height: 18px; background: #111; color: #fff;
+    border-radius: 3px; font-size: 0.6rem; font-weight: 800; display: flex; align-items: center;
+    justify-content: center; }
+  .pr-uren-uur { flex-shrink: 0; width: 22px; height: 22px; background: #fff; color: #111;
+    border-radius: 3px; font-size: 0.68rem; font-weight: 800; display: flex; align-items: center;
+    justify-content: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0; }
 
@@ -3639,7 +3644,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusA = statusMap[a] || 'vrijwilliger';
     const statusB = statusMap[b] || 'vrijwilliger';
     if (STATUS_VOLGORDE[statusA] !== STATUS_VOLGORDE[statusB]) return STATUS_VOLGORDE[statusA] - STATUS_VOLGORDE[statusB];
-    return a.localeCompare(b, 'nl'); // binnen dezelfde status: alfabetisch
+    if (uren[b] !== uren[a]) return uren[b] - uren[a]; // binnen dezelfde status: meeste uren eerst
+    return a.localeCompare(b, 'nl'); // bij gelijke uren: alfabetisch
   });
 
   const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
@@ -3654,7 +3660,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
-    : namen.map(naam => {
+    : namen.map((naam, idx) => {
     const status = statusMap[naam] || 'vrijwilliger';
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
     const naamVeilig = naam.replace(/'/g,"\\'");
@@ -3663,8 +3669,9 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       : `<span class="pr-status-label" style="margin-top:0">${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
+        <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam">${escHtml(naam)}</span>
-        <span class="pr-uren-uur">${uren[naam]}u</span>
+        <span class="pr-uren-uur">${uren[naam]}</span>
       </div>
       ${statusVeld}
     </div>`;
