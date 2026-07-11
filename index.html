@@ -172,7 +172,9 @@
     border-radius: 3px; font-size: 0.62rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
-    opacity: 0.85; padding: 0; }
+    opacity: 0.85; padding: 0 12px 0 0; -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%23ccc' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right center; background-size: 8px 5px; }
   .pr-uren-huisje { flex-shrink: 0; width: 11px; font-size: 0.55rem; text-align: center; }
   .pr-gasten-hint { font-size: 0.66rem; color: #888; margin-top: 8px; }
 
@@ -3663,14 +3665,24 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // Alle bewoners tonen, ook wie nog geen dienst heeft (0 uur).
   bewonersCache.forEach(naam => { if (!(naam in uren)) uren[naam] = 0; });
 
-  const STATUS_VOLGORDE = { gast_week: 0, oud_bewoner: 1, extern: 2, vrijwilliger: 3, gast: 4 };
-  const namen = Object.keys(uren).sort((a, b) => {
-    const statusA = statusMap[a] || 'vrijwilliger';
-    const statusB = statusMap[b] || 'vrijwilliger';
-    if (STATUS_VOLGORDE[statusA] !== STATUS_VOLGORDE[statusB]) return STATUS_VOLGORDE[statusA] - STATUS_VOLGORDE[statusB];
-    if (uren[b] !== uren[a]) return uren[b] - uren[a]; // binnen dezelfde status: meeste uren eerst
-    return a.localeCompare(b, 'nl'); // bij gelijke uren: alfabetisch
+  // Groepeer per status (kleur), zodat mensen met dezelfde kleur bij elkaar blijven staan.
+  // De positie van elke groep in de lijst wordt bepaald door het hoogste urenaantal binnen die groep.
+  const groepen = {}; // status -> [namen]
+  Object.keys(uren).forEach(naam => {
+    const status = statusMap[naam] || 'vrijwilliger';
+    if (!groepen[status]) groepen[status] = [];
+    groepen[status].push(naam);
   });
+  Object.values(groepen).forEach(lijst => {
+    lijst.sort((a, b) => {
+      if (uren[b] !== uren[a]) return uren[b] - uren[a];
+      return a.localeCompare(b, 'nl');
+    });
+  });
+  const groepMaxUren = (status) => Math.max(...groepen[status].map(n => uren[n]));
+  const namen = Object.keys(groepen)
+    .sort((statusA, statusB) => groepMaxUren(statusB) - groepMaxUren(statusA))
+    .flatMap(status => groepen[status]);
 
   const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
   const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
