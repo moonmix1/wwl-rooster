@@ -35,6 +35,44 @@
          display: inline-flex; align-items: center; gap: 5px; }
   .tab.actief { color: var(--bank); border-bottom-color: var(--bank); }
   .tab:hover:not(.actief) { color: var(--muted); }
+  #prive-tab-badge { background: #ef4444; color: white; border-radius: 99px; font-size: 0.65rem;
+    font-weight: 800; padding: 1px 6px; min-width: 16px; text-align: center; }
+
+  /* ── PRIVÉBERICHTEN ── */
+  .gesprek-item { display: flex; align-items: center; gap: 12px; width: 100%; background: #162032;
+    border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+    cursor: pointer; text-align: left; }
+  .gesprek-item:hover { border-color: var(--bank); }
+  .gesprek-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--bank-bg);
+    color: var(--bank); display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+  .gesprek-info { flex: 1; min-width: 0; }
+  .gesprek-naam { font-weight: 800; color: white; font-size: 0.9rem; }
+  .gesprek-laatste { font-size: 0.78rem; color: var(--subtle); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+  .gesprek-ongelezen { background: #ef4444; color: white; border-radius: 99px; font-size: 0.68rem;
+    font-weight: 800; padding: 2px 7px; flex-shrink: 0; }
+  .gesprek-nieuw-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px dashed var(--bank);
+    background: transparent; color: var(--bank); font-weight: 800; font-size: 0.85rem; cursor: pointer;
+    margin-bottom: 14px; }
+
+  .chat-scherm { display: flex; flex-direction: column; height: 70vh; max-height: 600px; }
+  .chat-berichten { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+    padding: 4px 2px 10px; }
+  .chat-bel { max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 0.85rem;
+    line-height: 1.4; word-break: break-word; }
+  .chat-bel-eigen { align-self: flex-end; background: var(--bank-bg); border: 1px solid var(--bank-border);
+    color: white; border-bottom-right-radius: 4px; }
+  .chat-bel-ander { align-self: flex-start; background: #1e2733; border: 1px solid var(--border);
+    color: white; border-bottom-left-radius: 4px; }
+  .chat-bel img { max-width: 100%; border-radius: 8px; margin-top: 4px; display: block; }
+  .chat-bel-tijd { font-size: 0.62rem; color: var(--subtle); margin-top: 3px; text-align: right; }
+  .chat-invoer-rij { display: flex; gap: 8px; align-items: flex-end; padding-top: 8px;
+    border-top: 1px solid var(--border); }
+  .chat-invoer-rij textarea { flex: 1; resize: none; min-height: 40px; max-height: 120px;
+    overflow-y: auto; line-height: 1.4; }
+  .chat-verstuur-btn { background: var(--bank); color: #0f1f35; border: none; border-radius: 10px;
+    padding: 10px 16px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
   .content { padding: 20px; max-width: 900px; margin: 0 auto; }
   .sectie { display: none; }
   .sectie.actief { display: block; }
@@ -65,6 +103,59 @@
   .week-tabel tr:hover td { background: var(--surface2); }
   .dag-label { font-weight: 700; color: white; font-size: 0.85rem; }
   .kantoor-label { font-size: 0.65rem; color: var(--subtle); font-style: italic; }
+
+  /* ── PAPIEREN-STIJL ROOSTER (sober, grijs/zwart-wit) ── */
+  .pr-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
+    padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+  .pr-nav-btn:hover { background: #3a3a3a; }
+  .pr-week-label { font-weight: 700; color: #ddd; font-size: 0.85rem; text-align: center; }
+  .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
+  .pr-tabel th:first-child, .pr-tabel td:first-child { width: 22%; }
+  .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 26%; }
+  .pr-tabel th { background: #2a2a2a; color: #aaa; padding: 9px 12px; text-align: left;
+    font-size: 0.68rem; font-weight: 700; border: 1px solid #3a3a3a; }
+  .pr-tijd { font-weight: 400; font-size: 0.62rem; color: #777; }
+  .pr-tabel td { padding: 8px 12px; border: 1px solid #3a3a3a; vertical-align: top; }
+  .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.82rem; }
+  .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
+  .pr-dag-label.pr-vandaag { color: #fff; }
+  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
+    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; }
+  .pr-cel-vw   { background: #0039ba; }
+  .pr-cel-gast { background: #de1c39; }
+  .pr-cel-gvdw { background: #028e74; }
+  .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
+  .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
+  .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
+    border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
+  .pr-cel:hover { background: #232323; }
+
+  /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
+  .pr-status-label { display: block; font-size: 0.38rem; opacity: 1; margin-top: 0; color: #fff;
+    text-transform: lowercase; font-weight: 700; white-space: nowrap; }
+
+  .pr-uren-status-vw   { background: #0039ba; }
+  .pr-uren-status-gast { background: #de1c39; }
+  .pr-uren-status-gvdw { background: #028e74; }
+
+  .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
+  .pr-uren-kolom { flex: 0 0 260px; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
+  .pr-uren-lijst-wrap { column-count: 1; column-gap: 14px; }
+  .pr-uren-lijst-wrap.pr-2kol { column-rule: 1px solid #3a3a3a; }
+  .pr-uren-lijst-wrap.pr-2kol { column-count: 2; }
+  .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 8px; }
+  .pr-uren-rij { display: flex; flex-direction: column; gap: 2px;
+    padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+  .pr-uren-rij-top { display: flex; align-items: center; gap: 6px; }
+  .pr-uren-naam { font-size: 0.78rem; color: #ddd; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; flex: 1; min-width: 0; }
+  .pr-uren-uur { font-size: 0.72rem; color: #999; flex-shrink: 0; width: 26px; text-align: right; }
+  .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
+    opacity: 0.85; padding: 0; }
+
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
           padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
   .pill-naam { display: block; }
@@ -152,11 +243,11 @@
   .type-btn.actief { border-color: var(--bank); background: var(--bank-bg); color: var(--bank);
                      box-shadow: 0 0 12px rgba(167,139,250,0.3); }
   .type-btn:hover:not(.actief) { border-color: #5b7fc4; }
-  .verstuur-btn { width: 100%; padding: 15px; background: #4f46e5; color: white;
-                  border: none; border-radius: 12px; font-size: 1rem; font-weight: 800;
+  .verstuur-btn { width: 100%; padding: 16px; background: #3b5998; color: white;
+                  border: 2px solid #4c6cad; border-radius: 12px; font-size: 1.02rem; font-weight: 800;
                   cursor: pointer; margin-bottom: 12px; transition: all 0.15s;
-                  box-shadow: 0 4px 15px rgba(79,70,229,0.4); }
-  .verstuur-btn:hover { background: #6366f1; }
+                  box-shadow: 0 2px 8px rgba(59,89,152,0.3); }
+  .verstuur-btn:hover { background: #4a6aa8; }
   .verstuur-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
   .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px;
             width: 100%; padding: 13px; background: #075e54; color: white;
@@ -352,7 +443,7 @@
   .gp-icon { font-size: 1.5rem; flex-shrink: 0; }
   .gp-tekst { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .gp-titel { font-size: 0.92rem; font-weight: 800; color: white; }
-  .gp-sub { font-size: 0.74rem; color: var(--muted); }
+  .gp-sub { font-size: 0.82rem; color: var(--muted); }
   .gp-deel-rij { max-width: 900px; margin: 0 auto 10px; padding: 0 16px; }
   #gp-deel-btn {
     width: 100%; background: #3a4658; color: var(--text);
@@ -448,6 +539,8 @@
   .gp-modal h2 { font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 8px; padding-right: 30px; }
   .gp-modal-intro { font-size: 0.85rem; color: #b0c4de; line-height: 1.6; margin-bottom: 18px; }
   .gp-modal-intro strong { color: white; }
+  .gp-modal-intro small, .melding-tekst small, .chat-bel small { font-size: 0.82em; opacity: 0.8; }
+  .gp-modal-intro em, .melding-tekst em, .chat-bel em { font-style: italic; }
 
   @media (max-width: 480px) {
     .kaart-grid { grid-template-columns: 1fr; }
@@ -512,6 +605,7 @@
   <div class="tab" onclick="toon('rotatie',this)">🔄 Rotatie</div>
   <div class="tab" onclick="toon('regels',this)">📋 Regels</div>
   <div class="tab" onclick="toon('meldingen',this)">💬 Meldingen</div>
+  <div class="tab" onclick="toon('prive',this)">📩 Privé<span id="prive-tab-badge" style="display:none"></span></div>
 </div>
 
 <div class="content">
@@ -544,6 +638,44 @@
     <p style="font-size:0.7rem;color:var(--subtle);margin-top:10px">
       ★ = deze persoon draait deze week 2 diensten (uitzondering, normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
     </p>
+  </div>
+
+  <div id="s-papierrooster" class="sectie">
+    <div class="pr-nav">
+      <button class="pr-nav-btn" onclick="prWeekNavigeer(-1)">◀ Vorige week</button>
+      <div class="pr-week-label" id="pr-week-label"></div>
+      <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
+    </div>
+    <div class="pr-layout">
+      <div style="min-width:0;flex:1 1 340px">
+        <div style="overflow-x:auto">
+          <table class="pr-tabel">
+            <thead><tr>
+              <th>Dag</th>
+              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
+              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
+              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
+            </tr></thead>
+            <tbody id="pr-dinsdag-body"></tbody>
+          </table>
+        </div>
+        <div style="overflow-x:auto;margin-top:14px">
+          <table class="pr-tabel">
+            <thead><tr>
+              <th>Dag</th>
+              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
+              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
+              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
+            </tr></thead>
+            <tbody id="pr-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="pr-uren-kolom">
+        <div class="pr-uren-titel">Uren deze week</div>
+        <div id="pr-uren-lijst"></div>
+      </div>
+    </div>
   </div>
 
   <div id="s-rotatie" class="sectie">
@@ -650,15 +782,26 @@
       <div class="type-grid" id="type-grid"></div>
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Toelichting (optioneel)</span>
-        <button type="button" onclick="maakVetGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">
+          <button type="button" onclick="maakVetGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+          <button type="button" onclick="maakCursiefGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0;font-style:italic">I</button>
+          <button type="button" onclick="maakKleinGeselecteerd('inp-bericht')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0">S</button>
+        </span>
       </label>
       <textarea id="inp-bericht" rows="2" placeholder="bijv. 'ben er om 17:20'"></textarea>
       <div id="melding-camera-plek"></div>
-      <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen → verschijnt direct op alle schermen</button>
+      <button class="verstuur-btn" id="verstuur-btn" onclick="verstuurMelding()">Versturen — zichtbaar voor iedereen</button>
       <a class="wa-btn" href="#" onclick="return waSturen()">📲 Sturen via WhatsApp</a>
     </div>
     <div class="sectie-titel"><span class="live-dot"></span>Actieve meldingen</div>
     <div id="mel-lijst" class="melding-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Berichten laden…</p></div>
+  </div>
+
+  <div id="s-prive" class="sectie">
+    <div class="info-box">
+      Privéberichten zijn <strong>alleen zichtbaar voor jou en de ontvanger</strong> — niet voor andere bewoners.
+    </div>
+    <div id="prive-gesprekken-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Laden…</p></div>
   </div>
 
 </div>
@@ -919,7 +1062,7 @@ async function laadEigenProfiel() {
 }
 
 let appGestart = false;
-function starApp() {
+async function starApp() {
   if (appGestart) return;
   appGestart = true;
   verversBeheerderUI();
@@ -938,6 +1081,11 @@ function starApp() {
   luisterGPOnderwerpenLive();
   laadGoedkeuringenTeller();
   luisterGoedkeuringenLive();
+  await laadActiefRoosterType();
+  herstelLaatsteTab();
+  laadAlleProfielen();
+  laadPriveGesprekken();
+  luisterPriveOverzichtLive();
 }
 
 function toonAuthScherm(soort) {
@@ -1013,10 +1161,6 @@ async function registreren() {
   if (!naam) { alert('Vul je naam in.'); return; }
   if (!email) { alert('Vul je e-mailadres in.'); return; }
   if (!wachtwoord || wachtwoord.length < 6) { alert('Wachtwoord moet minimaal 6 tekens zijn.'); return; }
-
-  const { data: naamGeldig, error: naamError } = await sb.rpc('is_geldige_bewonersnaam', { te_checken_naam: naam });
-  if (naamError) { alert('Er ging iets mis bij het controleren van je naam: ' + naamError.message); return; }
-  if (!naamGeldig) { alert('Deze naam staat niet in de bewonerslijst. Check de spelling (hoofdletter, exact zoals gebruikelijk) of vraag de beheerder om je naam eerst toe te voegen.'); return; }
 
   const { data, error } = await sb.auth.signUp({
     email, password: wachtwoord,
@@ -1095,8 +1239,8 @@ document.addEventListener('click', (e) => {
 
 function resetMijnNaam() {
   if (!confirm('Weet je zeker dat je een andere naam wilt kiezen?')) return;
-  const nieuweNaam = prompt('Kies je nieuwe naam exact zoals in de bewonerslijst:');
-  if (!nieuweNaam || !bewonersCache.includes(nieuweNaam)) { alert('Deze naam staat niet in de bewonerslijst.'); return; }
+  const nieuweNaam = prompt('Kies je nieuwe naam:');
+  if (!nieuweNaam) return;
   sb.rpc('wijzig_eigen_naam', { nieuwe_naam: nieuweNaam }).then(({error}) => {
     if (error) { alert('Wijzigen mislukt: ' + error.message); return; }
     huidigProfiel.naam = nieuweNaam;
@@ -1177,8 +1321,33 @@ function initSupabase() {
   try {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     supabaseActief = true;
+    checkNetBevestigd();
     checkAuthStatus();
   } catch(e) { console.error('Supabase fout:', e); }
+}
+
+function checkNetBevestigd() {
+  // Supabase zet na het klikken op de bevestigingslink info in de URL (hash of query), afhankelijk van de flow.
+  const hash = window.location.hash || '';
+  const zoek = window.location.search || '';
+  const isBevestiging = hash.includes('type=signup') || zoek.includes('type=signup') || hash.includes('type=email_change');
+  if (isBevestiging) {
+    sessionStorage.setItem('wwl_net_bevestigd', '1');
+    // Hash opschonen zodat de melding niet blijft terugkomen bij verversen.
+    history.replaceState(null, '', window.location.pathname + window.location.search.replace(/([&?])type=signup[^&]*/, ''));
+    toonWelkomMelding();
+  }
+}
+
+function toonWelkomMelding() {
+  if (sessionStorage.getItem('wwl_net_bevestigd') !== '1') return;
+  sessionStorage.removeItem('wwl_net_bevestigd');
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>🎉 Welkom bij WWL!</h2>
+    <p class="gp-modal-intro">Je e-mailadres is bevestigd en je account is aangemaakt. Een beheerder moet je aanvraag nog goedkeuren voordat je de app kunt gebruiken — dat duurt meestal niet lang. Je krijgt vanzelf toegang zodra dat is gebeurd.</p>
+    <button class="verstuur-btn" onclick="sluitGPModal()">Begrepen →</button>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
 }
 
 async function laadMeldingen() {
@@ -1231,12 +1400,27 @@ function toon(id, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('actief'));
   document.getElementById('s-'+id).classList.add('actief');
   el.classList.add('actief');
+  try { localStorage.setItem('wwl_laatste_tab', id); } catch(e) {}
   if(id==='vandaag')     renderVandaag();
-  if(id==='weekrooster') renderWeek();
+  if(id==='weekrooster') renderWeekVolgensInstelling();
   if(id==='rotatie')     renderRotatie();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
   if(id==='regels')      renderRegelsBeheerKnop();
+  if(id==='prive')       laadPriveGesprekken();
   stopCamera();
+}
+
+function herstelLaatsteTab() {
+  let laatsteTab;
+  try { laatsteTab = localStorage.getItem('wwl_laatste_tab'); } catch(e) { laatsteTab = null; }
+  if (laatsteTab && laatsteTab !== 'vandaag') {
+    const tabEl = Array.from(document.querySelectorAll('.tab')).find(t => t.getAttribute('onclick') === `toon('${laatsteTab}',this)`);
+    const sectieEl = document.getElementById('s-' + laatsteTab);
+    if (tabEl && sectieEl) toon(laatsteTab, tabEl);
+  }
+  try {
+    if (localStorage.getItem('wwl_geavanceerd_open') === '1') toggleGeavanceerd();
+  } catch(e) {}
 }
 
 function dagNaam() { return DAGEN_NL[new Date().getDay()]; }
@@ -1729,7 +1913,7 @@ async function verstuurMelding() {
   huidigeMedia['melding'] = [];
   renderMediaLijst('melding');
   btn.disabled = false;
-  btn.textContent = 'Versturen → verschijnt direct op alle schermen';
+  btn.textContent = 'Versturen — zichtbaar voor iedereen';
 }
 
 async function verwijderMelding(id) {
@@ -1823,9 +2007,9 @@ async function bewerkMeldingTekst(id) {
     <div class="melding-form" style="margin-top:4px">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Tekst</span>
-        <button type="button" onclick="maakVetGeselecteerd('bewerk-melding-tekst')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-melding-tekst')}</span>
       </label>
-      <textarea id="bewerk-melding-tekst" rows="3">${m.bericht || ''}</textarea>
+      <textarea id="bewerk-melding-tekst" rows="5">${m.bericht || ''}</textarea>
       ${mediaZoneHTML(ns)}
       <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, gebruik ◀ ▶ om de volgorde te wijzigen, of voeg een nieuwe toe (max. ${MAX_MEDIA}).</p>
       <button class="verstuur-btn" onclick="bevestigBewerkMelding(${id}, '${ns}')">Opslaan →</button>
@@ -2050,6 +2234,7 @@ function toggleGeavanceerd() {
   const btn = document.getElementById('geavanceerd-btn');
   paneel.classList.toggle('open');
   btn.classList.toggle('actief');
+  try { localStorage.setItem('wwl_geavanceerd_open', paneel.classList.contains('open') ? '1' : '0'); } catch(e) {}
   if (paneel.classList.contains('open')) {
     verversBeheerderUI();
     laadGPVolgorde();
@@ -2204,7 +2389,7 @@ function renderGPPaginas() {
         const globalIndex = paginaIdx * GP_PAGINA_GROOTTE + i;
         const c = onderwerpKleur(item.kleur || 'grijs');
         return `
-        <div class="gp-item ${item.actief?'':'gp-binnenkort'}" style="${item.actief?`border-color:${c.rand}`:''}">
+        <div class="gp-item ${item.actief?'':'gp-binnenkort'}" style="${item.actief?`border-color:${c.rand};background:${c.rand}14`:''}">
           <button class="gp-item-klik" onclick="openGP('${item.actief?item.key:'placeholder'}')">
             <span class="gp-icon">${item.icon}</span>
             <span class="gp-tekst">
@@ -2242,15 +2427,19 @@ function berichtTekstHtml(s) {
   return escHtml(s).replace(/\n/g, '<br>');
 }
 function introTekstHtml(s) {
-  // Escaped alles behalve <strong>/</strong> (toegestaan via het B-knopje), en behoudt regeleindes.
-  const escaped = escHtml(s)
-    .replace(/&lt;strong&gt;/g, '<strong>')
-    .replace(/&lt;\/strong&gt;/g, '</strong>');
+  // Escaped alles behalve <strong>/<em>/<small> (toegestaan via de B/I/S-knoppen), en behoudt regeleindes.
+  const toegestaan = ['strong', 'em', 'small'];
+  let escaped = escHtml(s);
+  toegestaan.forEach(tag => {
+    escaped = escaped
+      .replace(new RegExp(`&lt;${tag}&gt;`, 'g'), `<${tag}>`)
+      .replace(new RegExp(`&lt;/${tag}&gt;`, 'g'), `</${tag}>`);
+  });
   return escaped.replace(/\n/g, '<br>');
 }
 // ── ONDERWERP-KLEUREN ────────────────────────────────────────────────────
 const ONDERWERP_KLEUREN = {
-  blauw:    { naam: 'Blauw',    tekst: '#7eb8f7', rand: '#2d4a7a', bg: '#13233d' },
+  blauw:    { naam: 'Blauw',    tekst: '#7eb8f7', rand: '#3b6fb8', bg: '#13233d' },
   groen:    { naam: 'Groen',    tekst: '#6ee7a8', rand: '#1f5c3f', bg: '#0f2a1f' },
   paars:    { naam: 'Paars',    tekst: '#c4a7f7', rand: '#5b3a8a', bg: '#251a3d' },
   oranje:   { naam: 'Oranje',   tekst: '#f7b96e', rand: '#8a5a1f', bg: '#3d2a13' },
@@ -2616,9 +2805,9 @@ async function bewerkExtraItemTekst(id, categorie) {
     <div class="melding-form" style="margin-top:4px">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Tekst</span>
-        <button type="button" onclick="maakVetGeselecteerd('bewerk-extra-tekst')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-extra-tekst')}</span>
       </label>
-      <textarea id="bewerk-extra-tekst" rows="3">${item.tekst || ''}</textarea>
+      <textarea id="bewerk-extra-tekst" rows="5">${item.tekst || ''}</textarea>
       ${mediaZoneHTML(ns)}
       <p style="font-size:0.72rem;color:var(--subtle);margin:-8px 0 12px">Tik op ✕ bij een foto om 'm te verwijderen, gebruik ◀ ▶ om de volgorde te wijzigen, of voeg een nieuwe toe (max. ${MAX_MEDIA}).</p>
       <button class="verstuur-btn" onclick="bevestigBewerkExtraItem(${id}, '${categorie}', '${ns}')">Opslaan →</button>
@@ -2850,6 +3039,16 @@ function renderBewonersModalInhoud() {
         <button class="cam-btn cam-btn-primary" style="margin-top:10px" onclick="verkleinOudeFotos()">Oude foto's verkleinen</button>
         <div id="onderhoud-voortgang" style="font-size:0.78rem;color:var(--muted);margin-top:8px"></div>
       </div>` : ''}
+    ${beheerder ? `
+      <div class="rust-box" style="margin-bottom:16px">
+        <strong style="font-size:0.82rem">🗓️ Actief rooster</strong><br>
+        <span style="font-size:0.75rem;color:var(--subtle)">Welk rooster zien bewoners op het Week-tabblad?</span>
+        <div style="display:flex;gap:8px;margin-top:8px" id="rooster-keuze-knoppen">
+          <button class="cam-btn" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('a')">Digitaal rooster</button>
+          <button class="cam-btn" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('b')">Papieren-stijl rooster</button>
+        </div>
+        <div id="rooster-keuze-status" style="font-size:0.72rem;color:var(--subtle);margin-top:6px"></div>
+      </div>` : ''}
     <div class="sectie-titel"><span class="live-dot"></span>Bewonerslijst voor keuzemenu's (${bewonersCache.length})</div>
     <div id="bewoners-lijst" class="melding-lijst" style="gap:8px">${lijstHtml}</div>
   `;
@@ -2866,6 +3065,9 @@ async function toggleBeheerderswoning(naam) {
 function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
   const standaardItem = GP_STANDAARD.find(x => x.key === key);
+  const volgordeItem = gpVolgordeCache.find(x => x.key === key);
+  const titelruimte = (volgordeItem && volgordeItem.titelruimte) || custom?.titelruimte || 'normaal';
+  const titelMarge = { compact: '4px', normaal: '8px', ruim: '20px' }[titelruimte] || '8px';
   const data = custom
     ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: introTekstHtml(custom.intro || ''), footer: '' }
     : (GP_INHOUD[key] || GP_INHOUD.placeholder);
@@ -2885,7 +3087,7 @@ function openGP(key) {
           ${identiteitBlok}
           <label style="display:flex;align-items:center;justify-content:space-between">
             <span>Bericht</span>
-            <button type="button" onclick="maakVetGeselecteerd('extra-tekst-${key}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+            <span style="display:flex;gap:4px">${opmaakKnoppenHtml('extra-tekst-' + key)}</span>
           </label>
           <textarea id="extra-tekst-${key}" rows="2" placeholder="${EXTRA_PLACEHOLDERS[key] || 'Typ hier je bericht...'}"></textarea>
           ${mediaZoneHTML(key)}
@@ -2899,7 +3101,7 @@ function openGP(key) {
   }
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-right:46px">
-      <h2 style="margin:0">${data.titel}</h2>
+      <h2 style="margin:0 0 ${titelMarge} 0">${data.titel}</h2>
       ${kanBewerkOnderwerp ? `<button class="verwijder-btn" style="flex-shrink:0" onclick="toonBewerkOnderwerpForm('${key}')">✏️</button>` : ''}
     </div>
     <p class="gp-modal-intro">${data.intro}</p>
@@ -2911,22 +3113,33 @@ function openGP(key) {
 
 // ── ONDERWERP ZELF BEWERKEN (titel/sub/intro/icoon/kleur, ook voor standaardonderwerpen) ──
 // ── VETGEDRUKT MAKEN IN TEXTAREA ─────────────────────────────────────────
-function maakVetGeselecteerd(veldId) {
+function maakOpmaakGeselecteerd(veldId, tag) {
   const veld = document.getElementById(veldId);
   if (!veld) return;
   const start = veld.selectionStart;
   const eind = veld.selectionEnd;
   if (start === eind) {
-    alert('Selecteer eerst een stukje tekst (houd je vinger op de tekst en sleep) en tik daarna op B.');
+    alert('Selecteer eerst een stukje tekst (houd je vinger op de tekst en sleep) en tik daarna op de knop.');
     return;
   }
   const voor = veld.value.slice(0, start);
   const geselecteerd = veld.value.slice(start, eind);
   const na = veld.value.slice(eind);
-  veld.value = `${voor}<strong>${geselecteerd}</strong>${na}`;
+  const stuk = `<${tag}>${geselecteerd}</${tag}>`;
+  veld.value = `${voor}${stuk}${na}`;
   veld.focus();
-  const nieuweCursor = start + `<strong>${geselecteerd}</strong>`.length;
+  const nieuweCursor = start + stuk.length;
   veld.setSelectionRange(nieuweCursor, nieuweCursor);
+}
+function maakVetGeselecteerd(veldId) { maakOpmaakGeselecteerd(veldId, 'strong'); }
+function maakCursiefGeselecteerd(veldId) { maakOpmaakGeselecteerd(veldId, 'em'); }
+function maakKleinGeselecteerd(veldId) { maakOpmaakGeselecteerd(veldId, 'small'); }
+function opmaakKnoppenHtml(veldId) {
+  const btnStijl = 'background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 9px;cursor:pointer;text-transform:none;letter-spacing:0';
+  return `
+    <button type="button" onclick="maakVetGeselecteerd('${veldId}')" style="${btnStijl}">B</button>
+    <button type="button" onclick="maakCursiefGeselecteerd('${veldId}')" style="${btnStijl}font-style:italic">I</button>
+    <button type="button" onclick="maakKleinGeselecteerd('${veldId}')" style="${btnStijl}font-size:0.65rem">S</button>`;
 }
 
 function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
@@ -2940,6 +3153,7 @@ function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
     sub: (volgordeItem && volgordeItem.sub) || custom?.sub || standaardItem?.sub || '',
     intro: custom?.intro || (GP_INHOUD[key] && GP_INHOUD[key].intro.replace(/<[^>]+>/g, '')) || '',
     kleur: (volgordeItem && volgordeItem.kleur) || custom?.kleur || 'blauw',
+    titelruimte: (volgordeItem && volgordeItem.titelruimte) || custom?.titelruimte || 'normaal',
   };
   const kleurSwatches = Object.entries(ONDERWERP_KLEUREN).map(([k, c]) => `
     <div class="kleur-kies-item ${k === w.kleur ? 'actief' : ''}" style="background:${c.bg}" onclick="kiesBewerkOnderwerpKleur('${k}')">
@@ -2962,11 +3176,17 @@ function toonBewerkOnderwerpForm(key, bestaandeWaarden) {
       <input type="text" id="bewerk-onderwerp-titel" value="${escHtml(w.titel)}">
       <label>Korte ondertitel</label>
       <input type="text" id="bewerk-onderwerp-sub" value="${escHtml(w.sub)}">
+      <label>Ruimte onder de titel</label>
+      <select id="bewerk-onderwerp-titelruimte">
+        <option value="compact" ${w.titelruimte==='compact'?'selected':''}>Compact</option>
+        <option value="normaal" ${w.titelruimte==='normaal'?'selected':''}>Normaal</option>
+        <option value="ruim" ${w.titelruimte==='ruim'?'selected':''}>Ruim</option>
+      </select>
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Uitleg (intro-tekst)</span>
-        <button type="button" onclick="maakVetGeselecteerd('bewerk-onderwerp-intro')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:900;font-size:0.75rem;padding:4px 10px;cursor:pointer;text-transform:none;letter-spacing:0">B</button>
+        <span style="display:flex;gap:4px">${opmaakKnoppenHtml('bewerk-onderwerp-intro')}</span>
       </label>
-      <textarea id="bewerk-onderwerp-intro" rows="4">${escHtml(w.intro)}</textarea>
+      <textarea id="bewerk-onderwerp-intro" rows="8">${escHtml(w.intro)}</textarea>
       <button class="verstuur-btn" onclick="bevestigBewerkOnderwerp('${key}')">Opslaan →</button>
     </div>
   `;
@@ -2987,6 +3207,7 @@ async function bevestigBewerkOnderwerp(key) {
   const sub   = document.getElementById('bewerk-onderwerp-sub').value.trim();
   const intro = document.getElementById('bewerk-onderwerp-intro').value.trim();
   const kleur = document.getElementById('bewerk-onderwerp-kleur').value || 'blauw';
+  const titelruimte = document.getElementById('bewerk-onderwerp-titelruimte').value || 'normaal';
   if (!titel) { alert('Vul een titel in.'); return; }
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
 
@@ -2994,15 +3215,15 @@ async function bevestigBewerkOnderwerp(key) {
   const {error} = await sb.from('gp_items_info').upsert([{ sleutel: key, icoon, titel, sub, intro }]);
   if (error) { alert('Opslaan mislukt: ' + error.message); return; }
 
-  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro, kleur };
+  gpAangepasteOnderwerpen[key] = { icon: icoon, titel, sub, intro, kleur, titelruimte };
 
   // ook de volgorde-lijst bijwerken zodat icoon/titel/sub/kleur overal kloppen (overzicht, berichtkleuren)
   const items = getGPVolgorde();
   const idx = items.findIndex(x => x.key === key);
   if (idx >= 0) {
-    items[idx] = { ...items[idx], icon: icoon, titel, sub, kleur };
+    items[idx] = { ...items[idx], icon: icoon, titel, sub, kleur, titelruimte };
   } else {
-    items.push({ key, icon: icoon, titel, sub, actief: true, kleur });
+    items.push({ key, icon: icoon, titel, sub, actief: true, kleur, titelruimte });
   }
   await opslaanGPVolgorde(items);
 
@@ -3014,6 +3235,8 @@ async function bevestigBewerkOnderwerp(key) {
 function sluitGPModal() {
   document.getElementById('gp-overlay').classList.remove('open');
   if (extraChannel) { sb.removeChannel(extraChannel); extraChannel = null; }
+  if (priveGesprekChannel) { sb.removeChannel(priveGesprekChannel); priveGesprekChannel = null; }
+  huidigGesprekMetId = null;
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   cameraNS = null;
   EXTRA_CATEGORIEEN.forEach(c => { huidigeMedia[c] = []; });
@@ -3027,7 +3250,502 @@ renderVandaag();
 renderWeek();
 renderRotatie();
 renderPoll();
+// ── PRIVÉBERICHTEN ──────────────────────────────────────────────────────
+let alleProfielen = []; // [{id, naam}]
+let priveGesprekChannel = null;
+let huidigGesprekMetId = null;
+let huidigeMediaPrive = [];
+
+async function laadAlleProfielen() {
+  if (!supabaseActief) return;
+  const { data, error } = await sb.from('profielen').select('id, naam').order('naam', {ascending:true});
+  if (!error && data) alleProfielen = data;
+}
+
+function priveAvatarLetter(naam) { return (naam || '?').charAt(0).toUpperCase(); }
+
+async function laadPriveGesprekken() {
+  const el = document.getElementById('prive-gesprekken-lijst');
+  if (!el || !supabaseActief || !huidigProfiel) return;
+  if (!alleProfielen.length) await laadAlleProfielen();
+
+  const { data, error } = await sb
+    .from('prive_berichten')
+    .select('*')
+    .or(`van_id.eq.${huidigProfiel.id},naar_id.eq.${huidigProfiel.id}`)
+    .order('created_at', { ascending: false });
+
+  if (error) { el.innerHTML = `<p style="font-size:0.8rem;color:var(--warn)">Kon gesprekken niet laden: ${error.message}</p>`; return; }
+
+  // Groepeer per gesprekspartner, houd het laatste bericht + ongelezen-aantal per gesprek bij.
+  const gesprekken = {}; // partnerId -> {laatste, ongelezen}
+  (data || []).forEach(b => {
+    const partnerId = b.van_id === huidigProfiel.id ? b.naar_id : b.van_id;
+    if (!gesprekken[partnerId]) gesprekken[partnerId] = { laatste: b, ongelezen: 0 };
+    if (b.naar_id === huidigProfiel.id && !b.gelezen) gesprekken[partnerId].ongelezen++;
+  });
+
+  const rijen = Object.entries(gesprekken).map(([partnerId, info]) => {
+    const partner = alleProfielen.find(p => p.id === partnerId);
+    const naam = partner ? partner.naam : 'Onbekend';
+    const laatsteTekst = info.laatste.tekst || (info.laatste.media_klein ? '📷 Foto' : '');
+    return `
+      <button class="gesprek-item" onclick="openPriveGesprek('${partnerId}', '${escHtml(naam)}')">
+        <div class="gesprek-avatar">${priveAvatarLetter(naam)}</div>
+        <div class="gesprek-info">
+          <div class="gesprek-naam">${escHtml(naam)}</div>
+          <div class="gesprek-laatste">${escHtml(laatsteTekst)}</div>
+        </div>
+        ${info.ongelezen > 0 ? `<div class="gesprek-ongelezen">${info.ongelezen}</div>` : ''}
+      </button>`;
+  }).join('');
+
+  const totaalOngelezen = Object.values(gesprekken).reduce((s, g) => s + g.ongelezen, 0);
+  const badge = document.getElementById('prive-tab-badge');
+  if (badge) {
+    if (totaalOngelezen > 0) { badge.textContent = totaalOngelezen; badge.style.display = 'inline-block'; }
+    else { badge.style.display = 'none'; }
+  }
+
+  el.innerHTML = `
+    <button class="gesprek-nieuw-btn" onclick="toonNieuwPriveGesprek()">+ Nieuw gesprek starten</button>
+    ${rijen || '<p style="font-size:0.82rem;color:var(--subtle)">Nog geen privéberichten.</p>'}
+  `;
+}
+
+async function toonNieuwPriveGesprek() {
+  if (!alleProfielen.length) await laadAlleProfielen();
+  const opties = alleProfielen
+    .filter(p => p.id !== huidigProfiel?.id)
+    .map(p => `<option value="${p.id}">${escHtml(p.naam)}</option>`).join('');
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>📩 Nieuw gesprek</h2>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Met wie wil je praten?</label>
+      <select id="prive-nieuw-partner">${opties}</select>
+      <button class="verstuur-btn" onclick="startPriveGesprekVanuitKeuze()">Gesprek openen →</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+function startPriveGesprekVanuitKeuze() {
+  const select = document.getElementById('prive-nieuw-partner');
+  const partnerId = select.value;
+  const naam = select.options[select.selectedIndex].textContent;
+  sluitGPModal();
+  openPriveGesprek(partnerId, naam);
+}
+
+async function openPriveGesprek(partnerId, partnerNaam) {
+  huidigGesprekMetId = partnerId;
+  huidigeMediaPrive = [];
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding-right:46px">
+      <div class="gesprek-avatar" style="flex-shrink:0">${priveAvatarLetter(partnerNaam)}</div>
+      <h2 style="margin:0">${escHtml(partnerNaam)}</h2>
+    </div>
+    <div class="chat-scherm">
+      <div class="chat-berichten" id="chat-berichten-lijst"><p style="font-size:0.8rem;color:var(--subtle)">⏳ Laden…</p></div>
+      <div id="chat-media-lijst" class="media-lijst"></div>
+      <div class="chat-invoer-rij">
+        <textarea id="chat-invoer-tekst" rows="2" placeholder="Typ een bericht…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+        <button type="button" class="chat-verstuur-btn" style="background:var(--surface2);color:var(--text)" onclick="document.getElementById('chat-camera-input').click()">📷</button>
+        <input type="file" id="chat-camera-input" accept="image/*" style="display:none" onchange="priveFotoGekozen(event)">
+        <button class="chat-verstuur-btn" onclick="verstuurPriveBericht('${partnerId}')">Sturen</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+  await laadPriveBerichten(partnerId);
+  luisterPriveGesprekLive(partnerId);
+  await markeerGesprekGelezen(partnerId);
+}
+
+async function laadPriveBerichten(partnerId) {
+  const el = document.getElementById('chat-berichten-lijst');
+  if (!el || !supabaseActief || !huidigProfiel) return;
+  const { data, error } = await sb
+    .from('prive_berichten')
+    .select('*')
+    .or(`and(van_id.eq.${huidigProfiel.id},naar_id.eq.${partnerId}),and(van_id.eq.${partnerId},naar_id.eq.${huidigProfiel.id})`)
+    .order('created_at', { ascending: true });
+  if (error) { el.innerHTML = `<p style="font-size:0.8rem;color:var(--warn)">Kon berichten niet laden: ${error.message}</p>`; return; }
+  renderChatBerichten(data || []);
+}
+
+function renderChatBerichten(berichten) {
+  const el = document.getElementById('chat-berichten-lijst');
+  if (!el) return;
+  if (!berichten.length) { el.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen berichten. Zeg hallo!</p>'; return; }
+  el.innerHTML = berichten.map(b => {
+    const eigen = b.van_id === huidigProfiel?.id;
+    const fotoHtml = (b.media_vol && b.media_vol[0]) ? `<img src="${b.media_vol[0]}" alt="foto">` : '';
+    return `
+      <div class="chat-bel ${eigen ? 'chat-bel-eigen' : 'chat-bel-ander'}">
+        ${b.tekst ? introTekstHtml(b.tekst) : ''}
+        ${fotoHtml}
+        <div class="chat-bel-tijd">${tijdWeergave(b.created_at)}</div>
+      </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function priveFotoGekozen(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    huidigeMediaPrive = [{ foto: reader.result, foto_klein: reader.result, bestandsnaam: file.name }];
+    const lijstEl = document.getElementById('chat-media-lijst');
+    if (lijstEl) lijstEl.innerHTML = `
+      <div class="media-chip"><img src="${reader.result}" alt="foto">
+        <button type="button" class="media-chip-remove" onclick="huidigeMediaPrive=[];document.getElementById('chat-media-lijst').innerHTML=''">✕</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function verstuurPriveBericht(partnerId) {
+  const tekstVeld = document.getElementById('chat-invoer-tekst');
+  const tekst = tekstVeld.value.trim();
+  if (!tekst && !huidigeMediaPrive.length) return;
+  if (!supabaseActief || !huidigProfiel) return;
+
+  const media_klein = huidigeMediaPrive.length ? huidigeMediaPrive.map(m => ({ klein: m.foto_klein, bestandsnaam: m.bestandsnaam })) : null;
+  const media_vol = huidigeMediaPrive.length ? huidigeMediaPrive.map(m => m.foto) : null;
+
+  tekstVeld.value = '';
+  huidigeMediaPrive = [];
+  const mediaLijstEl = document.getElementById('chat-media-lijst');
+  if (mediaLijstEl) mediaLijstEl.innerHTML = '';
+
+  const { error } = await sb.from('prive_berichten').insert([{
+    van_id: huidigProfiel.id, naar_id: partnerId, tekst: tekst || null, media_klein, media_vol,
+  }]);
+  if (error) { alert('Versturen mislukt: ' + error.message); return; }
+  await laadPriveBerichten(partnerId);
+}
+
+function luisterPriveGesprekLive(partnerId) {
+  if (priveGesprekChannel) { sb.removeChannel(priveGesprekChannel); priveGesprekChannel = null; }
+  if (!supabaseActief) return;
+  priveGesprekChannel = sb.channel('prive-gesprek-' + partnerId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'prive_berichten' }, () => {
+      laadPriveBerichten(partnerId);
+      markeerGesprekGelezen(partnerId);
+    }).subscribe();
+}
+
+async function markeerGesprekGelezen(partnerId) {
+  if (!supabaseActief || !huidigProfiel) return;
+  await sb.from('prive_berichten').update({ gelezen: true })
+    .eq('van_id', partnerId).eq('naar_id', huidigProfiel.id).eq('gelezen', false);
+  laadPriveGesprekken();
+}
+
+let priveOverzichtChannel = null;
+function luisterPriveOverzichtLive() {
+  if (!supabaseActief || priveOverzichtChannel) return;
+  priveOverzichtChannel = sb.channel('prive-overzicht-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'prive_berichten' }, () => {
+      laadPriveGesprekken();
+    }).subscribe();
+}
+
+// ── PAPIEREN-STIJL ROOSTER (rooster B) ──────────────────────────────────
+let actiefRoosterType = 'a';
+let prWeekOffset = 0; // 0 = deze week, -1 = vorige, +1 = volgende
+const PR_DAGEN = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
+const PR_DIENSTEN = ['dag', 'avond', 'nacht'];
+
+function prDinsdagVanWeek(offsetWeken) {
+  const nu = new Date();
+  const dagNu = (nu.getDay() + 5) % 7; // 0 = dinsdag, 1 = woensdag, ... 6 = maandag
+  const dinsdagDezeWeek = new Date(nu);
+  dinsdagDezeWeek.setHours(0,0,0,0);
+  dinsdagDezeWeek.setDate(nu.getDate() - dagNu + offsetWeken * 7);
+  return dinsdagDezeWeek;
+}
+
+function prDatumKey(datum) {
+  return datum.toISOString().slice(0, 10);
+}
+
+function prFormatDatum(datum) {
+  return datum.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+}
+
+async function laadActiefRoosterType() {
+  if (!supabaseActief) return;
+  const { data } = await sb.from('rooster_instelling').select('actief_rooster').eq('id', 1).maybeSingle();
+  actiefRoosterType = (data && data.actief_rooster) || 'a';
+  toonJuisteRoosterSectie();
+}
+
+function toonJuisteRoosterSectie() {
+  const weekTab = document.querySelector('.tab[onclick*="weekrooster"]');
+  if (weekTab) weekTab.textContent = actiefRoosterType === 'b' ? '🗓 Week' : '🗓 Week';
+  // Beide secties bestaan; welke getoond wordt bepalen we bij het openen van het Week-tabblad.
+}
+
+async function zetActiefRooster(type) {
+  if (!supabaseActief) return;
+  const statusEl = document.getElementById('rooster-keuze-status');
+  const { error } = await sb.from('rooster_instelling').update({ actief_rooster: type }).eq('id', 1);
+  if (error) { if (statusEl) statusEl.textContent = '⚠️ Opslaan mislukt: ' + error.message; return; }
+  actiefRoosterType = type;
+  if (statusEl) statusEl.textContent = `✅ Ingesteld op: ${type === 'a' ? 'Digitaal rooster' : 'Papieren-stijl rooster'}`;
+}
+
+function renderWeekVolgensInstelling() {
+  const digitaalEl = document.getElementById('s-weekrooster');
+  const papierEl = document.getElementById('s-papierrooster');
+  if (!digitaalEl || !papierEl) return;
+  if (actiefRoosterType === 'b') {
+    digitaalEl.classList.remove('actief');
+    papierEl.classList.add('actief');
+    renderPapierRooster();
+  } else {
+    papierEl.classList.remove('actief');
+    digitaalEl.classList.add('actief');
+    renderWeek();
+  }
+}
+
+function prWeekNavigeer(richting) {
+  prWeekOffset += richting;
+  renderPapierRooster();
+}
+
+let papierRoosterCache = {}; // { 'maandag-datum-key': { dag: {naam, opmerking}, avond: {...}, nacht: {...} } }
+
+async function renderPapierRooster() {
+  const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
+  const weekKey = prDatumKey(dinsdag);
+
+  const labelEl = document.getElementById('pr-week-label');
+  if (labelEl) {
+    const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
+    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:400;font-size:0.7rem;color:#888">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
+  }
+
+  const dinsdagBody = document.getElementById('pr-dinsdag-body');
+  const restBody = document.getElementById('pr-body');
+  if (!dinsdagBody || !restBody) return;
+  restBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">⏳ Laden…</td></tr>';
+
+  let weekData = {};
+  if (supabaseActief) {
+    const { data } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
+    weekData = (data && data.dagen) || {};
+  }
+  papierRoosterCache[weekKey] = weekData;
+
+  const beheer = gpBeheerActief();
+  const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
+  const statusMap = weekData._status || {}; // naam -> 'gast' | 'gast_week' (afwezig = vrijwilliger)
+
+  renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
+
+  const statusKlasse = (status) => status === 'gast' ? 'pr-cel-gast' : (status === 'gast_week' ? 'pr-cel-gvdw' : 'pr-cel-vw');
+  const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
+
+  const maakRij = (dagNaam, i) => {
+    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
+    const dagKey = prDatumKey(datum);
+    const isVandaag = dagKey === vandaagKey;
+    const dagData = weekData[dagKey] || {};
+    const cellen = PR_DIENSTEN.map(dienstKey => {
+      const info = dagData[dienstKey] || {};
+      let cellHtml, cellClasses = '';
+      if (!info.naam1) {
+        cellHtml = `<span class="pr-leeg">—</span>`;
+      } else {
+        const status1 = statusMap[info.naam1] || 'vrijwilliger';
+        const status2 = info.naam2 ? (statusMap[info.naam2] || 'vrijwilliger') : null;
+        if (!status2 || status1 === status2) {
+          // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
+          cellClasses = statusKlasse(status1);
+          const label = statusLabelTekst(status1);
+          const naamTekst = info.naam2 ? `${escHtml(info.naam1)} &amp; ${escHtml(info.naam2)}` : escHtml(info.naam1);
+          cellHtml = `<span class="pr-naam" style="${info.naam2?'font-size:0.76rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
+        } else {
+          // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
+          cellHtml = `
+            <div class="${statusKlasse(status1)}" style="margin:-4px -6px 1px;padding:2px 6px;border-radius:4px;line-height:1.15">
+              <span class="pr-naam" style="font-size:0.76rem">${escHtml(info.naam1)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status1)}</span>
+            </div>
+            <div class="${statusKlasse(status2)}" style="margin:1px -6px -4px;padding:2px 6px;border-radius:4px;line-height:1.15">
+              <span class="pr-naam" style="font-size:0.76rem">${escHtml(info.naam2)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status2)}</span>
+            </div>`;
+        }
+        if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
+      }
+      const klik = beheer ? `onclick="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
+      return `<td><div class="pr-cel ${cellClasses}" ${klik}>${cellHtml}</div></td>`;
+    }).join('');
+    return `<tr>
+      <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}${isVandaag?' 📍':''}</span><span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
+      ${cellen}
+    </tr>`;
+  };
+
+  dinsdagBody.innerHTML = maakRij(PR_DAGEN[0], 0);
+  restBody.innerHTML = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('');
+}
+
+const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
+const PR_DIENST_UREN = 8;
+
+function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
+  const el = document.getElementById('pr-uren-lijst');
+  if (!el) return;
+
+  const uren = {}; // naam -> totaal uren deze week
+  Object.keys(weekData).forEach(dagKey => {
+    if (dagKey.startsWith('_')) return;
+    const dagData = weekData[dagKey] || {};
+    PR_DIENSTEN.forEach(dienstKey => {
+      const info = dagData[dienstKey];
+      if (!info) return;
+      [info.naam1, info.naam2].filter(Boolean).forEach(naam => {
+        uren[naam] = (uren[naam] || 0) + PR_DIENST_UREN;
+      });
+    });
+  });
+  // Alle bewoners tonen, ook wie nog geen dienst heeft (0 uur).
+  bewonersCache.forEach(naam => { if (!(naam in uren)) uren[naam] = 0; });
+
+  const namen = Object.keys(uren).sort((a, b) => {
+    if (uren[b] !== uren[a]) return uren[b] - uren[a]; // meeste uren eerst
+    return a.localeCompare(b, 'nl'); // bij gelijke uren (incl. 0): alfabetisch
+  });
+
+  const statusOpties = (naam, huidigeStatus) => `
+    <option value="vrijwilliger" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
+    <option value="gast" ${huidigeStatus==='gast'?'selected':''}>gast</option>
+    <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>`;
+
+  const lijstHtml = !namen.length
+    ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
+    : namen.map(naam => {
+    const status = statusMap[naam] || 'vrijwilliger';
+    const klasse = status === 'gast' ? 'pr-uren-status-gast' : (status === 'gast_week' ? 'pr-uren-status-gvdw' : 'pr-uren-status-vw');
+    const naamVeilig = naam.replace(/'/g,"\\'");
+    const statusVeld = beheer
+      ? `<select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(naam, status)}</select>`
+      : `<span class="pr-status-label" style="margin-top:0">${status === 'vrijwilliger' ? 'vrijwilliger' : (status === 'gast' ? 'gast' : 'gast van de week')}</span>`;
+    return `<div class="pr-uren-rij ${klasse}">
+      <div class="pr-uren-rij-top">
+        <span class="pr-uren-naam">${escHtml(naam)}</span>
+        <span class="pr-uren-uur">${uren[naam]}u</span>
+      </div>
+      ${statusVeld}
+    </div>`;
+  }).join('');
+
+  const kolomClass = namen.length > 6 ? 'pr-uren-lijst-wrap pr-2kol' : 'pr-uren-lijst-wrap';
+  el.innerHTML = `<div class="${kolomClass}">${lijstHtml}</div>`;
+}
+
+async function prZetStatus(weekKey, naam, status) {
+  const weekData = papierRoosterCache[weekKey] || {};
+  if (!weekData._status) weekData._status = {};
+  if (status === 'vrijwilliger') delete weekData._status[naam];
+  else weekData._status[naam] = status;
+  await prOpslaanWeek(weekKey, weekData);
+  renderPapierRooster();
+}
+
+function prNaamOpties(huidigeWaarde) {
+  const opties = ['<option value="">— leeg —</option>']
+    .concat(bewonersCache.map(n => `<option value="${escHtml(n)}" ${n===huidigeWaarde?'selected':''}>${escHtml(n)}</option>`))
+    .concat(['<option value="__nieuw__">+ Nieuwe naam toevoegen…</option>']);
+  return opties.join('');
+}
+
+function prBewerkCel(weekKey, dagKey, dienstKey) {
+  const weekData = papierRoosterCache[weekKey] || {};
+  const info = (weekData[dagKey] && weekData[dagKey][dienstKey]) || {};
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
+    <p class="gp-modal-intro">${dagKey}</p>
+    <div class="melding-form" style="margin-top:4px">
+      <label>Naam 1</label>
+      <select id="pr-cel-naam1" onchange="prCheckNieuweNaam(this,'1')">${prNaamOpties(info.naam1 || '')}</select>
+      <div id="pr-nieuwe-naam1-veld" style="display:none">
+        <input type="text" id="pr-nieuwe-naam1-input" placeholder="Nieuwe naam">
+      </div>
+      <label>Naam 2 (optioneel)</label>
+      <select id="pr-cel-naam2" onchange="prCheckNieuweNaam(this,'2')">${prNaamOpties(info.naam2 || '')}</select>
+      <div id="pr-nieuwe-naam2-veld" style="display:none">
+        <input type="text" id="pr-nieuwe-naam2-input" placeholder="Nieuwe naam">
+      </div>
+      <label>Opmerking (optioneel, geel briefje)</label>
+      <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
+      <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
+      ${info.naam1 ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="prVerwijderCel('${weekKey}','${dagKey}','${dienstKey}')">🗑 Leegmaken</button>` : ''}
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+function prCheckNieuweNaam(select, nummer) {
+  const veld = document.getElementById(`pr-nieuwe-naam${nummer}-veld`);
+  if (veld) veld.style.display = select.value === '__nieuw__' ? 'block' : 'none';
+}
+
+async function prOpslaanWeek(weekKey, weekData) {
+  papierRoosterCache[weekKey] = weekData;
+  if (!supabaseActief) return;
+  const { error } = await sb.from('papieren_rooster')
+    .upsert({ week_start: weekKey, dagen: weekData, updated_at: new Date().toISOString() }, { onConflict: 'week_start' });
+  if (error) { alert('Opslaan mislukt: ' + error.message); }
+}
+
+async function prHaalNaamOp(nummer) {
+  const select = document.getElementById(`pr-cel-naam${nummer}`);
+  if (!select) return '';
+  if (select.value === '__nieuw__') {
+    const inp = document.getElementById(`pr-nieuwe-naam${nummer}-input`);
+    const naam = inp ? inp.value.trim() : '';
+    if (naam && !bewonersCache.some(n => n.toLowerCase() === naam.toLowerCase()) && supabaseActief) {
+      await sb.from('bewoners').insert([{ naam }]);
+      bewonersCache.push(naam);
+    }
+    return naam;
+  }
+  return select.value;
+}
+
+async function prBevestigCel(weekKey, dagKey, dienstKey) {
+  const naam1 = await prHaalNaamOp('1');
+  const naam2 = await prHaalNaamOp('2');
+  const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
+  const weekData = papierRoosterCache[weekKey] || {};
+  if (!weekData[dagKey]) weekData[dagKey] = {};
+  if (naam1) weekData[dagKey][dienstKey] = { naam1, naam2: naam2 || undefined, opmerking: opmerking || undefined };
+  else delete weekData[dagKey][dienstKey];
+  await prOpslaanWeek(weekKey, weekData);
+  sluitGPModal();
+  renderPapierRooster();
+}
+
+async function prVerwijderCel(weekKey, dagKey, dienstKey) {
+  const weekData = papierRoosterCache[weekKey] || {};
+  if (weekData[dagKey]) delete weekData[dagKey][dienstKey];
+  await prOpslaanWeek(weekKey, weekData);
+  sluitGPModal();
+  renderPapierRooster();
+}
+
 initSupabase();
+
+
+
+
 </script>
 </body>
 </html>
