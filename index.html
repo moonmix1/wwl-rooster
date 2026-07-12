@@ -172,7 +172,8 @@
   .pr-uren-uur { grid-column: 3; align-self: center; width: 20px; height: 20px; background: #111; color: #f5d800;
     border-radius: 3px; font-size: 0.62rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  .pr-uren-status-select { grid-column: 2; font-size: 0.6rem; background: transparent; border: none; color: inherit;
+  .pr-uren-status-plek { grid-column: 2; text-align: center; }
+  .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0 12px 0 0; -webkit-appearance: none; appearance: none; text-align: center;
     text-align-last: center;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%23ccc' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
@@ -3738,16 +3739,21 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const naamVeilig = naam.replace(/'/g,"\\'");
     const heeftHuisje = bewonersBeheerSet.has(naam);
     const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
+    const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}`;
     const statusVeld = beheer
-      ? `<select class="pr-uren-status-select" onchange="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}', this)">
-           ${statusOpties(status)}
-           <option value="__huisje__">${huisjeOptieTekst}</option>
-         </select>`
-      : `<span class="pr-status-label" style="margin-top:0">${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}${heeftHuisje ? ' · 🏠' : ''}</span>`;
+      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative">
+           ${statusTekstZichtbaar}
+           <select class="pr-uren-status-select" onchange="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}', this)"
+             style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;font-size:1px">
+             ${statusOpties(status)}
+             <option value="__huisje__">${huisjeOptieTekst}</option>
+           </select>
+         </span>`
+      : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
-        <span class="pr-uren-naam">${heeftHuisje ? '🏠 ' : ''}${escHtml(naam)}</span>
+        <span class="pr-uren-naam">${escHtml(naam)}${heeftHuisje ? ' 🏠' : ''}</span>
         <span class="pr-uren-uur">${uren[naam]}</span>
       </div>
       ${statusVeld}
