@@ -3667,22 +3667,40 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   // Groepeer per status (kleur), zodat mensen met dezelfde kleur bij elkaar blijven staan.
   // De positie van elke groep in de lijst wordt bepaald door het hoogste urenaantal binnen die groep.
-  const groepen = {}; // status -> [namen]
+  // Uitzondering: 'vrijwilliger' (meestal de grootste/blauwe groep) mag in max. 6 stukken van elk
+  // minimaal 3 namen gesplitst worden, zodat die groep beter tussen de andere kleuren qua uren past.
+  const groepen = {}; // sleutel -> [namen]  (sleutel is status, of 'vrijwilliger_N' voor een sub-stuk)
+  const alleStatussen = {}; // temp: status -> [namen], vóór het opsplitsen van vrijwilliger
   Object.keys(uren).forEach(naam => {
     const status = statusMap[naam] || 'vrijwilliger';
-    if (!groepen[status]) groepen[status] = [];
-    groepen[status].push(naam);
+    if (!alleStatussen[status]) alleStatussen[status] = [];
+    alleStatussen[status].push(naam);
   });
-  Object.values(groepen).forEach(lijst => {
-    lijst.sort((a, b) => {
+  Object.keys(alleStatussen).forEach(status => {
+    alleStatussen[status].sort((a, b) => {
       if (uren[b] !== uren[a]) return uren[b] - uren[a];
       return a.localeCompare(b, 'nl');
     });
   });
-  const groepMaxUren = (status) => Math.max(...groepen[status].map(n => uren[n]));
+
+  const vrijwilligerNamen = alleStatussen['vrijwilliger'] || [];
+  delete alleStatussen['vrijwilliger'];
+  Object.assign(groepen, alleStatussen); // andere kleuren blijven altijd één ondeelbaar blok
+
+  if (vrijwilligerNamen.length) {
+    // Streven: zo min mogelijk splitsen. Max. 6 stukken, elk stuk minimaal 3 namen.
+    const maxStukken = Math.min(6, Math.floor(vrijwilligerNamen.length / 3)) || 1;
+    const stukGrootte = Math.ceil(vrijwilligerNamen.length / maxStukken);
+    for (let i = 0; i < maxStukken; i++) {
+      const stuk = vrijwilligerNamen.slice(i * stukGrootte, (i + 1) * stukGrootte);
+      if (stuk.length) groepen[`vrijwilliger_${i}`] = stuk;
+    }
+  }
+
+  const groepMaxUren = (sleutel) => Math.max(...groepen[sleutel].map(n => uren[n]));
   const namen = Object.keys(groepen)
-    .sort((statusA, statusB) => groepMaxUren(statusB) - groepMaxUren(statusA))
-    .flatMap(status => groepen[status]);
+    .sort((sleutelA, sleutelB) => groepMaxUren(sleutelB) - groepMaxUren(sleutelA))
+    .flatMap(sleutel => groepen[sleutel]);
 
   const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
   const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
