@@ -125,12 +125,6 @@
   .pr-dag-label.pr-vandaag { color: #fff; }
   .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
     margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; }
-  .pr-cel-vw, .pr-cel-gast, .pr-cel-gvdw, .pr-cel-oud, .pr-cel-ext {
-    background-image: linear-gradient(to bottom,
-      transparent 0, transparent calc(60% - 1px),
-      rgba(255,255,255,0.18) calc(60% - 1px), rgba(255,255,255,0.18) calc(60% + 1px),
-      transparent calc(60% + 1px), transparent 100%);
-  }
   .pr-cel-vw   { background-color: #0b5aa3; }
   .pr-cel-gast { background-color: #7a2530; }
   .pr-cel-gvdw { background-color: #1f5c45; }
@@ -140,7 +134,7 @@
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
-  .pr-naam-scheiding { display: block; height: 1px; background: rgba(255,255,255,0.18); margin: 5px 0; }
+  .pr-naam-scheiding { display: block; height: 1px; width: 55%; background: rgba(255,255,255,0.28); margin: 5px auto; }
   .pr-naam-regel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
   .pr-naam-regel-naam { min-width: 0; overflow-wrap: break-word; }
   .pr-naam-regel-huisje { flex-shrink: 0; font-size: 0.72rem; }
@@ -3628,8 +3622,9 @@ async function renderPapierRooster() {
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften, naadloos aan elkaar.
           cellHtml = `
-            <div class="${statusKlasse(status1)}" style="margin:-4px -8px 0;padding:4px 8px;line-height:1.15;flex-shrink:0">
+            <div class="${statusKlasse(status1)}" style="margin:-4px -8px -1px;padding:4px 8px;line-height:1.15;flex-shrink:0;position:relative;z-index:1">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
+              <span class="pr-naam-scheiding" style="margin-bottom:-3px"></span>
             </div>
             <div class="${statusKlasse(status2)}" style="margin:0 -8px -4px;padding:4px 8px;line-height:1.15;flex:1">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
