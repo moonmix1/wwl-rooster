@@ -3684,10 +3684,9 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   // Groepeer per status (kleur), zodat mensen met dezelfde kleur bij elkaar blijven staan.
   // De positie van elke groep in de lijst wordt bepaald door het hoogste urenaantal binnen die groep.
-  // Uitzondering: 'vrijwilliger' (meestal de grootste/blauwe groep) mag in max. 6 stukken van elk
-  // minimaal 3 namen gesplitst worden, zodat die groep beter tussen de andere kleuren qua uren past.
-  const groepen = {}; // sleutel -> [namen]  (sleutel is status, of 'vrijwilliger_N' voor een sub-stuk)
-  const alleStatussen = {}; // temp: status -> [namen], vóór het opsplitsen van vrijwilliger
+  // Kleurgroepen worden op precies de juiste plek tussen de vrijwilligers ingevoegd (op basis van uren),
+  // in plaats van dat het blauwe blok vooraf in een vast aantal stukken wordt opgeknipt.
+  const alleStatussen = {}; // status -> [namen]
   Object.keys(uren).forEach(naam => {
     const status = statusMap[naam] || 'vrijwilliger';
     if (!alleStatussen[status]) alleStatussen[status] = [];
@@ -3702,35 +3701,27 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   const vrijwilligerNamen = alleStatussen['vrijwilliger'] || [];
   delete alleStatussen['vrijwilliger'];
-  Object.assign(groepen, alleStatussen); // andere kleuren blijven altijd één ondeelbaar blok
 
-  if (vrijwilligerNamen.length) {
-    // Streven: zo min mogelijk splitsen. Max. 6 stukken, elk stuk minimaal 3 namen.
-    // Belangrijk: een grens mag nooit midden tussen mensen met hetzelfde urenaantal vallen —
-    // die schuift dan door tot het eerstvolgende afwijkende urenaantal.
-    const maxStukken = Math.min(6, Math.floor(vrijwilligerNamen.length / 3)) || 1;
-    const streefGrootte = vrijwilligerNamen.length / maxStukken;
-    const grenzen = [0];
-    for (let i = 1; i < maxStukken; i++) {
-      let grens = Math.round(i * streefGrootte);
-      // Grens mag niet midden in een blok gelijke uren vallen: schuif door tot het urenaantal verandert.
-      while (grens < vrijwilligerNamen.length && grens > 0 &&
-             uren[vrijwilligerNamen[grens]] === uren[vrijwilligerNamen[grens - 1]]) {
-        grens++;
-      }
-      if (grens > grenzen[grenzen.length - 1] && grens < vrijwilligerNamen.length) grenzen.push(grens);
+  // Elke niet-blauwe kleurgroep blijft altijd één ondeelbaar blok, met zijn hoogste urenaantal als sleutel.
+  const kleurGroepen = Object.keys(alleStatussen).map(status => ({
+    status, namen: alleStatussen[status], max: Math.max(...alleStatussen[status].map(n => uren[n]))
+  }));
+  kleurGroepen.sort((a, b) => b.max - a.max);
+
+  // Loop door de (op uren gesorteerde) vrijwilligers heen en voeg elke kleurgroep in zodra
+  // zijn max-uren hoger of gelijk is aan de eerstvolgende vrijwilliger — zo komt elke kleurgroep
+  // exact op zijn juiste plek qua uren te staan, ook al betekent dat dat het blauwe blok op
+  // meerdere plekken wordt "onderbroken".
+  const namen = [];
+  let kgIndex = 0;
+  for (let i = 0; i <= vrijwilligerNamen.length; i++) {
+    const huidigUren = i < vrijwilligerNamen.length ? uren[vrijwilligerNamen[i]] : -Infinity;
+    while (kgIndex < kleurGroepen.length && kleurGroepen[kgIndex].max >= huidigUren) {
+      namen.push(...kleurGroepen[kgIndex].namen);
+      kgIndex++;
     }
-    grenzen.push(vrijwilligerNamen.length);
-    for (let i = 0; i < grenzen.length - 1; i++) {
-      const stuk = vrijwilligerNamen.slice(grenzen[i], grenzen[i + 1]);
-      if (stuk.length) groepen[`vrijwilliger_${i}`] = stuk;
-    }
+    if (i < vrijwilligerNamen.length) namen.push(vrijwilligerNamen[i]);
   }
-
-  const groepMaxUren = (sleutel) => Math.max(...groepen[sleutel].map(n => uren[n]));
-  const namen = Object.keys(groepen)
-    .sort((sleutelA, sleutelB) => groepMaxUren(sleutelB) - groepMaxUren(sleutelA))
-    .flatMap(sleutel => groepen[sleutel]);
 
   const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
   const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
