@@ -3601,9 +3601,10 @@ async function renderPapierRooster() {
   const naamRegelHtml = (naam, status, celLabel) => {
     const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
     const huisje = bewonersBeheerSet.has(naam) ? '<span class="pr-naam-regel-huisje">🏠</span>' : '';
+    const naamWeergave = status === 'gast_week' ? `🎂 ${escHtml(naam)} 🍨` : escHtml(naam);
     return `<span class="pr-naam-regel">
       <span class="pr-naam-regel-top">
-        <span class="pr-naam-regel-naam">${escHtml(naam)}</span>
+        <span class="pr-naam-regel-naam">${naamWeergave}</span>
         ${huisje}
       </span>
       <span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span>
