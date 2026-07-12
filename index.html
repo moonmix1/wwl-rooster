@@ -124,7 +124,7 @@
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
   .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
-    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; }
+    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; }
   .pr-cel-vw, .pr-cel-gast, .pr-cel-gvdw, .pr-cel-oud, .pr-cel-ext {
     background-image: linear-gradient(to bottom,
       transparent 0, transparent calc(60% - 1px),
@@ -3626,12 +3626,12 @@ async function renderPapierRooster() {
             : naamRegelHtml(info.naam1, status1, info.label1);
           cellHtml = `<span class="pr-naam" style="${info.naam2||heeftExtra?'font-size:0.74rem':''}">${naamTekst}</span>`;
         } else {
-          // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
+          // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften, naadloos aan elkaar.
           cellHtml = `
-            <div class="${statusKlasse(status1)}" style="margin:-4px -8px 1px;padding:4px 8px;line-height:1.15">
+            <div class="${statusKlasse(status1)}" style="margin:-4px -8px 0;padding:4px 8px;line-height:1.15">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
             </div>
-            <div class="${statusKlasse(status2)}" style="margin:1px -8px -4px;padding:4px 8px;line-height:1.15">
+            <div class="${statusKlasse(status2)}" style="margin:0 -8px -4px;padding:4px 8px;line-height:1.15">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
             </div>`;
         }
