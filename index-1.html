@@ -3538,7 +3538,14 @@ async function renderPapierRooster() {
 
   let weekData = {};
   if (supabaseActief) {
-    const { data } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
+    const { data, error } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
+    if (error) {
+      alert('DIAGNOSE — fout bij ophalen papieren_rooster: ' + error.message + ' (code: ' + (error.code || '?') + ')');
+    } else if (!data) {
+      alert('DIAGNOSE — geen rij gevonden voor week_start = "' + weekKey + '"');
+    } else {
+      alert('DIAGNOSE — rij gevonden, dagen bevat sleutels: ' + Object.keys(data.dagen || {}).join(', '));
+    }
     weekData = (data && data.dagen) || {};
   }
   papierRoosterCache[weekKey] = weekData;
