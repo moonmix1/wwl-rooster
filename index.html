@@ -125,11 +125,14 @@
   .pr-dag-label.pr-vandaag { color: #fff; }
   .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
     margin: -4px -8px; padding: 4px 8px; border-radius: 4px; }
-  .pr-cel-vw   { background: #0b5aa3; }
-  .pr-cel-gast { background: #7a2530; }
-  .pr-cel-gvdw { background: #1f5c45; }
-  .pr-cel-oud  { background: #8a6d1f; }
-  .pr-cel-ext  { background: #4a2e6f; }
+  .pr-cel-vw, .pr-cel-gast, .pr-cel-gvdw, .pr-cel-oud, .pr-cel-ext {
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 7px);
+  }
+  .pr-cel-vw   { background-color: #0b5aa3; }
+  .pr-cel-gast { background-color: #7a2530; }
+  .pr-cel-gvdw { background-color: #1f5c45; }
+  .pr-cel-oud  { background-color: #8a6d1f; }
+  .pr-cel-ext  { background-color: #4a2e6f; }
   .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
@@ -3622,10 +3625,10 @@ async function renderPapierRooster() {
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
           cellHtml = `
-            <div class="${statusKlasse(status1)}" style="margin:-4px -6px 1px;padding:2px 6px;border-radius:4px;line-height:1.15">
+            <div class="${statusKlasse(status1)}" style="margin:-4px -8px 1px;padding:4px 8px;line-height:1.15">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
             </div>
-            <div class="${statusKlasse(status2)}" style="margin:1px -6px -4px;padding:2px 6px;border-radius:4px;line-height:1.15">
+            <div class="${statusKlasse(status2)}" style="margin:1px -8px -4px;padding:4px 8px;line-height:1.15">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
             </div>`;
         }
