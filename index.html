@@ -3689,10 +3689,23 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   if (vrijwilligerNamen.length) {
     // Streven: zo min mogelijk splitsen. Max. 6 stukken, elk stuk minimaal 3 namen.
+    // Belangrijk: een grens mag nooit midden tussen mensen met hetzelfde urenaantal vallen —
+    // die schuift dan door tot het eerstvolgende afwijkende urenaantal.
     const maxStukken = Math.min(6, Math.floor(vrijwilligerNamen.length / 3)) || 1;
-    const stukGrootte = Math.ceil(vrijwilligerNamen.length / maxStukken);
-    for (let i = 0; i < maxStukken; i++) {
-      const stuk = vrijwilligerNamen.slice(i * stukGrootte, (i + 1) * stukGrootte);
+    const streefGrootte = vrijwilligerNamen.length / maxStukken;
+    const grenzen = [0];
+    for (let i = 1; i < maxStukken; i++) {
+      let grens = Math.round(i * streefGrootte);
+      // Grens mag niet midden in een blok gelijke uren vallen: schuif door tot het urenaantal verandert.
+      while (grens < vrijwilligerNamen.length && grens > 0 &&
+             uren[vrijwilligerNamen[grens]] === uren[vrijwilligerNamen[grens - 1]]) {
+        grens++;
+      }
+      if (grens > grenzen[grenzen.length - 1] && grens < vrijwilligerNamen.length) grenzen.push(grens);
+    }
+    grenzen.push(vrijwilligerNamen.length);
+    for (let i = 0; i < grenzen.length - 1; i++) {
+      const stuk = vrijwilligerNamen.slice(grenzen[i], grenzen[i + 1]);
       if (stuk.length) groepen[`vrijwilliger_${i}`] = stuk;
     }
   }
