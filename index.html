@@ -198,7 +198,10 @@
   .rot-tabel th.naam-col { text-align: left; }
   .rot-tabel td { padding: 7px 10px; border: 1px solid var(--border); text-align: center; }
   .rot-tabel td.naam-cel { text-align: left; font-weight: 700; color: white;
-                            white-space: nowrap; background: var(--surface); }
+                            white-space: nowrap; background: var(--surface); min-width: 90px; max-width: 160px; }
+  .naam-cel-inner { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .naam-cel-tekst { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .naam-cel-huisje { flex-shrink: 0; font-size: 0.85rem; }
   .rot-tabel tr.warn-rood   td.naam-cel { border-left: 4px solid var(--warn); }
   .rot-tabel tr.warn-oranje td.naam-cel { border-left: 4px solid var(--oranje); }
   .rot-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; }
@@ -1713,7 +1716,7 @@ function renderRotatie() {
     const kleur = naamMatchKleuren[naam];
     const stijl = kleur ? ` style="box-shadow:inset 0 0 0 2px ${kleur};"` : '';
     html += `<tr class="${rood?'warn-rood':oranje?'warn-oranje':''}">
-      <td class="naam-cel"${stijl}>${naam}${bewonersBeheerSet.has(naam)?' 🏠':''}</td>
+      <td class="naam-cel"${stijl}><span class="naam-cel-inner"><span class="naam-cel-tekst">${naam}</span>${bewonersBeheerSet.has(naam)?'<span class="naam-cel-huisje">🏠</span>':''}</span></td>
       ${hist.map(t=>`<td><span class="rot-pill rot-${t}">${t==='B'?'Bank':t==='C'?'Corvee':'Kook'}</span></td>`).join('')}
       <td class="${rood?'status-rood':oranje?'status-oranje':'status-ok'}">
         ${rood?'⚠ Verplicht corvee':oranje?'⚡ Let op (3×)':'✅ OK'}
