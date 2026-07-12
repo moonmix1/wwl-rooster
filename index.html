@@ -3628,10 +3628,10 @@ async function renderPapierRooster() {
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften, naadloos aan elkaar.
           cellHtml = `
-            <div class="${statusKlasse(status1)}" style="margin:-4px -8px 0;padding:4px 8px;line-height:1.15">
+            <div class="${statusKlasse(status1)}" style="margin:-4px -8px 0;padding:4px 8px;line-height:1.15;flex-shrink:0">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
             </div>
-            <div class="${statusKlasse(status2)}" style="margin:0 -8px -4px;padding:4px 8px;line-height:1.15">
+            <div class="${statusKlasse(status2)}" style="margin:0 -8px -4px;padding:4px 8px;line-height:1.15;flex:1">
               <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
             </div>`;
         }
