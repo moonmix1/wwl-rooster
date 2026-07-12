@@ -111,50 +111,76 @@
   .pr-nav-btn:hover { background: #3a3a3a; }
   .pr-week-label { font-weight: 700; color: #ddd; font-size: 0.85rem; text-align: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
-  .pr-tabel th:first-child, .pr-tabel td:first-child { width: 22%; }
-  .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 26%; }
+  .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
+  .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
   .pr-tabel th { background: #2a2a2a; color: #aaa; padding: 9px 12px; text-align: left;
     font-size: 0.68rem; font-weight: 700; border: 1px solid #3a3a3a; }
   .pr-tijd { font-weight: 400; font-size: 0.62rem; color: #777; }
   .pr-tabel td { padding: 8px 12px; border: 1px solid #3a3a3a; vertical-align: top; }
-  .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.82rem; }
+  .pr-tabel td:first-child { padding: 8px 8px 8px 4px; }
+  .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.68rem; display: block; width: 100%;
+    white-space: nowrap; }
+  .pr-pin { font-size: 1.1rem; }
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
   .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
-    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; }
-  .pr-cel-vw   { background: #0039ba; }
-  .pr-cel-gast { background: #de1c39; }
-  .pr-cel-gvdw { background: #028e74; }
-  .pr-naam { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
+    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; text-align: center; }
+  .pr-cel-vw   { background-color: #0b5aa3; }
+  .pr-cel-gast { background-color: #7a2530; }
+  .pr-cel-gvdw { background-color: #1f5c45; }
+  .pr-cel-oud  { background-color: #8a6d1f; }
+  .pr-cel-ext  { background-color: #4a2e6f; }
+  .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
+  .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
+    text-transform: lowercase; white-space: nowrap; }
+  .pr-naam-regel { display: block; overflow-wrap: break-word; }
+  .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
+  .pr-naam-regel-top { position: relative; display: block; text-align: center; }
+  .pr-naam-regel-naam { min-width: 0; overflow-wrap: break-word; }
+  .pr-naam-regel-huisje { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.72rem; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
   .pr-opmerking { background: #d4c447; color: #1a1a1a; font-size: 0.68rem; padding: 2px 6px;
     border-radius: 4px; margin-top: 2px; display: inline-block; max-width: fit-content; }
   .pr-cel:hover { background: #232323; }
 
   /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
-  .pr-status-label { display: block; font-size: 0.38rem; opacity: 1; margin-top: 0; color: #fff;
-    text-transform: lowercase; font-weight: 700; white-space: nowrap; }
+  .pr-status-label { display: block; font-size: 0.44rem; opacity: 1; margin-top: 0; color: #fff;
+    text-transform: lowercase; font-weight: 700; white-space: nowrap; text-align: center; }
 
-  .pr-uren-status-vw   { background: #0039ba; }
-  .pr-uren-status-gast { background: #de1c39; }
-  .pr-uren-status-gvdw { background: #028e74; }
+  .pr-uren-status-vw   { background: #0b5aa3; }
+  .pr-uren-status-gast { background: #7a2530; }
+  .pr-uren-status-gvdw { background: #1f5c45; }
+  .pr-uren-status-oud  { background: #8a6d1f; }
+  .pr-uren-status-ext  { background: #4a2e6f; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
-  .pr-uren-kolom { flex: 0 0 260px; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
-  .pr-uren-lijst-wrap { column-count: 1; column-gap: 14px; }
-  .pr-uren-lijst-wrap.pr-2kol { column-rule: 1px solid #3a3a3a; }
-  .pr-uren-lijst-wrap.pr-2kol { column-count: 2; }
+  .pr-uren-kolom { flex: 1 1 100%; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
+  .pr-uren-lijst-wrap { display: flex; gap: 14px; }
+  .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
+  .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
-  .pr-uren-rij { display: flex; flex-direction: column; gap: 2px;
+  .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 20px; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
-  .pr-uren-rij-top { display: flex; align-items: center; gap: 6px; }
-  .pr-uren-naam { font-size: 0.78rem; color: #ddd; overflow: hidden; text-overflow: ellipsis;
-    white-space: nowrap; flex: 1; min-width: 0; }
-  .pr-uren-uur { font-size: 0.72rem; color: #999; flex-shrink: 0; width: 26px; text-align: right; }
+  .pr-uren-rij-top { display: contents; }
+  .pr-uren-naam { grid-column: 2; position: relative; overflow: hidden; min-width: 0; }
+  .pr-uren-naam-tekst { display: block; font-size: 0.82rem; color: #e0e0e0; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
+  .pr-uren-huisje-badge { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.68rem; }
+  .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
+    border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
+    justify-content: center; }
+  .pr-uren-uur { grid-column: 3; align-self: center; width: 20px; height: 20px; background: #111; color: #f5d800;
+    border-radius: 3px; font-size: 0.62rem; font-weight: 800; display: flex; align-items: center;
+    justify-content: center; }
+  .pr-uren-status-plek { grid-column: 2; text-align: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
-    opacity: 0.85; padding: 0; }
+    opacity: 0.85; padding: 0 12px 0 0; -webkit-appearance: none; appearance: none; text-align: center;
+    text-align-last: center;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%23ccc' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right center; background-size: 8px 5px; }
+  .pr-gasten-hint { font-size: 0.66rem; color: #888; margin-top: 8px; }
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
           padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
@@ -172,7 +198,10 @@
   .rot-tabel th.naam-col { text-align: left; }
   .rot-tabel td { padding: 7px 10px; border: 1px solid var(--border); text-align: center; }
   .rot-tabel td.naam-cel { text-align: left; font-weight: 700; color: white;
-                            white-space: nowrap; background: var(--surface); }
+                            white-space: nowrap; background: var(--surface); min-width: 90px; max-width: 160px; }
+  .naam-cel-inner { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .naam-cel-tekst { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .naam-cel-huisje { flex-shrink: 0; font-size: 0.85rem; }
   .rot-tabel tr.warn-rood   td.naam-cel { border-left: 4px solid var(--warn); }
   .rot-tabel tr.warn-oranje td.naam-cel { border-left: 4px solid var(--oranje); }
   .rot-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; }
@@ -243,11 +272,11 @@
   .type-btn.actief { border-color: var(--bank); background: var(--bank-bg); color: var(--bank);
                      box-shadow: 0 0 12px rgba(167,139,250,0.3); }
   .type-btn:hover:not(.actief) { border-color: #5b7fc4; }
-  .verstuur-btn { width: 100%; padding: 16px; background: #3b5998; color: white;
-                  border: 2px solid #4c6cad; border-radius: 12px; font-size: 1.02rem; font-weight: 800;
+  .verstuur-btn { width: 100%; padding: 16px; background: #2857af; color: white;
+                  border: 2px solid #3a68c0; border-radius: 12px; font-size: 1.02rem; font-weight: 800;
                   cursor: pointer; margin-bottom: 12px; transition: all 0.15s;
-                  box-shadow: 0 2px 8px rgba(59,89,152,0.3); }
-  .verstuur-btn:hover { background: #4a6aa8; }
+                  box-shadow: 0 2px 8px rgba(40,87,175,0.3); }
+  .verstuur-btn:hover { background: #3868c4; }
   .verstuur-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
   .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px;
             width: 100%; padding: 13px; background: #075e54; color: white;
@@ -674,6 +703,7 @@
       <div class="pr-uren-kolom">
         <div class="pr-uren-titel">Uren deze week</div>
         <div id="pr-uren-lijst"></div>
+        <div class="pr-gasten-hint">🏠 = beheerderswoning</div>
       </div>
     </div>
   </div>
@@ -1689,7 +1719,7 @@ function renderRotatie() {
     const kleur = naamMatchKleuren[naam];
     const stijl = kleur ? ` style="box-shadow:inset 0 0 0 2px ${kleur};"` : '';
     html += `<tr class="${rood?'warn-rood':oranje?'warn-oranje':''}">
-      <td class="naam-cel"${stijl}>${naam}${bewonersBeheerSet.has(naam)?' 🏠':''}</td>
+      <td class="naam-cel"${stijl}><span class="naam-cel-inner"><span class="naam-cel-tekst">${naam}</span>${bewonersBeheerSet.has(naam)?'<span class="naam-cel-huisje">🏠</span>':''}</span></td>
       ${hist.map(t=>`<td><span class="rot-pill rot-${t}">${t==='B'?'Bank':t==='C'?'Corvee':'Kook'}</span></td>`).join('')}
       <td class="${rood?'status-rood':oranje?'status-oranje':'status-ok'}">
         ${rood?'⚠ Verplicht corvee':oranje?'⚡ Let op (3×)':'✅ OK'}
@@ -3065,6 +3095,14 @@ async function toggleBeheerderswoning(naam) {
   laadBewoners();
 }
 
+async function zetBeheerderswoning(naam, aan) {
+  if (!supabaseActief || !naam) return;
+  if (bewonersBeheerSet.has(naam) === aan) return; // al goed, geen wijziging nodig
+  const {error} = await sb.from('bewoners').update({ beheerderswoning: aan }).eq('naam', naam);
+  if (error) { alert('Wijzigen beheerderswoning mislukt: ' + error.message); return; }
+  if (aan) bewonersBeheerSet.add(naam); else bewonersBeheerSet.delete(naam);
+}
+
 function openGP(key) {
   const custom = gpAangepasteOnderwerpen[key];
   const standaardItem = GP_STANDAARD.find(x => x.key === key);
@@ -3551,12 +3589,26 @@ async function renderPapierRooster() {
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
-  const statusMap = weekData._status || {}; // naam -> 'gast' | 'gast_week' (afwezig = vrijwilliger)
+  const statusMap = weekData._status || {}; // naam -> 'vrijwilliger' | 'gast' | 'gast_week' | 'oud_bewoner' | 'extern'
 
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
-  const statusKlasse = (status) => status === 'gast' ? 'pr-cel-gast' : (status === 'gast_week' ? 'pr-cel-gvdw' : 'pr-cel-vw');
-  const statusLabelTekst = (status) => status === 'gast' ? 'gast' : (status === 'gast_week' ? 'gast van de week' : 'vrijwilliger');
+  const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
+  const statusKlasse = (status) => STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
+  const statusLabelTekst = (status) => STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger;
+
+  const naamRegelHtml = (naam, status, celLabel) => {
+    const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
+    const huisje = bewonersBeheerSet.has(naam) ? '<span class="pr-naam-regel-huisje">🏠</span>' : '';
+    return `<span class="pr-naam-regel">
+      <span class="pr-naam-regel-top">
+        <span class="pr-naam-regel-naam">${escHtml(naam)}</span>
+        ${huisje}
+      </span>
+      <span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span>
+    </span>`;
+  };
 
   const maakRij = (dagNaam, i) => {
     const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
@@ -3574,17 +3626,23 @@ async function renderPapierRooster() {
         if (!status2 || status1 === status2) {
           // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
           cellClasses = statusKlasse(status1);
-          const label = statusLabelTekst(status1);
-          const naamTekst = info.naam2 ? `${escHtml(info.naam1)} &amp; ${escHtml(info.naam2)}` : escHtml(info.naam1);
-          cellHtml = `<span class="pr-naam" style="${info.naam2?'font-size:0.76rem':''}">${naamTekst}</span><span class="pr-status-label">${label}</span>`;
+          const heeftExtra = info.label1 || (info.naam2 && info.label2);
+          const naamTekst = info.naam2
+            ? `${naamRegelHtml(info.naam1, status1, info.label1)}<span class="pr-naam-scheiding"></span>${naamRegelHtml(info.naam2, status2, info.label2)}`
+            : `${naamRegelHtml(info.naam1, status1, info.label1)}<span class="pr-naam-scheiding"></span>`;
+          cellHtml = `<span class="pr-naam" style="${info.naam2||heeftExtra?'font-size:0.74rem':''}">${naamTekst}</span>`;
         } else {
-          // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften.
+          // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften, naadloos aan elkaar.
+          // Het lijntje komt exact op de kleurgrens te staan (via de rand van het onderste blok).
           cellHtml = `
-            <div class="${statusKlasse(status1)}" style="margin:-4px -6px 1px;padding:2px 6px;border-radius:4px;line-height:1.15">
-              <span class="pr-naam" style="font-size:0.76rem">${escHtml(info.naam1)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status1)}</span>
-            </div>
-            <div class="${statusKlasse(status2)}" style="margin:1px -6px -4px;padding:2px 6px;border-radius:4px;line-height:1.15">
-              <span class="pr-naam" style="font-size:0.76rem">${escHtml(info.naam2)}</span><span class="pr-status-label" style="font-size:0.38rem">${statusLabelTekst(status2)}</span>
+            <div style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative">
+              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex-shrink:0">
+                <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
+              </div>
+              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative">
+                <span class="pr-naam-scheiding" style="position:absolute;top:0;left:0;margin:0"></span>
+                <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
+              </div>
             </div>`;
         }
         if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
@@ -3593,7 +3651,7 @@ async function renderPapierRooster() {
       return `<td><div class="pr-cel ${cellClasses}" ${klik}>${cellHtml}</div></td>`;
     }).join('');
     return `<tr>
-      <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}${isVandaag?' 📍':''}</span><span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
+      <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}</span>${isVandaag?' <span class="pr-pin">📍</span>':''}<span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
       ${cellen}
     </tr>`;
   };
@@ -3624,36 +3682,118 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // Alle bewoners tonen, ook wie nog geen dienst heeft (0 uur).
   bewonersCache.forEach(naam => { if (!(naam in uren)) uren[naam] = 0; });
 
-  const namen = Object.keys(uren).sort((a, b) => {
-    if (uren[b] !== uren[a]) return uren[b] - uren[a]; // meeste uren eerst
-    return a.localeCompare(b, 'nl'); // bij gelijke uren (incl. 0): alfabetisch
+  // Groepeer per status (kleur), zodat mensen met dezelfde kleur bij elkaar blijven staan.
+  // De positie van elke groep in de lijst wordt bepaald door het hoogste urenaantal binnen die groep.
+  // Uitzondering: 'vrijwilliger' (meestal de grootste/blauwe groep) mag in max. 6 stukken van elk
+  // minimaal 3 namen gesplitst worden, zodat die groep beter tussen de andere kleuren qua uren past.
+  const groepen = {}; // sleutel -> [namen]  (sleutel is status, of 'vrijwilliger_N' voor een sub-stuk)
+  const alleStatussen = {}; // temp: status -> [namen], vóór het opsplitsen van vrijwilliger
+  Object.keys(uren).forEach(naam => {
+    const status = statusMap[naam] || 'vrijwilliger';
+    if (!alleStatussen[status]) alleStatussen[status] = [];
+    alleStatussen[status].push(naam);
+  });
+  Object.keys(alleStatussen).forEach(status => {
+    alleStatussen[status].sort((a, b) => {
+      if (uren[b] !== uren[a]) return uren[b] - uren[a];
+      return a.localeCompare(b, 'nl');
+    });
   });
 
-  const statusOpties = (naam, huidigeStatus) => `
+  const vrijwilligerNamen = alleStatussen['vrijwilliger'] || [];
+  delete alleStatussen['vrijwilliger'];
+  Object.assign(groepen, alleStatussen); // andere kleuren blijven altijd één ondeelbaar blok
+
+  if (vrijwilligerNamen.length) {
+    // Streven: zo min mogelijk splitsen. Max. 6 stukken, elk stuk minimaal 3 namen.
+    // Belangrijk: een grens mag nooit midden tussen mensen met hetzelfde urenaantal vallen —
+    // die schuift dan door tot het eerstvolgende afwijkende urenaantal.
+    const maxStukken = Math.min(6, Math.floor(vrijwilligerNamen.length / 3)) || 1;
+    const streefGrootte = vrijwilligerNamen.length / maxStukken;
+    const grenzen = [0];
+    for (let i = 1; i < maxStukken; i++) {
+      let grens = Math.round(i * streefGrootte);
+      // Grens mag niet midden in een blok gelijke uren vallen: schuif door tot het urenaantal verandert.
+      while (grens < vrijwilligerNamen.length && grens > 0 &&
+             uren[vrijwilligerNamen[grens]] === uren[vrijwilligerNamen[grens - 1]]) {
+        grens++;
+      }
+      if (grens > grenzen[grenzen.length - 1] && grens < vrijwilligerNamen.length) grenzen.push(grens);
+    }
+    grenzen.push(vrijwilligerNamen.length);
+    for (let i = 0; i < grenzen.length - 1; i++) {
+      const stuk = vrijwilligerNamen.slice(grenzen[i], grenzen[i + 1]);
+      if (stuk.length) groepen[`vrijwilliger_${i}`] = stuk;
+    }
+  }
+
+  const groepMaxUren = (sleutel) => Math.max(...groepen[sleutel].map(n => uren[n]));
+  const namen = Object.keys(groepen)
+    .sort((sleutelA, sleutelB) => groepMaxUren(sleutelB) - groepMaxUren(sleutelA))
+    .flatMap(sleutel => groepen[sleutel]);
+
+  const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
+
+  const statusOpties = (huidigeStatus) => `
     <option value="vrijwilliger" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
     <option value="gast" ${huidigeStatus==='gast'?'selected':''}>gast</option>
-    <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>`;
+    <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
+    <option value="oud_bewoner" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
+    <option value="extern" ${huidigeStatus==='extern'?'selected':''}>extern persoon</option>`;
 
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
-    : namen.map(naam => {
+    : namen.map((naam, idx) => {
     const status = statusMap[naam] || 'vrijwilliger';
-    const klasse = status === 'gast' ? 'pr-uren-status-gast' : (status === 'gast_week' ? 'pr-uren-status-gvdw' : 'pr-uren-status-vw');
+    const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
     const naamVeilig = naam.replace(/'/g,"\\'");
+    const heeftHuisje = bewonersBeheerSet.has(naam);
+    const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
+    const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}`;
     const statusVeld = beheer
-      ? `<select class="pr-uren-status-select" onchange="prZetStatus('${weekKey}','${naamVeilig}', this.value)">${statusOpties(naam, status)}</select>`
-      : `<span class="pr-status-label" style="margin-top:0">${status === 'vrijwilliger' ? 'vrijwilliger' : (status === 'gast' ? 'gast' : 'gast van de week')}</span>`;
+      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative">
+           ${statusTekstZichtbaar}
+           <select class="pr-uren-status-select" onchange="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}', this)"
+             style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;font-size:1px">
+             ${statusOpties(status)}
+             <option value="__huisje__">${huisjeOptieTekst}</option>
+           </select>
+         </span>`
+      : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
-        <span class="pr-uren-naam">${escHtml(naam)}</span>
-        <span class="pr-uren-uur">${uren[naam]}u</span>
+        <span class="pr-uren-nr">${idx + 1}</span>
+        <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${escHtml(naam)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
+        <span class="pr-uren-uur">${uren[naam]}</span>
       </div>
       ${statusVeld}
     </div>`;
-  }).join('');
+  });
 
-  const kolomClass = namen.length > 6 ? 'pr-uren-lijst-wrap pr-2kol' : 'pr-uren-lijst-wrap';
-  el.innerHTML = `<div class="${kolomClass}">${lijstHtml}</div>`;
+  const gebruikt2Kolommen = Array.isArray(lijstHtml) && lijstHtml.length > 6;
+  let eindHtml;
+  if (!Array.isArray(lijstHtml)) {
+    eindHtml = `<div class="pr-uren-lijst-wrap"><div class="pr-uren-lijst-kolom">${lijstHtml}</div></div>`;
+  } else if (gebruikt2Kolommen) {
+    const helft = Math.ceil(lijstHtml.length / 2);
+    const kol1 = lijstHtml.slice(0, helft).join('');
+    const kol2 = lijstHtml.slice(helft).join('');
+    eindHtml = `<div class="pr-uren-lijst-wrap pr-2kol"><div class="pr-uren-lijst-kolom">${kol1}</div><div class="pr-uren-lijst-kolom">${kol2}</div></div>`;
+  } else {
+    eindHtml = `<div class="pr-uren-lijst-wrap"><div class="pr-uren-lijst-kolom">${lijstHtml.join('')}</div></div>`;
+  }
+  el.innerHTML = eindHtml;
+}
+
+async function prVerwerkUrenKeuze(weekKey, naam, selectEl) {
+  const waarde = selectEl.value;
+  if (waarde === '__huisje__') {
+    await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
+    renderPapierRooster();
+    return;
+  }
+  await prZetStatus(weekKey, naam, waarde);
 }
 
 async function prZetStatus(weekKey, naam, status) {
@@ -3675,20 +3815,33 @@ function prNaamOpties(huidigeWaarde) {
 function prBewerkCel(weekKey, dagKey, dienstKey) {
   const weekData = papierRoosterCache[weekKey] || {};
   const info = (weekData[dagKey] && weekData[dagKey][dienstKey]) || {};
+  const labelOpties = (huidig) => `
+    <option value="" ${!huidig?'selected':''}>— geen label —</option>
+    <option value="kok" ${huidig==='kok'?'selected':''}>🍳 kok</option>`;
+  const huisjeCheckbox = (naam, veldId) => naam ? `
+      <label style="display:flex;align-items:center;gap:8px;margin:-6px 0 14px;font-weight:400;text-transform:none;font-size:0.82rem">
+        <input type="checkbox" id="${veldId}" ${bewonersBeheerSet.has(naam)?'checked':''} style="width:auto"> 🏠 ${escHtml(naam)} heeft een beheerderswoning
+      </label>` : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
-    <p class="gp-modal-intro">${dagKey}</p>
+    <p class="gp-modal-intro">${dagKey}<br><span style="font-size:0.75rem;color:var(--subtle)">Status (vrijwilliger/gast/oud bewoner/etc.) stel je in bij "Uren deze week" rechts.</span></p>
     <div class="melding-form" style="margin-top:4px">
       <label>Naam 1</label>
       <select id="pr-cel-naam1" onchange="prCheckNieuweNaam(this,'1')">${prNaamOpties(info.naam1 || '')}</select>
       <div id="pr-nieuwe-naam1-veld" style="display:none">
         <input type="text" id="pr-nieuwe-naam1-input" placeholder="Nieuwe naam">
       </div>
+      <label>Label bij naam 1 (optioneel)</label>
+      <select id="pr-cel-label1">${labelOpties(info.label1 || '')}</select>
+      ${huisjeCheckbox(info.naam1, 'pr-cel-huisje1')}
       <label>Naam 2 (optioneel)</label>
       <select id="pr-cel-naam2" onchange="prCheckNieuweNaam(this,'2')">${prNaamOpties(info.naam2 || '')}</select>
       <div id="pr-nieuwe-naam2-veld" style="display:none">
         <input type="text" id="pr-nieuwe-naam2-input" placeholder="Nieuwe naam">
       </div>
+      <label>Label bij naam 2 (optioneel)</label>
+      <select id="pr-cel-label2">${labelOpties(info.label2 || '')}</select>
+      ${huisjeCheckbox(info.naam2, 'pr-cel-huisje2')}
       <label>Opmerking (optioneel, geel briefje)</label>
       <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
       <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
@@ -3729,10 +3882,22 @@ async function prHaalNaamOp(nummer) {
 async function prBevestigCel(weekKey, dagKey, dienstKey) {
   const naam1 = await prHaalNaamOp('1');
   const naam2 = await prHaalNaamOp('2');
+  const label1 = document.getElementById('pr-cel-label1').value;
+  const label2 = document.getElementById('pr-cel-label2').value;
   const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
+
+  const huisje1El = document.getElementById('pr-cel-huisje1');
+  const huisje2El = document.getElementById('pr-cel-huisje2');
+  if (huisje1El && naam1) await zetBeheerderswoning(naam1, huisje1El.checked);
+  if (huisje2El && naam2) await zetBeheerderswoning(naam2, huisje2El.checked);
+
   const weekData = papierRoosterCache[weekKey] || {};
   if (!weekData[dagKey]) weekData[dagKey] = {};
-  if (naam1) weekData[dagKey][dienstKey] = { naam1, naam2: naam2 || undefined, opmerking: opmerking || undefined };
+  if (naam1) weekData[dagKey][dienstKey] = {
+    naam1, naam2: naam2 || undefined,
+    label1: label1 || undefined, label2: label2 || undefined,
+    opmerking: opmerking || undefined,
+  };
   else delete weekData[dagKey][dienstKey];
   await prOpslaanWeek(weekKey, weekData);
   sluitGPModal();
