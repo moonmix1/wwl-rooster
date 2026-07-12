@@ -124,7 +124,7 @@
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
   .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
-    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; }
+    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; text-align: center; }
   .pr-cel-vw   { background-color: #0b5aa3; }
   .pr-cel-gast { background-color: #7a2530; }
   .pr-cel-gvdw { background-color: #1f5c45; }
@@ -135,7 +135,7 @@
     text-transform: lowercase; white-space: nowrap; }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
   .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
-  .pr-naam-regel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+  .pr-naam-regel-top { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
   .pr-naam-regel-naam { min-width: 0; overflow-wrap: break-word; }
   .pr-naam-regel-huisje { flex-shrink: 0; font-size: 0.72rem; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
@@ -161,11 +161,11 @@
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
-  .pr-uren-rij { display: flex; flex-direction: column; gap: 2px;
+  .pr-uren-rij { display: flex; flex-direction: column; gap: 2px; text-align: center;
     padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
-  .pr-uren-rij-top { display: flex; align-items: center; gap: 6px; }
-  .pr-uren-naam { font-size: 0.78rem; color: #ddd; overflow: hidden; text-overflow: ellipsis;
-    white-space: nowrap; flex: 1; min-width: 0; }
+  .pr-uren-rij-top { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .pr-uren-naam { font-size: 0.82rem; color: #e0e0e0; font-weight: 600; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; flex: 1; min-width: 0; text-align: center; }
   .pr-uren-nr { flex-shrink: 0; width: 11px; height: 11px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.4rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
