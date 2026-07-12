@@ -868,7 +868,10 @@ function weekStartVan(datum) {
   const offset = (dag === 0) ? 6 : dag - 1;
   d.setDate(d.getDate() - offset);
   d.setHours(0,0,0,0);
-  return d.toISOString().slice(0,10);
+  const jaar = d.getFullYear();
+  const maand = String(d.getMonth() + 1).padStart(2, '0');
+  const dagVanMaand = String(d.getDate()).padStart(2, '0');
+  return `${jaar}-${maand}-${dagVanMaand}`;
 }
 
 function vindRolVanPersoon(dagen, naam) {
@@ -3469,7 +3472,10 @@ function prDinsdagVanWeek(offsetWeken) {
 }
 
 function prDatumKey(datum) {
-  return datum.toISOString().slice(0, 10);
+  const jaar = datum.getFullYear();
+  const maand = String(datum.getMonth() + 1).padStart(2, '0');
+  const dag = String(datum.getDate()).padStart(2, '0');
+  return `${jaar}-${maand}-${dag}`;
 }
 
 function prFormatDatum(datum) {
@@ -3538,14 +3544,7 @@ async function renderPapierRooster() {
 
   let weekData = {};
   if (supabaseActief) {
-    const { data, error } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
-    if (error) {
-      alert('DIAGNOSE — fout bij ophalen papieren_rooster: ' + error.message + ' (code: ' + (error.code || '?') + ')');
-    } else if (!data) {
-      alert('DIAGNOSE — geen rij gevonden voor week_start = "' + weekKey + '"');
-    } else {
-      alert('DIAGNOSE — rij gevonden, dagen bevat sleutels: ' + Object.keys(data.dagen || {}).join(', '));
-    }
+    const { data } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
     weekData = (data && data.dagen) || {};
   }
   papierRoosterCache[weekKey] = weekData;
