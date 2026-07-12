@@ -134,7 +134,7 @@
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
-  .pr-naam-scheiding { display: block; height: 1px; width: 55%; background: rgba(255,255,255,0.28); margin: 5px auto; }
+  .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
   .pr-naam-regel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
   .pr-naam-regel-naam { min-width: 0; overflow-wrap: break-word; }
   .pr-naam-regel-huisje { flex-shrink: 0; font-size: 0.72rem; }
@@ -3628,7 +3628,7 @@ async function renderPapierRooster() {
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
               </div>
               <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative">
-                <span class="pr-naam-scheiding" style="position:absolute;top:0;left:22.5%;margin:0"></span>
+                <span class="pr-naam-scheiding" style="position:absolute;top:0;left:0;margin:0"></span>
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
               </div>
             </div>`;
