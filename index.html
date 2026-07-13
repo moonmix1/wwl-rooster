@@ -137,7 +137,7 @@
     margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; text-align: center; }
   .pr-cel-vw   { background-color: #0a4a87; }
   .pr-cel-gast { background-color: #7a2530; }
-  .pr-cel-gvdw { background-color: #774e09; }
+  .pr-cel-gvdw { background-color: #cbab0a; }
   .pr-cel-oud  { background-color: #15503f; }
   .pr-cel-ext  { background-color: #4a2e6f; }
   .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
@@ -161,7 +161,7 @@
 
   .pr-uren-status-vw   { background: #0a4a87; }
   .pr-uren-status-gast { background: #7a2530; }
-  .pr-uren-status-gvdw { background: #774e09; }
+  .pr-uren-status-gvdw { background: #cbab0a; }
   .pr-uren-status-oud  { background: #15503f; }
   .pr-uren-status-ext  { background: #4a2e6f; }
 
@@ -674,7 +674,7 @@
           <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
           <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
           <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
-          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">17–21u</span></th>
+          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
         </tr></thead>
         <tbody id="week-body"></tbody>
       </table>
@@ -784,7 +784,7 @@
         <tr><td>🔵 Bank ochtend</td><td>10–16u</td><td>6 uur</td><td>Passief</td><td>Za + Zo</td></tr>
         <tr><td>🟢 Kook</td><td>14–17u</td><td>3 uur</td><td>Actief</td><td>Dagelijks</td></tr>
         <tr><td>🟣 Bank avond</td><td>16–22u</td><td>6 uur</td><td>Passief</td><td>Dagelijks</td></tr>
-        <tr><td>🟠 Corvee</td><td>17–21u</td><td>4 uur</td><td>Actief</td><td>Dagelijks</td></tr>
+        <tr><td>🟠 Corvee</td><td>18–22u</td><td>4 uur</td><td>Actief</td><td>Dagelijks</td></tr>
       </table>
     </div>
     <div class="rust-box">
@@ -1535,7 +1535,7 @@ function renderVandaagMetMeldingen(meldingen) {
   if(bOch) kaarten.push({rol:'Bank ochtend',naam:bOch,tijd:'10:00–16:00',cls:'bankoch'});
   if(d.kook)   kaarten.push({rol:'Kook',naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
   if(bAv)  kaarten.push({rol:'Bank avond',naam:bAv,tijd:'16:00–22:00',cls:'bank'});
-  if(d.corvee) kaarten.push({rol:'Corvee',naam:d.corvee,tijd:'17:00–21:00',cls:'corvee'});
+  if(d.corvee) kaarten.push({rol:'Corvee',naam:d.corvee,tijd:'18:00–22:00',cls:'corvee'});
   document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>{
     const kleur = naamMatchKleuren[k.naam];
     const stijl = kleur ? ` style="box-shadow:0 0 0 3px ${kleur};"` : '';
@@ -2350,7 +2350,7 @@ const GP_INHOUD = {
     intro: `<strong>Shift kiezen:</strong> wie het eerst kiest heeft de meeste keuze — dat doe je via 💬 Meldingen met je naam en gewenste shift. Koken mag je altijd kiezen. Bank en corvee zijn vrije keuze, tenzij je al 4 weken bank hebt gedaan.<br><br>
 <strong>Sterretje (★):</strong> een uitzonderlijke 2e shift in dezelfde week. Normaal max. 1 shift per week (3–6 uur) — nog altijd ver onder het huidige niveau van 3 shifts van 8 uur.<br><br>
 <strong>Anti-ophoping:</strong> na 4 weken bank op rij ben je verplicht minimaal 2 weken corvee te doen, zodat het werk eerlijk verdeeld blijft. Zie tab 🔄 Rotatie voor de actuele status.<br><br>
-<strong>Shift-overzicht:</strong> Bank ochtend 10–16u (za+zo) · Kook 14–17u · Bank avond 16–22u · Corvee 17–21u.<br><br>
+<strong>Shift-overzicht:</strong> Bank ochtend 10–16u (za+zo) · Kook 14–17u · Bank avond 16–22u · Corvee 18–22u.<br><br>
 <strong>Rustperiode 22:00–10:00:</strong> geen diensten. Rust, respect en fatsoen zijn vanzelfsprekend in een groep van twintig mensen die elkaar kennen.<br><br>
 <strong>De deur na 22:00:</strong> buiten hangt een bord met instructies. Spoedgevallen gaan telefonisch. Bewoners hebben via het smartlock zelfstandig toegang.`,
     footer: ''
