@@ -113,12 +113,13 @@
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
-  .pr-tabel th { background: #2a2a2a; color: #aaa; padding: 9px 12px; text-align: left;
+  .pr-tabel th { background: #2a1332; color: #aaa; padding: 9px 12px; text-align: left;
     font-size: 0.68rem; font-weight: 700; border: 1px solid #3a3a3a; }
-  .pr-tabel th:first-child { background: #2a1332; }
   .pr-tijd { font-weight: 400; font-size: 0.62rem; color: #777; }
   .pr-tabel td { padding: 8px 12px; border: 1px solid #3a3a3a; vertical-align: top; }
-  .pr-tabel td:first-child { padding: 8px 8px 8px 4px; background: #2a1332; border-bottom: 1px solid #4a2a58; }
+  .pr-tabel td:first-child { padding: 8px 8px 8px 4px; }
+  .pr-dag-cel { min-height: 66px; display: flex; flex-direction: column; justify-content: center;
+    margin: -4px -8px; padding: 4px 8px; border-radius: 4px; background: #2a1332; }
   .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.68rem; display: block; width: 100%;
     white-space: nowrap; }
   .pr-pin { font-size: 1.1rem; }
@@ -3652,7 +3653,7 @@ async function renderPapierRooster() {
       return `<td><div class="pr-cel ${cellClasses}" ${klik}>${cellHtml}</div></td>`;
     }).join('');
     return `<tr>
-      <td><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}</span>${isVandaag?' <span class="pr-pin">📍</span>':''}<span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
+      <td><div class="pr-dag-cel"><span class="pr-dag-label ${isVandaag?'pr-vandaag':''}">${dagNaam}</span>${isVandaag?' <span class="pr-pin">📍</span>':''}<span class="pr-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></div></td>
       ${cellen}
     </tr>`;
   };
