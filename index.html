@@ -661,8 +661,10 @@
 
   <div id="s-weekrooster" class="sectie">
     <div class="sectie-titel">Volledig weekrooster</div>
-    <div id="rooster-keuze-eigen" style="margin-bottom:12px"></div>
-    <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1">
+      <div id="rooster-keuze-eigen"></div>
+    </div>
     <div style="overflow-x:auto">
       <table class="week-tabel">
         <thead><tr>
