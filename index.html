@@ -1674,10 +1674,10 @@ async function bevestigRoosterWijziging(dag, rolKey) {
   if (error) alert('Opslaan mislukt: ' + error.message);
 }
 
-// ── REGELS BEWERKEN (beheerder) ──
+// ── REGELS BEWERKEN (alleen beheerder, valt onder tekst/vormgeving) ──
 function renderRegelsBeheerKnop() {
   const knop = document.getElementById('regels-beheer-knop');
-  if (knop) knop.style.display = gpBeheerActief() ? 'block' : 'none';
+  if (knop) knop.style.display = isBeheerder() ? 'block' : 'none';
 }
 
 function regelsBewerkModusAan() {
@@ -2296,9 +2296,13 @@ function toggleGeavanceerd() {
 function verversBeheerderUI() {
   const paneel = document.getElementById('geavanceerd-paneel');
   const btn = document.getElementById('gp-beheer-btn');
-  const actief = gpBeheerActief();
-  if (paneel) paneel.classList.toggle('gp-beheer-modus', actief);
-  if (btn) { btn.style.display = actief ? 'inline-flex' : 'none'; btn.textContent = '⭐ Jij bent beheerder'; }
+  const beheerderActief = isBeheerder();
+  const coordinatorActief = isCoordinator();
+  if (paneel) paneel.classList.toggle('gp-beheer-modus', beheerderActief);
+  if (btn) {
+    btn.style.display = coordinatorActief ? 'inline-flex' : 'none';
+    btn.textContent = beheerderActief ? '⭐ Jij bent beheerder' : '🛠️ Jij bent coördinator';
+  }
   herRenderRoosterTabs();
   renderRegelsBeheerKnop();
   renderGPNieuwKnop();
@@ -2464,10 +2468,10 @@ function renderGPPaginas() {
   gpUpdatePaginaLabel(0, gpTotaalPaginas);
 }
 
-// ── ONDERWERPEN TOEVOEGEN/VERWIJDEREN (beheerder) ──
+// ── ONDERWERPEN TOEVOEGEN/VERWIJDEREN (alleen beheerder, valt onder structuur/vormgeving) ──
 function renderGPNieuwKnop() {
   const btn = document.getElementById('gp-nieuw-btn');
-  if (btn) btn.style.display = gpBeheerActief() ? 'inline-block' : 'none';
+  if (btn) btn.style.display = isBeheerder() ? 'inline-block' : 'none';
 }
 
 // ── ICOONKIEZER ──────────────────────────────────────────────────────────
@@ -2731,12 +2735,18 @@ function gpVerplaats(index, richting) {
 }
 
 // ── BEHEERDER-STATUS ──
-// Beheerder is nu een echte eigenschap van je account (is_beheerder in Supabase),
-// niet meer een pincode. Alleen een bestaande beheerder kan iemand anders beheerder maken.
-function gpBeheerActief() { return !!(huidigProfiel && huidigProfiel.is_beheerder); }
+// Twee niveaus:
+// - Beheerder (is_beheerder): technisch eigenaar. Enige die styling, onderwerp-teksten en
+//   coördinator-rechten mag beheren. Kan niet door coördinatoren worden verwijderd.
+// - Coördinator (is_coordinator): mag mensen-taken doen (goedkeuren, statussen wijzigen,
+//   rooster A/B bewerken, meldingen beheren) maar niet aan vormgeving/teksten/rollen komen.
+function isBeheerder() { return !!(huidigProfiel && huidigProfiel.is_beheerder); }
+function isCoordinator() { return !!(huidigProfiel && (huidigProfiel.is_beheerder || huidigProfiel.is_coordinator)); }
+// Backwards compatible alias — bestaande code die "mensen-taken" checkt blijft werken.
+function gpBeheerActief() { return isCoordinator(); }
 
 async function maakBeheerder(id) {
-  if (!confirm('Weet je zeker dat je deze persoon beheerdersrechten wilt geven?')) return;
+  if (!confirm('Weet je zeker dat je deze persoon beheerdersrechten wilt geven? Dit geeft volledige technische rechten, inclusief vormgeving.')) return;
   const {error} = await sb.from('profielen').update({ is_beheerder: true }).eq('id', id);
   if (error) { alert('Mislukt: ' + error.message); return; }
   openGP('instellingen');
@@ -2745,6 +2755,20 @@ async function maakBeheerder(id) {
 async function haalBeheerderWeg(id) {
   if (!confirm('Weet je zeker dat je de beheerdersrechten van deze persoon wilt intrekken?')) return;
   const {error} = await sb.from('profielen').update({ is_beheerder: false }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
+}
+
+async function maakCoordinator(id) {
+  if (!confirm('Weet je zeker dat je deze persoon coördinator wilt maken? Diegene kan dan mensen goedkeuren/weigeren, statussen wijzigen en het rooster bewerken.')) return;
+  const {error} = await sb.from('profielen').update({ is_coordinator: true }).eq('id', id);
+  if (error) { alert('Mislukt: ' + error.message); return; }
+  openGP('instellingen');
+}
+
+async function haalCoordinatorWeg(id) {
+  if (!confirm('Weet je zeker dat je de coördinator-rechten van deze persoon wilt intrekken?')) return;
+  const {error} = await sb.from('profielen').update({ is_coordinator: false }).eq('id', id);
   if (error) { alert('Mislukt: ' + error.message); return; }
   openGP('instellingen');
 }
@@ -3018,15 +3042,16 @@ async function verkleinOudeFotos() {
 }
 
 function renderBewonersModalInhoud() {
-  const beheerder = gpBeheerActief();
+  const coordinator = isCoordinator();
+  const beheerder = isBeheerder();
   const lijstHtml = bewonersCache.length
     ? bewonersCache.map(naam => {
         const heeftHuisje = bewonersBeheerSet.has(naam);
         return `
       <div class="melding-item">
         <div style="flex:1;min-width:0"><div class="melding-naam">${naam}${heeftHuisje?' 🏠':''}</div></div>
-        ${beheerder ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="toggleBeheerderswoning('${naam.replace(/'/g,"\\'")}')">${heeftHuisje?'🏠 Verwijderen':'+ 🏠 Toewijzen'}</button>` : ''}
-        ${beheerder ? `<button class="verwijder-btn" onclick="bewonerVerwijderen('${naam.replace(/'/g,"\\'")}')">✕</button>` : ''}
+        ${coordinator ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="toggleBeheerderswoning('${naam.replace(/'/g,"\\'")}')">${heeftHuisje?'🏠 Verwijderen':'+ 🏠 Toewijzen'}</button>` : ''}
+        ${coordinator ? `<button class="verwijder-btn" onclick="bewonerVerwijderen('${naam.replace(/'/g,"\\'")}')">✕</button>` : ''}
       </div>`;
       }).join('')
     : '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen bewoners toegevoegd.</p>';
@@ -3034,7 +3059,7 @@ function renderBewonersModalInhoud() {
   const wachtend = profielenCache.filter(p => !p.goedgekeurd && !p.geweigerd);
   const actief   = profielenCache.filter(p => p.goedgekeurd && !p.geweigerd);
 
-  const goedkeuringenHtml = beheerder && wachtend.length ? `
+  const goedkeuringenHtml = coordinator && wachtend.length ? `
     <div class="rust-box" style="margin-bottom:16px;border-color:var(--oranje)">
       <strong>⏳ Wachtend op goedkeuring (${wachtend.length})</strong>
       ${wachtend.map(p => `
@@ -3048,20 +3073,24 @@ function renderBewonersModalInhoud() {
         </div>`).join('')}
     </div>` : '';
 
-  const accountsHtml = beheerder ? `
+  // Rol-rechten (beheerder maken/afhalen, coördinator maken/afhalen) blijven voorbehouden aan de beheerder zelf.
+  const accountsHtml = coordinator ? `
     <div class="sectie-titel" style="margin-top:18px"><span class="live-dot"></span>Accounts met toegang (${actief.length})</div>
     <div class="melding-lijst" style="gap:8px;margin-bottom:16px">
       ${actief.map(p => `
         <div class="melding-item">
           <div style="flex:1;min-width:0">
-            <div class="melding-naam">${p.naam || '(geen naam)'}${p.is_beheerder?' ⭐':''}</div>
+            <div class="melding-naam">${p.naam || '(geen naam)'}${p.is_beheerder?' ⭐':(p.is_coordinator?' 🛠️':'')}</div>
             <div style="font-size:0.72rem;color:var(--subtle)">${p.email || ''}</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${p.is_beheerder
+            ${beheerder ? (p.is_beheerder
               ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="haalBeheerderWeg('${p.id}')">⭐ Beheerder afhalen</button>`
-              : `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="maakBeheerder('${p.id}')">+ ⭐ Beheerder maken</button>`}
-            <button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;color:var(--warn)" onclick="intrekkenToegang('${p.id}', '${(p.naam||'').replace(/'/g,"\\'")}')">🚫 Intrekken</button>
+              : `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="maakBeheerder('${p.id}')">+ ⭐ Beheerder maken</button>`) : ''}
+            ${beheerder && !p.is_beheerder ? (p.is_coordinator
+              ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="haalCoordinatorWeg('${p.id}')">🛠️ Coördinator afhalen</button>`
+              : `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="maakCoordinator('${p.id}')">+ 🛠️ Coördinator maken</button>`) : ''}
+            ${coordinator ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;color:var(--warn)" onclick="intrekkenToegang('${p.id}', '${(p.naam||'').replace(/'/g,"\\'")}')">🚫 Intrekken</button>` : ''}
           </div>
         </div>`).join('')}
     </div>` : '';
@@ -3073,7 +3102,7 @@ function renderBewonersModalInhoud() {
     </p>
     ${goedkeuringenHtml}
     ${accountsHtml}
-    ${beheerder ? `
+    ${coordinator ? `
       <div class="melding-form" style="margin-top:4px">
         <label>Naam toevoegen aan bewonerslijst (voor keuzemenu's)</label>
         <input type="text" id="bewoner-nieuwe-naam" placeholder="Voornaam">
@@ -3081,7 +3110,7 @@ function renderBewonersModalInhoud() {
       </div>
       <p style="font-size:0.75rem;color:var(--subtle);margin:-8px 0 14px">🏠 = beheederswoning-badge, zichtbaar bij het weekrooster en de rotatie.</p>` : `
       <p style="font-size:0.78rem;color:var(--subtle);font-style:italic;margin-bottom:14px">
-        Alleen de beheerder kan namen toevoegen of verwijderen. Tik op 🔒 Beheerder hierboven om in te loggen.
+        Alleen de beheerder of coördinator kan namen toevoegen of verwijderen.
       </p>`}
     ${beheerder ? `
       <div class="rust-box" style="margin-bottom:16px">
@@ -3121,7 +3150,7 @@ function openGP(key) {
     ? { titel: `${custom.icon || '📌'} ${custom.titel}`, intro: introTekstHtml(custom.intro || ''), footer: '' }
     : (GP_INHOUD[key] || GP_INHOUD.placeholder);
   const interactief = EXTRA_CATEGORIEEN.includes(key);
-  const kanBewerkOnderwerp = gpBeheerActief() && (custom || standaardItem) && key !== 'instellingen' && key !== 'huisregels';
+  const kanBewerkOnderwerp = isBeheerder() && (custom || standaardItem) && key !== 'instellingen' && key !== 'huisregels';
   let extraHtml = '';
   if (interactief) {
     const identiteitBlok = mijnNaam()
