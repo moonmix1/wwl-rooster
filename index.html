@@ -133,7 +133,7 @@
   .pr-pin { font-size: 1.1rem; }
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
-  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
+  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px; aspect-ratio: 1 / 1;
     margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; text-align: center; }
   .pr-cel-vw   { background-color: #0a4a87; }
   .pr-cel-gast { background-color: #7a2530; }
@@ -3659,8 +3659,9 @@ async function renderPapierRooster() {
           const heeftExtra = info.label1 || (info.naam2 && info.label2);
           const naamTekst = info.naam2
             ? `${naamRegelHtml(info.naam1, status1, info.label1)}<span class="pr-naam-scheiding"></span>${naamRegelHtml(info.naam2, status2, info.label2)}`
-            : `${naamRegelHtml(info.naam1, status1, info.label1)}<span class="pr-naam-scheiding"></span>`;
-          cellHtml = `<span class="pr-naam" style="${info.naam2||heeftExtra?'font-size:0.74rem':''}">${naamTekst}</span>`;
+            : naamRegelHtml(info.naam1, status1, info.label1);
+          const centreerStijl = !info.naam2 ? 'display:flex;flex-direction:column;justify-content:center;height:100%;' : '';
+          cellHtml = `<span class="pr-naam" style="${info.naam2||heeftExtra?'font-size:0.74rem':''}${centreerStijl}">${naamTekst}</span>`;
           if (!info.naam2 && info.naam1 === 'Mark') {
             cellHtml += markPoppetjeHtml();
           }
