@@ -612,7 +612,7 @@
   </div>
   <div class="gp-beheer-rij">
     <button id="gp-nieuw-btn" style="display:none" onclick="toonNieuwOnderwerpForm()">➕ Nieuw onderwerp</button>
-    <button id="gp-beheer-btn" style="display:none" disabled>⭐ Jij bent beheerder</button>
+    <button id="gp-beheer-btn" style="display:none" disabled>⭐ Jij bent technisch beheerder</button>
   </div>
   <div class="gp-pagina-label" id="gp-pagina-label"></div>
   <div class="gp-pages" id="gp-pages"></div>
@@ -810,8 +810,8 @@
       <div id="poll-weergave">
         <p class="poll-vraag" style="color:var(--subtle);font-style:italic">Geen actieve poll op dit moment.</p>
       </div>
-      <details style="margin-top:12px">
-        <summary style="font-size:0.8rem;color:#818cf8;cursor:pointer;font-weight:700">+ Nieuwe poll starten (beheerder)</summary>
+      <details style="margin-top:12px" id="poll-nieuw-details">
+        <summary style="font-size:0.8rem;color:#818cf8;cursor:pointer;font-weight:700">+ Nieuwe poll starten</summary>
         <div style="margin-top:12px">
           <input class="poll-input" id="poll-vraag-inp" placeholder="De vraag, bijv: Willen we een gezamenlijk ontbijt op zondag?">
           <input class="poll-input" id="poll-opt1" placeholder="Optie 1, bijv: Ja">
@@ -2301,7 +2301,7 @@ function verversBeheerderUI() {
   if (paneel) paneel.classList.toggle('gp-beheer-modus', beheerderActief);
   if (btn) {
     btn.style.display = coordinatorActief ? 'inline-flex' : 'none';
-    btn.textContent = beheerderActief ? '⭐ Jij bent beheerder' : '🛠️ Jij bent coördinator';
+    btn.textContent = beheerderActief ? '⭐ Jij bent technisch beheerder' : '🛠️ Jij bent coördinator';
   }
   herRenderRoosterTabs();
   renderRegelsBeheerKnop();
@@ -3085,8 +3085,8 @@ function renderBewonersModalInhoud() {
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             ${beheerder ? (p.is_beheerder
-              ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="haalBeheerderWeg('${p.id}')">⭐ Beheerder afhalen</button>`
-              : `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="maakBeheerder('${p.id}')">+ ⭐ Beheerder maken</button>`) : ''}
+              ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="haalBeheerderWeg('${p.id}')">⭐ Technisch beheerder afhalen</button>`
+              : `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="maakBeheerder('${p.id}')">+ ⭐ Technisch beheerder maken</button>`) : ''}
             ${beheerder && !p.is_beheerder ? (p.is_coordinator
               ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="haalCoordinatorWeg('${p.id}')">🛠️ Coördinator afhalen</button>`
               : `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="maakCoordinator('${p.id}')">+ 🛠️ Coördinator maken</button>`) : ''}
