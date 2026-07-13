@@ -603,7 +603,10 @@
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
   <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd <span id="goedkeuring-teller" style="display:none;background:var(--warn);color:white;border-radius:99px;padding:1px 6px;font-size:0.65rem;margin-left:4px"></span></button>
   <div id="account-menu-plek" style="position:relative"></div>
-  <div><div id="klok">--:--</div><div id="datum"></div></div>
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <div id="rooster-keuze-header"></div>
+    <div><div id="klok">--:--</div><div id="datum"></div></div>
+  </div>
 </div>
 
 <div id="geavanceerd-paneel">
@@ -671,7 +674,6 @@
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
-      <div id="rooster-keuze-eigen" style="margin-left:auto;margin-top:-4px"></div>
     </div>
     <div style="overflow-x:auto">
       <table class="week-tabel">
@@ -691,13 +693,10 @@
   </div>
 
   <div id="s-papierrooster" class="sectie">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <div class="pr-nav" style="flex:1;margin-bottom:0">
-        <button class="pr-nav-btn" onclick="prWeekNavigeer(-1)">◀ Vorige week</button>
-        <div class="pr-week-label" id="pr-week-label"></div>
-        <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
-      </div>
-      <div id="rooster-keuze-eigen-b" style="margin-top:6px"></div>
+    <div class="pr-nav" style="margin-bottom:14px">
+      <button class="pr-nav-btn" onclick="prWeekNavigeer(-1)">◀ Vorige week</button>
+      <div class="pr-week-label" id="pr-week-label"></div>
+      <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
     </div>
     <div class="pr-layout">
       <div style="min-width:0;flex:1 1 340px">
@@ -3570,6 +3569,7 @@ async function laadActiefRoosterType() {
     actiefRoosterType = 'a';
   }
   toonJuisteRoosterSectie();
+  renderRoosterKeuzeKnoppen();
 }
 
 function toonJuisteRoosterSectie() {
@@ -3595,7 +3595,7 @@ function renderRoosterKeuzeKnoppen() {
       </div>
       <span class="rooster-switch-label ${isB ? 'actief' : ''}">Papier</span>
     </div>`;
-  ['rooster-keuze-eigen', 'rooster-keuze-eigen-b'].forEach(id => {
+  ['rooster-keuze-header'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = switchHtml;
   });
