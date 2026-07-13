@@ -133,7 +133,7 @@
   .pr-pin { font-size: 1.1rem; }
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
-  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px; aspect-ratio: 1 / 1;
+  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; min-height: 66px;
     margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; text-align: center; }
   .pr-cel-vw   { background-color: #0a4a87; }
   .pr-cel-gast { background-color: #7a2530; }
@@ -3662,9 +3662,6 @@ async function renderPapierRooster() {
             : naamRegelHtml(info.naam1, status1, info.label1);
           const centreerStijl = !info.naam2 ? 'display:flex;flex-direction:column;justify-content:center;height:100%;' : '';
           cellHtml = `<span class="pr-naam" style="${info.naam2||heeftExtra?'font-size:0.74rem':''}${centreerStijl}">${naamTekst}</span>`;
-          if (!info.naam2 && info.naam1 === 'Mark') {
-            cellHtml += markPoppetjeHtml();
-          }
         } else {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften, naadloos aan elkaar.
           // Het lijntje komt exact op de kleurgrens te staan (via de rand van het onderste blok).
