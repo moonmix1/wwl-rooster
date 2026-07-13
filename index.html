@@ -117,7 +117,7 @@
   .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
     padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .pr-nav-btn:hover { background: #3a3a3a; }
-  .pr-week-label { font-weight: 700; color: #ddd; font-size: 0.85rem; text-align: center; }
+  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
@@ -3595,7 +3595,7 @@ async function renderPapierRooster() {
   const labelEl = document.getElementById('pr-week-label');
   if (labelEl) {
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
-    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:400;font-size:0.7rem;color:#888">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
+    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:600;font-size:0.76rem;color:#bbb">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
   }
 
   const dinsdagBody = document.getElementById('pr-dinsdag-body');
