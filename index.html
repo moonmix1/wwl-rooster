@@ -156,6 +156,8 @@
   /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
   .pr-status-label { display: block; font-size: 0.44rem; opacity: 1; margin-top: 0; color: #fff;
     text-transform: lowercase; font-weight: 700; white-space: nowrap; text-align: center; }
+  .pr-inwerk-tekst { color: #f5d800; font-weight: 800; font-family: 'Comic Sans MS', cursive, sans-serif;
+    text-transform: none; }
 
   .pr-uren-status-vw   { background: #0a4a87; }
   .pr-uren-status-gast { background: #7a2530; }
@@ -3631,12 +3633,14 @@ async function renderPapierRooster() {
   const naamRegelHtml = (naam, status, celLabel) => {
     const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
     const huisje = bewonersBeheerSet.has(naam) ? '<span class="pr-naam-regel-huisje">🏠</span>' : '';
+    const inwerkVoor = status === 'gast' ? '<span class="pr-inwerk-tekst">Inwerk </span>' : '';
+    const inwerkNa = status === 'gast' ? '<span class="pr-inwerk-tekst"> Periode</span>' : '';
     return `<span class="pr-naam-regel">
       <span class="pr-naam-regel-top">
         <span class="pr-naam-regel-naam">${escHtml(naam)}</span>
         ${huisje}
       </span>
-      <span class="pr-cel-label">${statusLabelTekst(status)}${kokExtra}</span>
+      <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${kokExtra}${inwerkNa}</span>
     </span>`;
   };
 
