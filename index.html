@@ -651,6 +651,8 @@
     </div>
   </div>
 
+  <div id="rooster-keuze-eigen" style="display:flex;gap:8px;max-width:900px;margin:20px auto 0;padding:0 20px"></div>
+
   <div id="s-weekrooster" class="sectie">
     <div class="sectie-titel">Volledig weekrooster</div>
     <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
@@ -3074,16 +3076,6 @@ function renderBewonersModalInhoud() {
         <button class="cam-btn cam-btn-primary" style="margin-top:10px" onclick="verkleinOudeFotos()">Oude foto's verkleinen</button>
         <div id="onderhoud-voortgang" style="font-size:0.78rem;color:var(--muted);margin-top:8px"></div>
       </div>` : ''}
-    ${beheerder ? `
-      <div class="rust-box" style="margin-bottom:16px">
-        <strong style="font-size:0.82rem">🗓️ Actief rooster</strong><br>
-        <span style="font-size:0.75rem;color:var(--subtle)">Welk rooster zien bewoners op het Week-tabblad?</span>
-        <div style="display:flex;gap:8px;margin-top:8px" id="rooster-keuze-knoppen">
-          <button class="cam-btn" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('a')">Digitaal rooster</button>
-          <button class="cam-btn" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('b')">Papieren-stijl rooster</button>
-        </div>
-        <div id="rooster-keuze-status" style="font-size:0.72rem;color:var(--subtle);margin-top:6px"></div>
-      </div>` : ''}
     <div class="sectie-titel"><span class="live-dot"></span>Bewonerslijst voor keuzemenu's (${bewonersCache.length})</div>
     <div id="bewoners-lijst" class="melding-lijst" style="gap:8px">${lijstHtml}</div>
   `;
@@ -3523,9 +3515,11 @@ function prFormatDatum(datum) {
 }
 
 async function laadActiefRoosterType() {
-  if (!supabaseActief) return;
-  const { data } = await sb.from('rooster_instelling').select('actief_rooster').eq('id', 1).maybeSingle();
-  actiefRoosterType = (data && data.actief_rooster) || 'a';
+  try {
+    actiefRoosterType = localStorage.getItem('wwl_rooster_keuze') || 'a';
+  } catch(e) {
+    actiefRoosterType = 'a';
+  }
   toonJuisteRoosterSectie();
 }
 
@@ -3535,19 +3529,27 @@ function toonJuisteRoosterSectie() {
   // Beide secties bestaan; welke getoond wordt bepalen we bij het openen van het Week-tabblad.
 }
 
-async function zetActiefRooster(type) {
-  if (!supabaseActief) return;
-  const statusEl = document.getElementById('rooster-keuze-status');
-  const { error } = await sb.from('rooster_instelling').update({ actief_rooster: type }).eq('id', 1);
-  if (error) { if (statusEl) statusEl.textContent = '⚠️ Opslaan mislukt: ' + error.message; return; }
+function zetActiefRooster(type) {
   actiefRoosterType = type;
-  if (statusEl) statusEl.textContent = `✅ Ingesteld op: ${type === 'a' ? 'Digitaal rooster' : 'Papieren-stijl rooster'}`;
+  try { localStorage.setItem('wwl_rooster_keuze', type); } catch(e) {}
+  renderWeekVolgensInstelling();
+  renderRoosterKeuzeKnoppen();
+}
+
+function renderRoosterKeuzeKnoppen() {
+  const el = document.getElementById('rooster-keuze-eigen');
+  if (!el) return;
+  el.innerHTML = `
+    <button class="cam-btn ${actiefRoosterType==='a'?'cam-btn-primary':''}" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('a')">Digitaal rooster</button>
+    <button class="cam-btn ${actiefRoosterType==='b'?'cam-btn-primary':''}" style="font-size:0.72rem;padding:5px 12px" onclick="zetActiefRooster('b')">Papieren-stijl rooster</button>
+  `;
 }
 
 function renderWeekVolgensInstelling() {
   const digitaalEl = document.getElementById('s-weekrooster');
   const papierEl = document.getElementById('s-papierrooster');
   if (!digitaalEl || !papierEl) return;
+  renderRoosterKeuzeKnoppen();
   if (actiefRoosterType === 'b') {
     digitaalEl.classList.remove('actief');
     papierEl.classList.add('actief');
