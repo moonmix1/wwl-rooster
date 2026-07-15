@@ -605,6 +605,7 @@
   <div id="account-menu-plek" style="position:relative"></div>
   <div style="display:flex;align-items:flex-start;gap:10px">
     <div id="rooster-keuze-header"></div>
+    <button id="actuele-week-btn" onclick="gaNaarActueleWeek()" style="background:#f5d800;color:#1a1a1a;border:none;border-radius:8px;padding:6px 12px;font-size:0.7rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;align-self:center;white-space:nowrap">Actuele week</button>
     <div><div id="klok">--:--</div><div id="datum"></div></div>
   </div>
 </div>
@@ -928,6 +929,14 @@ function weekAWeekStartVoorOffset(offset) {
   const d = new Date();
   d.setDate(d.getDate() + offset * 7);
   return weekStartVan(d);
+}
+
+async function gaNaarActueleWeek() {
+  weekAOffset = 0;
+  await weekALaadVoorOffset();
+  renderWeek();
+  prWeekOffset = 0;
+  renderPapierRooster();
 }
 
 async function weekANavigeer(richting) {
