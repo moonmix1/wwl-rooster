@@ -123,7 +123,7 @@
   .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
     padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .pr-nav-btn:hover { background: #3a3a3a; }
-  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; }
+  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 38px; display: flex; flex-direction: column; justify-content: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
@@ -680,7 +680,7 @@
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
-    <div style="overflow-x:auto">
+    <div id="week-a-tabel-wrap" style="overflow-x:auto">
       <table class="week-tabel">
         <thead><tr>
           <th>Dag</th>
@@ -971,11 +971,11 @@ function renderWeekALabel() {
   }
   if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
 
-  const sectie = document.getElementById('s-weekrooster');
-  if (sectie) {
-    sectie.style.outline = nietActueel ? '2px solid #f5a62355' : 'none';
-    sectie.style.outlineOffset = '6px';
-    sectie.style.borderRadius = '10px';
+  const wrapEl = document.getElementById('week-a-tabel-wrap');
+  if (wrapEl) {
+    wrapEl.style.outline = nietActueel ? '2px solid #f5a623' : 'none';
+    wrapEl.style.outlineOffset = '8px';
+    wrapEl.style.borderRadius = '10px';
   }
 }
 
@@ -3846,11 +3846,11 @@ async function renderPapierRooster() {
     vorigeBtn.style.cursor = magTerug ? 'pointer' : 'not-allowed';
   }
   if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
-  const prSectie = document.getElementById('s-papierrooster');
-  if (prSectie) {
-    prSectie.style.outline = prWeekOffset !== 0 ? '2px solid #f5a62355' : 'none';
-    prSectie.style.outlineOffset = '6px';
-    prSectie.style.borderRadius = '10px';
+  const prLayout = document.querySelector('#s-papierrooster .pr-layout');
+  if (prLayout) {
+    prLayout.style.outline = prWeekOffset !== 0 ? '2px solid #f5a623' : 'none';
+    prLayout.style.outlineOffset = '8px';
+    prLayout.style.borderRadius = '10px';
   }
 
   const dinsdagBody = document.getElementById('pr-dinsdag-body');
