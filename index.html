@@ -123,7 +123,7 @@
   .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
     padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .pr-nav-btn:hover { background: #3a3a3a; }
-  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 38px; display: flex; flex-direction: column; justify-content: center; }
+  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 54px; display: flex; flex-direction: column; justify-content: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
@@ -681,6 +681,7 @@
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
+    <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
     <div id="week-a-tabel-wrap" style="overflow-x:auto">
       <table class="week-tabel">
         <thead><tr>
@@ -954,6 +955,67 @@ async function weekALaadVoorOffset() {
   if (rij) { huidigRooster = rij.dagen; return; }
   if (weekAOffset === 0) { await zorgVoorHuidigeWeek(); return; }
   huidigRooster = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
+}
+
+// ── ROOSTER A: HUIDIGE WEEK KOPIËREN NAAR EEN VOLGENDE WEEK ──
+function renderWeekAKopieerKnop() {
+  const plek = document.getElementById('week-a-kopieer-knop-plek');
+  if (!plek) return;
+  if (!isCoordinator()) { plek.innerHTML = ''; return; }
+  plek.innerHTML = `
+    <button class="cam-btn cam-btn-primary" style="width:100%" onclick="weekAKopieerNaarVolgende()">
+      📋 Kopieer naar ${weekALabelTekstVoorOffset(weekAOffset + 1)}
+    </button>
+    <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
+      Kopieert dit rooster naar de volgende week — bestaande gegevens in die week worden overschreven.
+      &nbsp;·&nbsp;<a href="#" onclick="weekAToonKopieerNaarAndereWeek(); return false;" style="color:var(--subtle);text-decoration:underline">of kopieer naar een andere week</a>
+    </p>`;
+}
+
+async function weekAKopieerNaarOffset(doelOffset) {
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+  const bronWeekStart = weekAWeekStartVoorOffset(weekAOffset);
+  const doelWeekStart = weekAWeekStartVoorOffset(doelOffset);
+  const bronDagen = JSON.parse(JSON.stringify(huidigRooster));
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: doelWeekStart, dagen: bronDagen });
+  if (error) { alert('Kopiëren mislukt: ' + error.message); return; }
+  weekAOffset = doelOffset;
+  await weekALaadVoorOffset();
+  renderWeek();
+  alert('Rooster gekopieerd naar de gekozen week.');
+}
+
+function weekAKopieerNaarVolgende() {
+  const bron = weekAOffset;
+  const doel = bron + 1;
+  const bronLabel = weekALabelTekstVoorOffset(bron);
+  const doelLabel = weekALabelTekstVoorOffset(doel);
+  if (!confirm(`Rooster van "${bronLabel}" kopiëren naar "${doelLabel}"? Bestaande gegevens in die week worden overschreven.`)) return;
+  weekAKopieerNaarOffset(doel);
+}
+
+function weekAToonKopieerNaarAndereWeek() {
+  const bron = weekAOffset;
+  const maxOffset = bron + 3;
+  const opties = [];
+  for (let o = bron + 1; o <= maxOffset; o++) opties.push(o);
+  const keuzeTekst = opties.map(o => `${o - bron}: ${weekALabelTekstVoorOffset(o)}`).join('\n');
+  const invoer = prompt(`Naar hoeveel weken verder wil je kopiëren? Kies 1, 2 of 3:\n\n${keuzeTekst}`, '1');
+  if (invoer === null) return;
+  const stappen = parseInt(invoer, 10);
+  if (!stappen || stappen < 1 || stappen > 3) { alert('Kies 1, 2 of 3.'); return; }
+  const doel = bron + stappen;
+  const bronLabel = weekALabelTekstVoorOffset(bron);
+  const doelLabel = weekALabelTekstVoorOffset(doel);
+  if (!confirm(`Rooster van "${bronLabel}" kopiëren naar "${doelLabel}"? Bestaande gegevens in die week worden overschreven.`)) return;
+  weekAKopieerNaarOffset(doel);
+}
+
+function weekALabelTekstVoorOffset(offset) {
+  const weekStart = weekAWeekStartVoorOffset(offset);
+  const startDatum = new Date(weekStart + 'T00:00:00');
+  const eindDatum = new Date(startDatum); eindDatum.setDate(startDatum.getDate() + 6);
+  return `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
 }
 
 function renderWeekALabel() {
@@ -1664,6 +1726,7 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
 
 function renderWeek() {
   renderWeekALabel();
+  renderWeekAKopieerKnop();
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -3740,11 +3803,17 @@ function renderPrScanKnop() {
   if (!plek) return;
   if (!isCoordinator()) { plek.innerHTML = ''; return; }
   plek.innerHTML = `
-    <button class="cam-btn cam-btn-primary" style="width:100%" onclick="document.getElementById('pr-scan-input').click()">
-      📷 Papieren rooster scannen en automatisch invullen
-    </button>
-    <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
-      Maakt een foto van het handgeschreven rooster en vult deze week automatisch in. Controleer daarna gewoon zoals je gewend bent — een foutje corrigeer je met dezelfde bewerk-knoppen als altijd.
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="cam-btn cam-btn-primary" style="flex:1 1 auto" onclick="document.getElementById('pr-scan-input').click()">
+        📷 Scannen
+      </button>
+      <button class="cam-btn" style="flex:1 1 auto" onclick="prKopieerNaarVolgende()">
+        📋 Kopieer naar ${prLabelTekstVoorOffset(prWeekOffset + 1)}
+      </button>
+    </div>
+    <p style="font-size:0.68rem;color:var(--subtle);margin-top:2px">
+      Maakt een foto van het handgeschreven rooster en vult deze week automatisch in — controleer daarna zoals gewend.
+      &nbsp;·&nbsp;<a href="#" onclick="prToonKopieerNaarAndereWeek(); return false;" style="color:var(--subtle);text-decoration:underline">of kopieer naar een andere week</a>
     </p>`;
 }
 
@@ -4171,6 +4240,50 @@ async function prOpslaanWeek(weekKey, weekData) {
   const { error } = await sb.from('papieren_rooster')
     .upsert({ week_start: weekKey, dagen: weekData, updated_at: new Date().toISOString() }, { onConflict: 'week_start' });
   if (error) { alert('Opslaan mislukt: ' + error.message); }
+}
+
+// ── ROOSTER B: HUIDIGE WEEK KOPIËREN NAAR EEN VOLGENDE WEEK ──
+function prLabelTekstVoorOffset(offset) {
+  const dinsdag = prDinsdagVanWeek(offset);
+  const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
+  return `${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}`;
+}
+
+async function prKopieerNaarOffset(doelOffset) {
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+  const bronDinsdag = prDinsdagVanWeek(prWeekOffset);
+  const bronWeekKey = prDatumKey(bronDinsdag);
+  const doelDinsdag = prDinsdagVanWeek(doelOffset);
+  const doelWeekKey = prDatumKey(doelDinsdag);
+  const bronData = papierRoosterCache[bronWeekKey] || {};
+  const doelData = JSON.parse(JSON.stringify(bronData));
+  await prOpslaanWeek(doelWeekKey, doelData);
+  prWeekOffset = doelOffset;
+  renderPapierRooster();
+  alert('Rooster gekopieerd naar de gekozen week.');
+}
+
+function prKopieerNaarVolgende() {
+  const bron = prWeekOffset;
+  const doel = bron + 1;
+  const bronLabel = prLabelTekstVoorOffset(bron);
+  const doelLabel = prLabelTekstVoorOffset(doel);
+  if (!confirm(`Rooster van "${bronLabel}" kopiëren naar "${doelLabel}"? Bestaande gegevens in die week worden overschreven.`)) return;
+  prKopieerNaarOffset(doel);
+}
+
+function prToonKopieerNaarAndereWeek() {
+  const bron = prWeekOffset;
+  const opties = [1, 2, 3].map(s => `${s}: ${prLabelTekstVoorOffset(bron + s)}`).join('\n');
+  const invoer = prompt(`Naar hoeveel weken verder wil je kopiëren? Kies 1, 2 of 3:\n\n${opties}`, '1');
+  if (invoer === null) return;
+  const stappen = parseInt(invoer, 10);
+  if (!stappen || stappen < 1 || stappen > 3) { alert('Kies 1, 2 of 3.'); return; }
+  const doel = bron + stappen;
+  const bronLabel = prLabelTekstVoorOffset(bron);
+  const doelLabel = prLabelTekstVoorOffset(doel);
+  if (!confirm(`Rooster van "${bronLabel}" kopiëren naar "${doelLabel}"? Bestaande gegevens in die week worden overschreven.`)) return;
+  prKopieerNaarOffset(doel);
 }
 
 async function prHaalNaamOp(nummer) {
