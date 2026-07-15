@@ -671,6 +671,11 @@
   </div>
 
   <div id="s-weekrooster" class="sectie">
+    <div class="pr-nav" style="margin-bottom:14px">
+      <button class="pr-nav-btn" id="week-a-vorige-btn" onclick="weekANavigeer(-1)">◀ Vorige week</button>
+      <div class="pr-week-label" id="week-a-label"></div>
+      <button class="pr-nav-btn" id="week-a-volgende-btn" onclick="weekANavigeer(1)">Volgende week ▶</button>
+    </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
@@ -904,6 +909,75 @@ const ROTATIE_SEED = {
   Frans:   {hist:["C","B","C","K"]}, Jordy:   {hist:["B","K","C","C"]},
   Abdi:    {hist:["C","C","B","C"]}, Johnny:  {hist:["K","K","K","K"]},
 };
+
+let weekAOffset = 0; // 0 = huidige week, -1 = vorige, +1 = volgende
+const WEEK_A_MIN_BASISDATUM = '2026-07-06'; // maandag van de eerst ingevulde week
+
+function weekAMinimaleOffset() {
+  const nu = new Date();
+  const dagNu = nu.getDay() === 0 ? 6 : nu.getDay() - 1;
+  const maandagDezeWeek = new Date(nu);
+  maandagDezeWeek.setHours(0,0,0,0);
+  maandagDezeWeek.setDate(nu.getDate() - dagNu);
+  const basis = new Date(WEEK_A_MIN_BASISDATUM + 'T00:00:00');
+  const verschilWeken = Math.round((maandagDezeWeek - basis) / (7 * 24 * 60 * 60 * 1000));
+  return -verschilWeken;
+}
+
+function weekAWeekStartVoorOffset(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset * 7);
+  return weekStartVan(d);
+}
+
+async function weekANavigeer(richting) {
+  const nieuweOffset = weekAOffset + richting;
+  if (nieuweOffset < weekAMinimaleOffset()) return;
+  weekAOffset = nieuweOffset;
+  await weekALaadVoorOffset();
+  renderWeek();
+}
+
+async function weekALaadVoorOffset() {
+  if (!supabaseActief) return;
+  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
+  const {data: rij} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
+  if (rij) { huidigRooster = rij.dagen; return; }
+  if (weekAOffset === 0) { await zorgVoorHuidigeWeek(); return; }
+  huidigRooster = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
+}
+
+function renderWeekALabel() {
+  const labelEl = document.getElementById('week-a-label');
+  if (!labelEl) return;
+  const nietActueel = weekAOffset !== 0;
+  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
+  const startDatum = new Date(weekStart + 'T00:00:00');
+  const eindDatum = new Date(startDatum); eindDatum.setDate(startDatum.getDate() + 6);
+  const offsetTekst = weekAOffset === 0 ? 'Deze week'
+    : (weekAOffset === -1 ? 'Vorige week'
+    : (weekAOffset === 1 ? 'Volgende week'
+    : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
+  labelEl.innerHTML = `<span style="${nietActueel ? 'color:#f5a623;font-weight:700' : 'font-weight:700;color:#ddd'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span>
+    <span style="font-weight:500;font-size:0.76rem;color:var(--subtle);margin-left:6px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</span>`;
+
+  const vorigeBtn = document.getElementById('week-a-vorige-btn');
+  const volgendeBtn = document.getElementById('week-a-volgende-btn');
+  if (vorigeBtn) {
+    const magTerug = (weekAOffset - 1) >= weekAMinimaleOffset();
+    vorigeBtn.disabled = !magTerug;
+    vorigeBtn.style.opacity = magTerug ? '1' : '0.35';
+    vorigeBtn.style.cursor = magTerug ? 'pointer' : 'not-allowed';
+  }
+  if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
+
+  const sectie = document.getElementById('s-weekrooster');
+  if (sectie) {
+    sectie.style.outline = nietActueel ? '2px solid #f5a62355' : 'none';
+    sectie.style.outlineOffset = '6px';
+    sectie.style.borderRadius = '10px';
+  }
+}
 
 let huidigRooster = JSON.parse(JSON.stringify(ROOSTER_SEED));
 let huidigeRotatieStatus = {};
@@ -1461,7 +1535,7 @@ function toon(id, el) {
   el.classList.add('actief');
   try { localStorage.setItem('wwl_laatste_tab', id); } catch(e) {}
   if(id==='vandaag')     renderVandaag();
-  if(id==='weekrooster') renderWeekVolgensInstelling();
+  if(id==='weekrooster') { weekALaadVoorOffset().then(renderWeekVolgensInstelling); }
   if(id==='rotatie')     renderRotatie();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
   if(id==='regels')      renderRegelsBeheerKnop();
@@ -1580,6 +1654,7 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
 }
 
 function renderWeek() {
+  renderWeekALabel();
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -1664,7 +1739,7 @@ async function verwijderRoosterCel(dag, rolKey) {
   renderWeek();
   renderVandaag();
   if (!supabaseActief) return;
-  const weekStart = weekStartVan(new Date());
+  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
   const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
   if (error) alert('Opslaan mislukt: ' + error.message);
 }
@@ -1677,7 +1752,7 @@ async function bevestigRoosterWijziging(dag, rolKey) {
   renderWeek();
   renderVandaag();
   if (!supabaseActief) return;
-  const weekStart = weekStartVan(new Date());
+  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
   const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
   if (error) alert('Opslaan mislukt: ' + error.message);
 }
@@ -3757,8 +3832,25 @@ async function renderPapierRooster() {
 
   const labelEl = document.getElementById('pr-week-label');
   if (labelEl) {
+    const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
-    labelEl.innerHTML = `${offsetTekst}<br><span style="font-weight:600;font-size:0.76rem;color:#bbb">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
+    labelEl.innerHTML = `<span style="${nietActueel ? 'color:#f5a623' : ''}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span><br><span style="font-weight:600;font-size:0.76rem;color:#bbb">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
+    labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
+  }
+  const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
+  const volgendeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(1)"]');
+  if (vorigeBtn) {
+    const magTerug = (prWeekOffset - 1) >= prMinimaleWeekOffset();
+    vorigeBtn.disabled = !magTerug;
+    vorigeBtn.style.opacity = magTerug ? '1' : '0.35';
+    vorigeBtn.style.cursor = magTerug ? 'pointer' : 'not-allowed';
+  }
+  if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
+  const prSectie = document.getElementById('s-papierrooster');
+  if (prSectie) {
+    prSectie.style.outline = prWeekOffset !== 0 ? '2px solid #f5a62355' : 'none';
+    prSectie.style.outlineOffset = '6px';
+    prSectie.style.borderRadius = '10px';
   }
 
   const dinsdagBody = document.getElementById('pr-dinsdag-body');
