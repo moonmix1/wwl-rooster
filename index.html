@@ -123,7 +123,7 @@
   .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
     padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .pr-nav-btn:hover { background: #3a3a3a; }
-  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 54px; display: flex; flex-direction: column; justify-content: center; }
+  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 62px; display: flex; flex-direction: column; justify-content: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
@@ -1028,8 +1028,9 @@ function renderWeekALabel() {
     : (weekAOffset === -1 ? 'Vorige week'
     : (weekAOffset === 1 ? 'Volgende week'
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
-  labelEl.innerHTML = `<span style="${nietActueel ? 'color:#f5a623;font-weight:700' : 'font-weight:700;color:#ddd'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span>
-    <span style="font-weight:500;font-size:0.76rem;color:var(--subtle);margin-left:6px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</span>`;
+  labelEl.innerHTML = `<span style="${nietActueel ? 'color:#ddd;font-weight:700' : 'font-weight:700;color:#f5a623'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span>
+    <span style="font-weight:500;font-size:0.76rem;color:var(--subtle);margin-left:6px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</span>
+    ${!nietActueel ? '<span style="display:inline-block;width:26px;height:3px;background:#f5d800;border-radius:2px;margin-top:5px"></span>' : '<span style="display:inline-block;width:26px;height:3px;margin-top:5px;visibility:hidden"></span>'}`;
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
   const volgendeBtn = document.getElementById('week-a-volgende-btn');
@@ -3911,7 +3912,7 @@ async function renderPapierRooster() {
   if (labelEl) {
     const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
-    labelEl.innerHTML = `<span style="${nietActueel ? 'color:#f5a623' : ''}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span><br><span style="font-weight:600;font-size:0.76rem;color:#bbb">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span>`;
+    labelEl.innerHTML = `<span style="${nietActueel ? 'color:#ddd' : 'color:#f5a623'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span><br><span style="font-weight:600;font-size:0.76rem;color:#bbb">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span><br>${!nietActueel ? '<span style="display:inline-block;width:26px;height:3px;background:#f5d800;border-radius:2px;margin-top:5px"></span>' : '<span style="display:inline-block;width:26px;height:3px;margin-top:5px;visibility:hidden"></span>'}`;
     labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
