@@ -123,7 +123,7 @@
   .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
     padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .pr-nav-btn:hover { background: #3a3a3a; }
-  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 62px; display: flex; flex-direction: column; justify-content: center; }
+  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
@@ -1028,9 +1028,9 @@ function renderWeekALabel() {
     : (weekAOffset === -1 ? 'Vorige week'
     : (weekAOffset === 1 ? 'Volgende week'
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
-  labelEl.innerHTML = `<span style="${nietActueel ? 'color:#ddd;font-weight:700' : 'font-weight:700;color:#f5a623'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span>
-    <span style="font-weight:500;font-size:0.76rem;color:var(--subtle);margin-left:6px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</span>
-    ${!nietActueel ? '<span style="display:inline-block;width:26px;height:3px;background:#f5d800;border-radius:2px;margin-top:5px"></span>' : '<span style="display:inline-block;width:26px;height:3px;margin-top:5px;visibility:hidden"></span>'}`;
+  labelEl.innerHTML = `
+    <div style="${nietActueel ? 'color:#ddd;font-weight:700' : 'font-weight:700;color:#f5d800'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</div>
+    <div style="font-weight:500;font-size:0.76rem;min-height:2.4em;display:flex;align-items:center;justify-content:center;${nietActueel ? 'color:var(--subtle)' : 'color:#f5d800'}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>`;
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
   const volgendeBtn = document.getElementById('week-a-volgende-btn');
@@ -1044,7 +1044,7 @@ function renderWeekALabel() {
 
   const wrapEl = document.getElementById('week-a-tabel-wrap');
   if (wrapEl) {
-    wrapEl.style.outline = nietActueel ? '2px solid #f5a623' : 'none';
+    wrapEl.style.outline = nietActueel ? '2px solid #f5d800' : 'none';
     wrapEl.style.outlineOffset = '8px';
     wrapEl.style.borderRadius = '10px';
   }
@@ -3803,12 +3803,12 @@ function renderPrScanKnop() {
   if (!plek) return;
   if (!isCoordinator()) { plek.innerHTML = ''; return; }
   plek.innerHTML = `
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-      <button class="cam-btn cam-btn-primary" style="flex:1 1 auto" onclick="document.getElementById('pr-scan-input').click()">
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button class="cam-btn cam-btn-primary" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem" onclick="document.getElementById('pr-scan-input').click()">
         📷 Scannen
       </button>
-      <button class="cam-btn" style="flex:1 1 auto" onclick="prKopieerNaarVolgende()">
-        📋 Kopieer naar ${prLabelTekstVoorOffset(prWeekOffset + 1)}
+      <button class="cam-btn" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem" onclick="prKopieerNaarVolgende()">
+        📋 Kopieer volgende week
       </button>
     </div>
     <p style="font-size:0.68rem;color:var(--subtle);margin-top:2px">
@@ -3912,7 +3912,9 @@ async function renderPapierRooster() {
   if (labelEl) {
     const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
-    labelEl.innerHTML = `<span style="${nietActueel ? 'color:#ddd' : 'color:#f5a623'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</span><br><span style="font-weight:600;font-size:0.76rem;color:#bbb">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</span><br>${!nietActueel ? '<span style="display:inline-block;width:26px;height:3px;background:#f5d800;border-radius:2px;margin-top:5px"></span>' : '<span style="display:inline-block;width:26px;height:3px;margin-top:5px;visibility:hidden"></span>'}`;
+    labelEl.innerHTML = `
+      <div style="${nietActueel ? 'color:#ddd' : 'color:#f5d800'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</div>
+      <div style="font-weight:600;font-size:0.76rem;min-height:2.4em;display:flex;align-items:center;justify-content:center;${nietActueel ? 'color:#bbb' : 'color:#f5d800'}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>`;
     labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
@@ -3926,7 +3928,7 @@ async function renderPapierRooster() {
   if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
   const prLayout = document.querySelector('#s-papierrooster .pr-layout');
   if (prLayout) {
-    prLayout.style.outline = prWeekOffset !== 0 ? '2px solid #f5a623' : 'none';
+    prLayout.style.outline = prWeekOffset !== 0 ? '2px solid #f5d800' : 'none';
     prLayout.style.outlineOffset = '8px';
     prLayout.style.borderRadius = '10px';
   }
@@ -4258,8 +4260,15 @@ async function prKopieerNaarOffset(doelOffset) {
   const { data: bronRij, error: leesError } = await sb.from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
   if (leesError) { alert('Kon brongegevens niet ophalen: ' + leesError.message); return; }
   const bronData = (bronRij && bronRij.dagen) || {};
+  if (!bronRij || !bronRij.dagen || Object.keys(bronRij.dagen).length === 0) {
+    alert('Deze week bevat nog geen gegevens om te kopiëren.');
+    return;
+  }
   const doelData = JSON.parse(JSON.stringify(bronData));
-  await prOpslaanWeek(doelWeekKey, doelData);
+  const { error: schrijfError } = await sb.from('papieren_rooster')
+    .upsert({ week_start: doelWeekKey, dagen: doelData, updated_at: new Date().toISOString() }, { onConflict: 'week_start' });
+  if (schrijfError) { alert('Kopiëren mislukt: ' + schrijfError.message); return; }
+  papierRoosterCache[doelWeekKey] = doelData;
   prWeekOffset = doelOffset;
   await renderPapierRooster();
 }
