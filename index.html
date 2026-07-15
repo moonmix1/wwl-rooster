@@ -123,7 +123,7 @@
   .pr-nav-btn { background: #2a2a2a; border: 1px solid #4a4a4a; color: #ccc; border-radius: 8px;
     padding: 8px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .pr-nav-btn:hover { background: #3a3a3a; }
-  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
+  .pr-week-label { font-weight: 600; color: #ddd; font-size: 0.85rem; text-align: center; min-height: 72px; display: flex; flex-direction: column; justify-content: center; }
   .pr-tabel { width: 100%; border-collapse: collapse; background: #1a1a1a; table-layout: fixed; }
   .pr-tabel th:first-child, .pr-tabel td:first-child { width: 19%; }
   .pr-tabel th:not(:first-child), .pr-tabel td:not(:first-child) { width: 27%; }
@@ -1030,7 +1030,7 @@ function renderWeekALabel() {
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
   labelEl.innerHTML = `
     <div style="${nietActueel ? 'color:#ddd;font-weight:700' : 'font-weight:700;color:#f5d800'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</div>
-    <div style="font-weight:500;font-size:0.76rem;min-height:2.4em;display:flex;align-items:center;justify-content:center;${nietActueel ? 'color:var(--subtle)' : 'color:#f5d800'}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>`;
+    <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;${nietActueel ? 'color:var(--subtle)' : 'color:#f5d800'}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>`;
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
   const volgendeBtn = document.getElementById('week-a-volgende-btn');
@@ -3914,7 +3914,7 @@ async function renderPapierRooster() {
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     labelEl.innerHTML = `
       <div style="${nietActueel ? 'color:#ddd' : 'color:#f5d800'}">${nietActueel ? '🕓 ' : ''}${offsetTekst}</div>
-      <div style="font-weight:600;font-size:0.76rem;min-height:2.4em;display:flex;align-items:center;justify-content:center;${nietActueel ? 'color:#bbb' : 'color:#f5d800'}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>`;
+      <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;${nietActueel ? 'color:#bbb' : 'color:#f5d800'}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>`;
     labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
