@@ -693,6 +693,9 @@
   </div>
 
   <div id="s-papierrooster" class="sectie">
+    <div id="pr-scan-knop-plek" style="margin-bottom:10px"></div>
+    <input type="file" id="pr-scan-input" accept="image/*" capture="environment" style="display:none" onchange="prVerwerkScanFoto(event)">
+    <div id="pr-scan-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;background:#1a2744;border:1.5px solid #3d5a8a;font-size:0.8rem;color:#b0c4de"></div>
     <div class="pr-nav" style="margin-bottom:14px">
       <button class="pr-nav-btn" onclick="prWeekNavigeer(-1)">◀ Vorige week</button>
       <div class="pr-week-label" id="pr-week-label"></div>
@@ -3631,7 +3634,107 @@ function markPoppetjeHtml() {
   </div>`;
 }
 
+// ── ROOSTER SCANNEN (foto van papieren rooster -> automatisch invullen) ──
+function renderPrScanKnop() {
+  const plek = document.getElementById('pr-scan-knop-plek');
+  if (!plek) return;
+  if (!isCoordinator()) { plek.innerHTML = ''; return; }
+  plek.innerHTML = `
+    <button class="cam-btn cam-btn-primary" style="width:100%" onclick="document.getElementById('pr-scan-input').click()">
+      📷 Papieren rooster scannen en automatisch invullen
+    </button>
+    <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
+      Maakt een foto van het handgeschreven rooster en vult deze week automatisch in. Controleer daarna gewoon zoals je gewend bent — een foutje corrigeer je met dezelfde bewerk-knoppen als altijd.
+    </p>`;
+}
+
+function prZetScanStatus(tekst, kleur) {
+  const el = document.getElementById('pr-scan-status');
+  if (!el) return;
+  if (!tekst) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = tekst;
+  el.style.borderColor = kleur || '#3d5a8a';
+  el.style.color = kleur || '#b0c4de';
+}
+
+async function prVerwerkScanFoto(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+
+  prZetScanStatus('⏳ Foto wordt gecomprimeerd...', '#7eb8f7');
+
+  const dataUrl = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+
+  const fotoBase64 = await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX_BREEDTE = 1400;
+      let breedte = img.width, hoogte = img.height;
+      if (breedte > MAX_BREEDTE) {
+        hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
+        breedte = MAX_BREEDTE;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = breedte; canvas.height = hoogte;
+      canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      resolve(jpegDataUrl.split(',')[1]); // alleen de base64-data, zonder 'data:image/jpeg;base64,' prefix
+    };
+    img.src = dataUrl;
+  });
+
+  prZetScanStatus('⏳ AI leest het rooster... dit kan 10-20 seconden duren.', '#7eb8f7');
+
+  const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const weekKey = prDatumKey(dinsdag);
+
+  try {
+    const { data, error } = await sb.functions.invoke('scan-rooster', {
+      body: { fotoBase64, weekStart: weekKey },
+    });
+
+    if (error) { prZetScanStatus('⚠️ Fout bij scannen: ' + error.message, '#f87171'); return; }
+    if (!data || !data.succes) { prZetScanStatus('⚠️ Fout: ' + (data?.error || 'onbekende fout'), '#f87171'); return; }
+
+    await prVerwerkHerkendRooster(data.rooster, weekKey);
+    prZetScanStatus('✅ Rooster automatisch ingevuld! Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+  } catch (e) {
+    prZetScanStatus('⚠️ Onverwachte fout: ' + e.message, '#f87171');
+  }
+}
+
+// Namen van herkende AI-JSON (dinsdag..maandag) omzetten naar de echte datum-sleutels van deze week
+async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
+  const dagVolgordeNamen = ['dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag','maandag'];
+  const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const weekData = papierRoosterCache[weekKey] || {};
+
+  dagVolgordeNamen.forEach((dagNaam, i) => {
+    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
+    const dagKey = prDatumKey(datum);
+    const herkendDag = herkendRooster[dagNaam];
+    if (!herkendDag) return;
+    if (!weekData[dagKey]) weekData[dagKey] = {};
+    ['dag','avond','nacht'].forEach(dienstKey => {
+      if (herkendDag[dienstKey] && herkendDag[dienstKey].naam1) {
+        weekData[dagKey][dienstKey] = herkendDag[dienstKey];
+      }
+    });
+  });
+
+  await prOpslaanWeek(weekKey, weekData);
+  renderPapierRooster();
+}
+
 async function renderPapierRooster() {
+  renderPrScanKnop();
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
   const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
   const weekKey = prDatumKey(dinsdag);
