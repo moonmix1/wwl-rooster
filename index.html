@@ -963,7 +963,7 @@ function renderWeekAKopieerKnop() {
   if (!plek) return;
   if (!isCoordinator()) { plek.innerHTML = ''; return; }
   plek.innerHTML = `
-    <button class="cam-btn cam-btn-primary" style="width:100%" onclick="weekAKopieerNaarVolgende()">
+    <button class="cam-btn" style="width:100%" onclick="weekAKopieerNaarVolgende()">
       📋 Kopieer naar ${weekALabelTekstVoorOffset(weekAOffset + 1)}
     </button>
     <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
@@ -982,7 +982,6 @@ async function weekAKopieerNaarOffset(doelOffset) {
   weekAOffset = doelOffset;
   await weekALaadVoorOffset();
   renderWeek();
-  alert('Rooster gekopieerd naar de gekozen week.');
 }
 
 function weekAKopieerNaarVolgende() {
@@ -4255,12 +4254,13 @@ async function prKopieerNaarOffset(doelOffset) {
   const bronWeekKey = prDatumKey(bronDinsdag);
   const doelDinsdag = prDinsdagVanWeek(doelOffset);
   const doelWeekKey = prDatumKey(doelDinsdag);
-  const bronData = papierRoosterCache[bronWeekKey] || {};
+  const { data: bronRij, error: leesError } = await sb.from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
+  if (leesError) { alert('Kon brongegevens niet ophalen: ' + leesError.message); return; }
+  const bronData = (bronRij && bronRij.dagen) || {};
   const doelData = JSON.parse(JSON.stringify(bronData));
   await prOpslaanWeek(doelWeekKey, doelData);
   prWeekOffset = doelOffset;
-  renderPapierRooster();
-  alert('Rooster gekopieerd naar de gekozen week.');
+  await renderPapierRooster();
 }
 
 function prKopieerNaarVolgende() {
