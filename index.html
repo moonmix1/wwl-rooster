@@ -3620,8 +3620,24 @@ function renderWeekVolgensInstelling() {
   }
 }
 
+const PR_MIN_WEEK_OFFSET_BASISDATUM = '2026-07-07';
+
+function prMinimaleWeekOffset() {
+  const nu = new Date();
+  const dagNu = (nu.getDay() + 5) % 7;
+  const dinsdagDezeWeek = new Date(nu);
+  dinsdagDezeWeek.setHours(0,0,0,0);
+  dinsdagDezeWeek.setDate(nu.getDate() - dagNu);
+  const basis = new Date(PR_MIN_WEEK_OFFSET_BASISDATUM + 'T00:00:00');
+  const verschilMs = dinsdagDezeWeek - basis;
+  const verschilWeken = Math.round(verschilMs / (7 * 24 * 60 * 60 * 1000));
+  return -verschilWeken;
+}
+
 function prWeekNavigeer(richting) {
-  prWeekOffset += richting;
+  const nieuweOffset = prWeekOffset + richting;
+  if (nieuweOffset < prMinimaleWeekOffset()) return;
+  prWeekOffset = nieuweOffset;
   renderPapierRooster();
 }
 
