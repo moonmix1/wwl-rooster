@@ -594,6 +594,13 @@
     .type-grid  { grid-template-columns: 1fr; }
     .header h1  { font-size: 1.4rem; }
     #klok       { font-size: 1.4rem; }
+    /* Rooster A compacter zodat de 5 kolommen (Dag/Bank och/Kook/Bank avond/Corvee) passen zonder horizontaal te scrollen */
+    #week-a-tabel-wrap .week-tabel th { padding: 5px 3px; font-size: 0.6rem; }
+    #week-a-tabel-wrap .week-tabel td { padding: 4px 3px; }
+    #week-a-tabel-wrap .dag-label { font-size: 0.68rem; }
+    #week-a-tabel-wrap .kantoor-label { font-size: 0.55rem; }
+    #week-a-tabel-wrap .pill { padding: 2px 4px; font-size: 0.6rem; }
+    #week-a-tabel-wrap .pill-sub { font-size: 0.5rem; }
   }
   /* ── LEGE-WEEK BANNER ── */
   .lege-week-banner-in-content {
@@ -607,39 +614,42 @@
   .lege-week-banner-in-content.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
   .lege-week-banner-in-content .lwb-pijl { font-size: 1.4rem; display: block; margin-bottom: 4px; }
   /* ── AFZETLINT-EFFECT: verleden (bruin/rood-wit 'OUD') en toekomst (blauw/wit 'NIEUW') ── */
+  /* outline i.p.v. border: neemt geen ruimte in de documentflow in, dus geen springen/krimpen van het rooster zelf bij het bladeren */
   .week-afzetlint-verleden {
     position: relative;
-    outline: none !important;
-    border: 10px solid transparent;
-    background:
-      linear-gradient(#1a1006, #1a1006) padding-box,
-      repeating-linear-gradient(45deg, #8a4a1f 0 40px, #f5f1e8 40px 80px) border-box;
-    border-radius: 14px;
+    outline: 6px solid transparent;
+    outline-offset: 0;
+    border-radius: 10px;
+  }
+  .week-afzetlint-verleden::after {
+    content: ''; position: absolute; inset: -6px; z-index: -1; pointer-events: none;
+    background: repeating-linear-gradient(45deg, #8a4a1f 0 18px, #f5f1e8 18px 36px);
+    border-radius: 12px;
   }
   .week-afzetlint-verleden::before {
-    content: 'OUD • OUD • OUD • OUD • OUD • OUD • OUD • OUD • OUD • OUD • ';
-    position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
-    white-space: nowrap; overflow: hidden; width: calc(100% + 60px);
-    font-weight: 900; font-size: 1.1rem; letter-spacing: 0.15em;
-    color: #f87171; text-shadow: 1px 1px 0 #7a1f1f;
-    pointer-events: none;
+    content: 'OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD ·';
+    position: absolute; top: -20px; left: 0; right: 0;
+    white-space: nowrap; overflow: hidden; text-align: center;
+    font-weight: 800; font-size: 0.62rem; letter-spacing: 0.12em;
+    color: #f87171; pointer-events: none;
   }
   .week-afzetlint-toekomst {
     position: relative;
-    outline: none !important;
-    border: 10px solid transparent;
-    background:
-      linear-gradient(#06121a, #06121a) padding-box,
-      repeating-linear-gradient(45deg, #1d4ed8 0 40px, #f0f6ff 40px 80px) border-box;
-    border-radius: 14px;
+    outline: 6px solid transparent;
+    outline-offset: 0;
+    border-radius: 10px;
+  }
+  .week-afzetlint-toekomst::after {
+    content: ''; position: absolute; inset: -6px; z-index: -1; pointer-events: none;
+    background: repeating-linear-gradient(45deg, #1d4ed8 0 18px, #f0f6ff 18px 36px);
+    border-radius: 12px;
   }
   .week-afzetlint-toekomst::before {
-    content: 'NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • ';
-    position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
-    white-space: nowrap; overflow: hidden; width: calc(100% + 60px);
-    font-weight: 900; font-size: 1.1rem; letter-spacing: 0.15em;
-    color: #93c5fd; text-shadow: 1px 1px 0 #1e3a8a;
-    pointer-events: none;
+    content: 'NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW ·';
+    position: absolute; top: -20px; left: 0; right: 0;
+    white-space: nowrap; overflow: hidden; text-align: center;
+    font-weight: 800; font-size: 0.62rem; letter-spacing: 0.12em;
+    color: #93c5fd; pointer-events: none;
   }
   /* ── GROOT SCHERM: rooster compacter zodat het past zonder scrollen ── */
   @media (min-width: 1100px) and (min-height: 700px) {
