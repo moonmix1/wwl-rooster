@@ -4339,6 +4339,9 @@ async function prKopieerNaarOffset(doelOffset) {
   papierRoosterCache[doelWeekKey] = doelData;
   prWeekOffset = doelOffset;
   await renderPapierRooster(doelData);
+  const renderDinsdag = prDinsdagVanWeek(prWeekOffset);
+  const renderWeekKey = prDatumKey(renderDinsdag);
+  alert('DIAGNOSE NA RENDER:\ndoelOffset=' + doelOffset + '\nprWeekOffset nu=' + prWeekOffset + '\ndoelWeekKey=' + doelWeekKey + '\nrenderWeekKey=' + renderWeekKey + '\nmatch=' + (doelWeekKey === renderWeekKey));
 }
 
 function prKopieerNaarVolgende() {
