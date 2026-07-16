@@ -595,9 +595,22 @@
     .header h1  { font-size: 1.4rem; }
     #klok       { font-size: 1.4rem; }
   }
+  /* ── LEGE-WEEK BANNER ── */
+  #lege-week-banner {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 8000; background: rgba(248,113,113,0.32); border: 2px solid rgba(248,113,113,0.55);
+    color: #fff; padding: 18px 26px; border-radius: 16px; font-size: 1.05rem; font-weight: 800;
+    text-align: center; max-width: 88vw; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px); pointer-events: none;
+    opacity: 0; transition: opacity 2s ease;
+  }
+  #lege-week-banner.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
+  #lege-week-banner .lwb-pijl { font-size: 1.6rem; display: block; margin-bottom: 4px; }
 </style>
 </head>
 <body>
+
+<div id="lege-week-banner"></div>
 
 <div class="header">
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
@@ -911,6 +924,26 @@ const ROTATIE_SEED = {
   Frans:   {hist:["C","B","C","K"]}, Jordy:   {hist:["B","K","C","C"]},
   Abdi:    {hist:["C","C","B","C"]}, Johnny:  {hist:["K","K","K","K"]},
 };
+
+// ── LEGE-WEEK BANNER (generiek voor beide roosters) ──
+let legeWeekBannerTimeout = null;
+function toonLegeWeekBanner(offset) {
+  const el = document.getElementById('lege-week-banner');
+  if (!el || offset === 0) { if (el) { el.classList.remove('zichtbaar'); } return; }
+  const richtingTekst = offset < 0
+    ? 'Blader terug voor de actuele week'
+    : 'Blader verder voor de actuele week';
+  const pijl = offset < 0 ? '◀' : '▶';
+  el.innerHTML = `<span class="lwb-pijl">${pijl}</span>${richtingTekst}`;
+  if (legeWeekBannerTimeout) clearTimeout(legeWeekBannerTimeout);
+  el.style.transition = 'none';
+  el.classList.add('zichtbaar');
+  void el.offsetWidth;
+  legeWeekBannerTimeout = setTimeout(() => {
+    el.style.transition = '';
+    el.classList.remove('zichtbaar');
+  }, 1000);
+}
 
 let weekAOffset = 0; // 0 = huidige week, -1 = vorige, +1 = volgende
 const WEEK_A_MIN_BASISDATUM = '2026-07-06'; // maandag van de eerst ingevulde week
@@ -1727,6 +1760,10 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
 function renderWeek() {
   renderWeekALabel();
   renderWeekAKopieerKnop();
+  const aantalIngevuldA = Object.values(huidigRooster).reduce((som, d) => {
+    return som + ['bankOch','bank','kook','corvee'].filter(k => d[k]).length;
+  }, 0);
+  if (aantalIngevuldA === 0) toonLegeWeekBanner(weekAOffset);
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -3944,6 +3981,12 @@ async function renderPapierRooster() {
     weekData = (data && data.dagen) || {};
   }
   papierRoosterCache[weekKey] = weekData;
+
+  const aantalIngevuldB = Object.keys(weekData).filter(k => k !== '_status').reduce((som, dagKey) => {
+    const dagData = weekData[dagKey] || {};
+    return som + PR_DIENSTEN.filter(dk => dagData[dk] && dagData[dk].naam1).length;
+  }, 0);
+  if (aantalIngevuldB === 0) toonLegeWeekBanner(prWeekOffset);
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
