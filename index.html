@@ -4315,6 +4315,7 @@ async function prKopieerNaarOffset(doelOffset) {
   }
 
   const doelData = JSON.parse(JSON.stringify(bronRij.dagen));
+  alert('DIAGNOSE: bronWeekKey=' + bronWeekKey + '\naantal keys in doelData=' + Object.keys(doelData).length + '\nkeys: ' + Object.keys(doelData).join(', ') + '\nvoorbeeld eerste dag: ' + JSON.stringify(doelData[echteDatumSleutels[0]]));
 
   const { data: bestaandeDoelRij } = await sb
     .from('papieren_rooster').select('week_start').eq('week_start', doelWeekKey).maybeSingle();
