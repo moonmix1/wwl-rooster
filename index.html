@@ -4297,12 +4297,12 @@ function prLabelTekstVoorOffset(offset) {
 }
 
 async function prKopieerNaarOffset(doelOffset) {
-  alert('DIAGNOSE BEGIN: prWeekOffset bij binnenkomst=' + prWeekOffset + ', doelOffset=' + doelOffset);
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
   const bronDinsdag = prDinsdagVanWeek(prWeekOffset);
   const bronWeekKey = prDatumKey(bronDinsdag);
   const doelDinsdag = prDinsdagVanWeek(doelOffset);
   const doelWeekKey = prDatumKey(doelDinsdag);
+  const dagVerschil = Math.round((doelDinsdag - bronDinsdag) / (24 * 60 * 60 * 1000));
 
   const { data: bronRij, error: leesError } = await sb
     .from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
@@ -4317,7 +4317,22 @@ async function prKopieerNaarOffset(doelOffset) {
     return;
   }
 
-  const doelData = JSON.parse(JSON.stringify(bronRij.dagen));
+  // Belangrijk: dag-sleutels zijn concrete datums (bijv. '2026-07-07'), dus die moeten
+  // verschoven worden naar de nieuwe week. Simpelweg de waarden 1-op-1 kopiëren zou de data
+  // onder de oude datums laten staan, waardoor de nieuwe week leeg lijkt.
+  const doelData = {};
+  Object.keys(bronRij.dagen).forEach(sleutel => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(sleutel)) {
+      const oudeDatum = new Date(sleutel + 'T00:00:00');
+      const nieuweDatum = new Date(oudeDatum);
+      nieuweDatum.setDate(oudeDatum.getDate() + dagVerschil);
+      const nieuweSleutel = prDatumKey(nieuweDatum);
+      doelData[nieuweSleutel] = JSON.parse(JSON.stringify(bronRij.dagen[sleutel]));
+    } else {
+      // Niet-datum sleutels (zoals _status) blijven ongewijzigd meegekopieerd.
+      doelData[sleutel] = JSON.parse(JSON.stringify(bronRij.dagen[sleutel]));
+    }
+  });
 
   const { data: bestaandeDoelRij } = await sb
     .from('papieren_rooster').select('week_start').eq('week_start', doelWeekKey).maybeSingle();
@@ -4340,9 +4355,6 @@ async function prKopieerNaarOffset(doelOffset) {
   papierRoosterCache[doelWeekKey] = doelData;
   prWeekOffset = doelOffset;
   await renderPapierRooster(doelData);
-  const renderDinsdag = prDinsdagVanWeek(prWeekOffset);
-  const renderWeekKey = prDatumKey(renderDinsdag);
-  alert('DIAGNOSE NA RENDER:\ndoelOffset=' + doelOffset + '\nprWeekOffset nu=' + prWeekOffset + '\ndoelWeekKey=' + doelWeekKey + '\nrenderWeekKey=' + renderWeekKey + '\nmatch=' + (doelWeekKey === renderWeekKey));
 }
 
 function prKopieerNaarVolgende() {
