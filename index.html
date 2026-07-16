@@ -4305,7 +4305,7 @@ async function prKopieerNaarOffset(doelOffset) {
     .from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
   if (leesError) { alert('Kon brongegevens niet ophalen: ' + leesError.message); return; }
   if (!bronRij || !bronRij.dagen || Object.keys(bronRij.dagen).filter(k => k !== '_status').length === 0) {
-    alert('Deze week bevat nog geen gegevens om te kopiëren.');
+    alert('Deze week bevat nog geen gegevens om te kopiëren.\n(bronWeekKey: ' + bronWeekKey + ')');
     return;
   }
 
@@ -4330,9 +4330,11 @@ async function prKopieerNaarOffset(doelOffset) {
   const { data: controleRij, error: controleError } = await sb
     .from('papieren_rooster').select('dagen').eq('week_start', doelWeekKey).maybeSingle();
   if (controleError || !controleRij || !controleRij.dagen || Object.keys(controleRij.dagen).length === 0) {
-    alert('Waarschuwing: kopiëren leek te lukken, maar de doelweek blijkt toch leeg. Probeer het opnieuw of neem contact op met de beheerder.');
+    alert('DIAGNOSE: schrijven leek te lukken maar controle faalt.\ndoelWeekKey: ' + doelWeekKey + '\ncontroleError: ' + (controleError ? controleError.message : 'geen') + '\ncontroleRij: ' + JSON.stringify(controleRij));
     return;
   }
+
+  alert('DIAGNOSE: succesvol! doelWeekKey=' + doelWeekKey + ', aantal dagen in doelData=' + Object.keys(doelData).length + ', gecontroleerde data=' + JSON.stringify(controleRij.dagen).slice(0,200));
 
   papierRoosterCache[doelWeekKey] = controleRij.dagen;
   prWeekOffset = doelOffset;
