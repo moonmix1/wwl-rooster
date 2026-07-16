@@ -4297,6 +4297,7 @@ function prLabelTekstVoorOffset(offset) {
 }
 
 async function prKopieerNaarOffset(doelOffset) {
+  alert('DIAGNOSE BEGIN: prWeekOffset bij binnenkomst=' + prWeekOffset + ', doelOffset=' + doelOffset);
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
   const bronDinsdag = prDinsdagVanWeek(prWeekOffset);
   const bronWeekKey = prDatumKey(bronDinsdag);
