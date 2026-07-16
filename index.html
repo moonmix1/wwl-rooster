@@ -596,21 +596,19 @@
     #klok       { font-size: 1.4rem; }
   }
   /* ── LEGE-WEEK BANNER ── */
-  #lege-week-banner {
-    position: fixed; top: 72%; left: 53%; transform: translate(-50%, -50%);
-    z-index: 8000; background: rgba(248,113,113,0.32); border: 2px solid rgba(248,113,113,0.55);
-    color: #fff; padding: 18px 26px; border-radius: 16px; font-size: 1.05rem; font-weight: 800;
-    text-align: center; max-width: 88vw; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  .lege-week-banner-in-content {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    z-index: 500; background: rgba(248,113,113,0.32); border: 2px solid rgba(248,113,113,0.55);
+    color: #fff; padding: 16px 24px; border-radius: 16px; font-size: 1rem; font-weight: 800;
+    text-align: center; max-width: 90%; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     backdrop-filter: blur(3px); pointer-events: none;
-    opacity: 0; transition: opacity 2s ease;
+    opacity: 0; transition: opacity 2s ease; white-space: nowrap;
   }
-  #lege-week-banner.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
-  #lege-week-banner .lwb-pijl { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+  .lege-week-banner-in-content.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
+  .lege-week-banner-in-content .lwb-pijl { font-size: 1.4rem; display: block; margin-bottom: 4px; }
 </style>
 </head>
 <body>
-
-<div id="lege-week-banner"></div>
 
 <div class="header">
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
@@ -695,7 +693,8 @@
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
     <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
-    <div id="week-a-tabel-wrap" style="overflow-x:auto">
+    <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
+      <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
       <table class="week-tabel">
         <thead><tr>
           <th>Dag</th>
@@ -721,7 +720,8 @@
       <div class="pr-week-label" id="pr-week-label"></div>
       <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
     </div>
-    <div class="pr-layout">
+    <div class="pr-layout" style="position:relative">
+      <div id="lege-week-banner-b" class="lege-week-banner-in-content"></div>
       <div style="min-width:0;flex:1 1 340px">
         <div style="overflow-x:auto">
           <table class="pr-tabel">
@@ -927,8 +927,8 @@ const ROTATIE_SEED = {
 
 // ── LEGE-WEEK BANNER (generiek voor beide roosters) ──
 let legeWeekBannerTimeout = null;
-function toonLegeWeekBanner(offset) {
-  const el = document.getElementById('lege-week-banner');
+function toonLegeWeekBanner(offset, elementId) {
+  const el = document.getElementById(elementId);
   if (!el || offset === 0) { if (el) { el.classList.remove('zichtbaar'); } return; }
   const richtingTekst = offset < 0
     ? 'Blader verder voor de actuele week'
@@ -1763,7 +1763,7 @@ function renderWeek() {
   const aantalIngevuldA = Object.values(huidigRooster).reduce((som, d) => {
     return som + ['bankOch','bank','kook','corvee'].filter(k => d[k]).length;
   }, 0);
-  if (aantalIngevuldA === 0) toonLegeWeekBanner(weekAOffset);
+  if (aantalIngevuldA === 0) toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -3986,7 +3986,7 @@ async function renderPapierRooster() {
     const dagData = weekData[dagKey] || {};
     return som + PR_DIENSTEN.filter(dk => dagData[dk] && dagData[dk].naam1).length;
   }, 0);
-  if (aantalIngevuldB === 0) toonLegeWeekBanner(prWeekOffset);
+  if (aantalIngevuldB === 0) toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b');
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
