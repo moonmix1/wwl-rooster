@@ -606,6 +606,54 @@
   }
   .lege-week-banner-in-content.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
   .lege-week-banner-in-content .lwb-pijl { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  /* ── AFZETLINT-EFFECT: verleden (bruin/rood-wit 'OUD') en toekomst (blauw/wit 'NIEUW') ── */
+  .week-afzetlint-verleden {
+    position: relative;
+    outline: none !important;
+    border: 10px solid transparent;
+    background:
+      linear-gradient(#1a1006, #1a1006) padding-box,
+      repeating-linear-gradient(45deg, #8a4a1f 0 40px, #f5f1e8 40px 80px) border-box;
+    border-radius: 14px;
+  }
+  .week-afzetlint-verleden::before {
+    content: 'OUD • OUD • OUD • OUD • OUD • OUD • OUD • OUD • OUD • OUD • ';
+    position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap; overflow: hidden; width: calc(100% + 60px);
+    font-weight: 900; font-size: 1.1rem; letter-spacing: 0.15em;
+    color: #f87171; text-shadow: 1px 1px 0 #7a1f1f;
+    pointer-events: none;
+  }
+  .week-afzetlint-toekomst {
+    position: relative;
+    outline: none !important;
+    border: 10px solid transparent;
+    background:
+      linear-gradient(#06121a, #06121a) padding-box,
+      repeating-linear-gradient(45deg, #1d4ed8 0 40px, #f0f6ff 40px 80px) border-box;
+    border-radius: 14px;
+  }
+  .week-afzetlint-toekomst::before {
+    content: 'NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • NIEUW • ';
+    position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap; overflow: hidden; width: calc(100% + 60px);
+    font-weight: 900; font-size: 1.1rem; letter-spacing: 0.15em;
+    color: #93c5fd; text-shadow: 1px 1px 0 #1e3a8a;
+    pointer-events: none;
+  }
+  /* ── GROOT SCHERM: rooster compacter zodat het past zonder scrollen ── */
+  @media (min-width: 1100px) and (min-height: 700px) {
+    .content { padding: 10px 20px; }
+    .pr-tabel td, .pr-tabel th { padding: 4px 8px; }
+    .pr-dag-cel, .pr-cel { min-height: 44px; }
+    .pr-naam { font-size: 0.72rem; }
+    .pr-naam-regel-naam, .pr-naam-regel-top { font-size: 0.9em; }
+    .pr-cel-label, .pr-status-label { font-size: 0.4rem; }
+    .week-tabel td, .week-tabel th { padding: 6px 10px; }
+    .pill { padding: 2px 7px; font-size: 0.68rem; }
+    .sectie-titel { margin-bottom: 6px; }
+    .pr-nav, .header { padding-top: 8px; padding-bottom: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -1077,9 +1125,10 @@ function renderWeekALabel() {
 
   const wrapEl = document.getElementById('week-a-tabel-wrap');
   if (wrapEl) {
-    wrapEl.style.outline = nietActueel ? '2px solid #f5d800' : 'none';
-    wrapEl.style.outlineOffset = '8px';
-    wrapEl.style.borderRadius = '10px';
+    wrapEl.classList.remove('week-afzetlint-verleden', 'week-afzetlint-toekomst');
+    wrapEl.style.outline = 'none';
+    if (weekAOffset < 0) wrapEl.classList.add('week-afzetlint-verleden');
+    else if (weekAOffset > 0) wrapEl.classList.add('week-afzetlint-toekomst');
   }
 }
 
@@ -3965,9 +4014,10 @@ async function renderPapierRooster(voorafGeladenData) {
   if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
   const prLayout = document.querySelector('#s-papierrooster .pr-layout');
   if (prLayout) {
-    prLayout.style.outline = prWeekOffset !== 0 ? '2px solid #f5d800' : 'none';
-    prLayout.style.outlineOffset = '8px';
-    prLayout.style.borderRadius = '10px';
+    prLayout.classList.remove('week-afzetlint-verleden', 'week-afzetlint-toekomst');
+    prLayout.style.outline = 'none';
+    if (prWeekOffset < 0) prLayout.classList.add('week-afzetlint-verleden');
+    else if (prWeekOffset > 0) prLayout.classList.add('week-afzetlint-toekomst');
   }
 
   const dinsdagBody = document.getElementById('pr-dinsdag-body');
