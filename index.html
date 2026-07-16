@@ -931,9 +931,9 @@ function toonLegeWeekBanner(offset) {
   const el = document.getElementById('lege-week-banner');
   if (!el || offset === 0) { if (el) { el.classList.remove('zichtbaar'); } return; }
   const richtingTekst = offset < 0
-    ? 'Blader terug voor de actuele week'
-    : 'Blader verder voor de actuele week';
-  const pijl = offset < 0 ? '◀' : '▶';
+    ? 'Blader verder voor de actuele week'
+    : 'Blader terug voor de actuele week';
+  const pijl = offset < 0 ? '▶' : '◀';
   el.innerHTML = `<span class="lwb-pijl">${pijl}</span>${richtingTekst}`;
   if (legeWeekBannerTimeout) clearTimeout(legeWeekBannerTimeout);
   el.style.transition = 'none';
@@ -4300,18 +4300,41 @@ async function prKopieerNaarOffset(doelOffset) {
   const bronWeekKey = prDatumKey(bronDinsdag);
   const doelDinsdag = prDinsdagVanWeek(doelOffset);
   const doelWeekKey = prDatumKey(doelDinsdag);
-  const { data: bronRij, error: leesError } = await sb.from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
+
+  const { data: bronRij, error: leesError } = await sb
+    .from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
   if (leesError) { alert('Kon brongegevens niet ophalen: ' + leesError.message); return; }
-  const bronData = (bronRij && bronRij.dagen) || {};
-  if (!bronRij || !bronRij.dagen || Object.keys(bronRij.dagen).length === 0) {
+  if (!bronRij || !bronRij.dagen || Object.keys(bronRij.dagen).filter(k => k !== '_status').length === 0) {
     alert('Deze week bevat nog geen gegevens om te kopiëren.');
     return;
   }
-  const doelData = JSON.parse(JSON.stringify(bronData));
-  const { error: schrijfError } = await sb.from('papieren_rooster')
-    .upsert({ week_start: doelWeekKey, dagen: doelData, updated_at: new Date().toISOString() }, { onConflict: 'week_start' });
+
+  const doelData = JSON.parse(JSON.stringify(bronRij.dagen));
+
+  const { data: bestaandeDoelRij } = await sb
+    .from('papieren_rooster').select('week_start').eq('week_start', doelWeekKey).maybeSingle();
+
+  let schrijfError;
+  if (bestaandeDoelRij) {
+    const { error } = await sb.from('papieren_rooster')
+      .update({ dagen: doelData, updated_at: new Date().toISOString() })
+      .eq('week_start', doelWeekKey);
+    schrijfError = error;
+  } else {
+    const { error } = await sb.from('papieren_rooster')
+      .insert([{ week_start: doelWeekKey, dagen: doelData, updated_at: new Date().toISOString() }]);
+    schrijfError = error;
+  }
   if (schrijfError) { alert('Kopiëren mislukt: ' + schrijfError.message); return; }
-  papierRoosterCache[doelWeekKey] = doelData;
+
+  const { data: controleRij, error: controleError } = await sb
+    .from('papieren_rooster').select('dagen').eq('week_start', doelWeekKey).maybeSingle();
+  if (controleError || !controleRij || !controleRij.dagen || Object.keys(controleRij.dagen).length === 0) {
+    alert('Waarschuwing: kopiëren leek te lukken, maar de doelweek blijkt toch leeg. Probeer het opnieuw of neem contact op met de beheerder.');
+    return;
+  }
+
+  papierRoosterCache[doelWeekKey] = controleRij.dagen;
   prWeekOffset = doelOffset;
   await renderPapierRooster();
 }
