@@ -3939,7 +3939,7 @@ async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
   renderPapierRooster();
 }
 
-async function renderPapierRooster() {
+async function renderPapierRooster(voorafGeladenData) {
   renderPrScanKnop();
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
   const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
@@ -3976,7 +3976,9 @@ async function renderPapierRooster() {
   restBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">⏳ Laden…</td></tr>';
 
   let weekData = {};
-  if (supabaseActief) {
+  if (voorafGeladenData) {
+    weekData = voorafGeladenData;
+  } else if (supabaseActief) {
     const { data } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKey).maybeSingle();
     weekData = (data && data.dagen) || {};
   }
@@ -4315,7 +4317,6 @@ async function prKopieerNaarOffset(doelOffset) {
   }
 
   const doelData = JSON.parse(JSON.stringify(bronRij.dagen));
-  alert('DIAGNOSE: bronWeekKey=' + bronWeekKey + '\naantal keys in doelData=' + Object.keys(doelData).length + '\nkeys: ' + Object.keys(doelData).join(', ') + '\nvoorbeeld eerste dag: ' + JSON.stringify(doelData[echteDatumSleutels[0]]));
 
   const { data: bestaandeDoelRij } = await sb
     .from('papieren_rooster').select('week_start').eq('week_start', doelWeekKey).maybeSingle();
@@ -4333,18 +4334,11 @@ async function prKopieerNaarOffset(doelOffset) {
   }
   if (schrijfError) { alert('Kopiëren mislukt: ' + schrijfError.message); return; }
 
-  const { data: controleRij, error: controleError } = await sb
-    .from('papieren_rooster').select('dagen').eq('week_start', doelWeekKey).maybeSingle();
-  if (controleError || !controleRij || !controleRij.dagen || Object.keys(controleRij.dagen).length === 0) {
-    alert('Waarschuwing: kopiëren leek te lukken, maar de doelweek blijkt toch leeg. Probeer het opnieuw of neem contact op met de beheerder.');
-    return;
-  }
-
   alert('Rooster gekopieerd naar de gekozen week.');
 
-  papierRoosterCache[doelWeekKey] = controleRij.dagen;
+  papierRoosterCache[doelWeekKey] = doelData;
   prWeekOffset = doelOffset;
-  await renderPapierRooster();
+  await renderPapierRooster(doelData);
 }
 
 function prKopieerNaarVolgende() {
