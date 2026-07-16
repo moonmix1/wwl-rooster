@@ -4304,8 +4304,13 @@ async function prKopieerNaarOffset(doelOffset) {
   const { data: bronRij, error: leesError } = await sb
     .from('papieren_rooster').select('dagen').eq('week_start', bronWeekKey).maybeSingle();
   if (leesError) { alert('Kon brongegevens niet ophalen: ' + leesError.message); return; }
-  if (!bronRij || !bronRij.dagen || Object.keys(bronRij.dagen).filter(k => k !== '_status').length === 0) {
-    alert('Deze week bevat nog geen gegevens om te kopiëren.\n(bronWeekKey: ' + bronWeekKey + ')');
+  const echteDatumSleutels = Object.keys(bronRij && bronRij.dagen ? bronRij.dagen : {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
+  const heeftEchteDiensten = echteDatumSleutels.some(dagKey => {
+    const dagData = bronRij.dagen[dagKey] || {};
+    return PR_DIENSTEN.some(dienstKey => dagData[dienstKey] && dagData[dienstKey].naam1);
+  });
+  if (!bronRij || !bronRij.dagen || !heeftEchteDiensten) {
+    alert('Deze week bevat nog geen ingevulde diensten om te kopiëren.');
     return;
   }
 
@@ -4330,11 +4335,11 @@ async function prKopieerNaarOffset(doelOffset) {
   const { data: controleRij, error: controleError } = await sb
     .from('papieren_rooster').select('dagen').eq('week_start', doelWeekKey).maybeSingle();
   if (controleError || !controleRij || !controleRij.dagen || Object.keys(controleRij.dagen).length === 0) {
-    alert('DIAGNOSE: schrijven leek te lukken maar controle faalt.\ndoelWeekKey: ' + doelWeekKey + '\ncontroleError: ' + (controleError ? controleError.message : 'geen') + '\ncontroleRij: ' + JSON.stringify(controleRij));
+    alert('Waarschuwing: kopiëren leek te lukken, maar de doelweek blijkt toch leeg. Probeer het opnieuw of neem contact op met de beheerder.');
     return;
   }
 
-  alert('DIAGNOSE: succesvol! doelWeekKey=' + doelWeekKey + ', aantal dagen in doelData=' + Object.keys(doelData).length + ', gecontroleerde data=' + JSON.stringify(controleRij.dagen).slice(0,200));
+  alert('Rooster gekopieerd naar de gekozen week.');
 
   papierRoosterCache[doelWeekKey] = controleRij.dagen;
   prWeekOffset = doelOffset;
