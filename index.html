@@ -779,7 +779,7 @@
       <div class="pr-week-label" id="pr-week-label"></div>
       <button class="pr-nav-btn" onclick="prWeekNavigeer(1)">Volgende week ▶</button>
     </div>
-    <div class="pr-layout" style="position:relative">
+    <div class="pr-layout" id="pr-layout-wrap" style="position:relative">
       <div id="lege-week-banner-b" class="lege-week-banner-in-content"></div>
       <div style="min-width:0;flex:1 1 340px">
         <div style="overflow-x:auto">
@@ -4493,6 +4493,34 @@ async function prVerwijderCel(weekKey, dagKey, dienstKey) {
   sluitGPModal();
   renderPapierRooster();
 }
+
+// ── SWIPE-NAVIGATIE TUSSEN WEKEN ──
+function initWeekSwipe(elementId, navigeerFn) {
+  const el = document.getElementById(elementId);
+  if (!el || el.dataset.swipeInit) return;
+  el.dataset.swipeInit = '1';
+  let startX = 0, startY = 0, actief = false;
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    actief = true;
+  }, { passive: true });
+  el.addEventListener('touchend', (e) => {
+    if (!actief) return;
+    actief = false;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+    if (Math.abs(diffX) < 55 || Math.abs(diffX) < Math.abs(diffY) * 1.4) return;
+    navigeerFn(diffX < 0 ? 1 : -1);
+  }, { passive: true });
+}
+setInterval(() => {
+  initWeekSwipe('week-a-tabel-wrap', weekANavigeer);
+  initWeekSwipe('pr-layout-wrap', prWeekNavigeer);
+}, 800);
 
 initSupabase();
 
