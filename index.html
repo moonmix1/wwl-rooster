@@ -613,7 +613,6 @@
   }
   .lege-week-banner-in-content.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
   .lege-week-banner-in-content .lwb-pijl { font-size: 1.4rem; display: block; margin-bottom: 4px; }
-  #lege-week-banner-a2, #lege-week-banner-b2 { top: 140px; padding: 16px 24px; }
   /* ── AFZETLINT-EFFECT: verleden (bruin/rood-wit 'OUD') en toekomst (blauw/wit 'NIEUW') ── */
   /* outline i.p.v. border: neemt geen ruimte in de documentflow in, dus geen springen/krimpen van het rooster zelf bij het bladeren */
   .week-afzetlint-verleden {
@@ -754,7 +753,6 @@
     <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
     <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
       <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
-      <div id="lege-week-banner-a2" class="lege-week-banner-in-content"></div>
       <table class="week-tabel">
         <thead><tr>
           <th>Dag</th>
@@ -783,7 +781,6 @@
     </div>
     <div class="pr-layout" id="pr-layout-wrap" style="position:relative">
       <div id="lege-week-banner-b" class="lege-week-banner-in-content"></div>
-      <div id="lege-week-banner-b2" class="lege-week-banner-in-content"></div>
       <div style="min-width:0;flex:1 1 340px">
         <div style="overflow-x:auto">
           <table class="pr-tabel">
@@ -995,8 +992,15 @@ function toonLegeWeekBanner(offset, elementId) {
   const richtingTekst = offset < 0
     ? 'Blader verder voor de actuele week'
     : 'Blader terug voor de actuele week';
-  const pijl = offset < 0 ? '▶' : '◀';
-  el.innerHTML = `<span class="lwb-pijl">${pijl}</span>${richtingTekst}`;
+  const pijl = offset < 0 ? '⟶' : '⟵';
+  if (offset < 0) {
+    el.style.background = 'rgba(96,165,250,0.32)';
+    el.style.borderColor = 'rgba(96,165,250,0.55)';
+  } else {
+    el.style.background = 'rgba(248,113,113,0.32)';
+    el.style.borderColor = 'rgba(248,113,113,0.55)';
+  }
+  el.innerHTML = `<span class="lwb-pijl" style="font-size:2.2rem">${pijl}</span>${richtingTekst}`;
   if (legeWeekBannerTimeout) clearTimeout(legeWeekBannerTimeout);
   el.style.transition = 'none';
   el.classList.add('zichtbaar');
@@ -1828,7 +1832,7 @@ function renderWeek() {
   const aantalIngevuldA = Object.values(huidigRooster).reduce((som, d) => {
     return som + ['bankOch','bank','kook','corvee'].filter(k => d[k]).length;
   }, 0);
-  if (aantalIngevuldA === 0) { toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a'); toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a2'); }
+  if (aantalIngevuldA === 0) toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -4061,7 +4065,7 @@ async function renderPapierRooster(voorafGeladenData) {
     const dagData = weekData[dagKey] || {};
     return som + PR_DIENSTEN.filter(dk => dagData[dk] && dagData[dk].naam1).length;
   }, 0);
-  if (aantalIngevuldB === 0) { toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b'); toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b2'); }
+  if (aantalIngevuldB === 0) toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b');
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
