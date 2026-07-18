@@ -1071,7 +1071,7 @@ function renderWeekAKopieerKnop() {
   const zichtbaar = weekAOffset >= -2 && weekAOffset <= 1;
   plek.innerHTML = `
     <div style="${zichtbaar ? '' : 'visibility:hidden'}">
-      <button class="cam-btn" style="width:100%;background:#2f6fe0;border:2px solid #12328a;color:#fff" onclick="weekAToonKopieerNaarAndereWeek()">
+      <button class="cam-btn" style="width:100%;background:#2f6fe0;border:4px solid #12328a;color:#fff" onclick="weekAToonKopieerNaarAndereWeek()">
         📋 Kopieer rooster naar een toekomstige week
       </button>
       <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
@@ -3933,7 +3933,7 @@ function renderPrScanKnop() {
       Maakt een foto van het handgeschreven rooster en vult deze week automatisch in — controleer daarna zoals gewend.
     </p>
     <div style="margin-bottom:6px;${(prWeekOffset >= -2 && prWeekOffset <= 1) ? '' : 'visibility:hidden'}">
-      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#2f6fe0;border:2px solid #12328a;color:#fff" onclick="prToonKopieerNaarAndereWeek()">
+      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#2f6fe0;border:4px solid #12328a;color:#fff" onclick="prToonKopieerNaarAndereWeek()">
         📋 Kopieer rooster naar een toekomstige week
       </button>
     </div>`;
