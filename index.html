@@ -1094,7 +1094,7 @@ async function weekAKopieerNaarOffset(doelOffset) {
 
 function weekAToonKopieerNaarAndereWeek() {
   const bron = weekAOffset;
-  const minDoel = Math.max(bron, 0);
+  const minDoel = Math.max(bron + 1, 0);
   const maxDoel = Math.min(bron + 2, 2);
   const opties = [];
   for (let o = minDoel; o <= maxDoel; o++) opties.push(o);
@@ -4458,7 +4458,7 @@ async function prKopieerNaarOffset(doelOffset) {
 
 function prToonKopieerNaarAndereWeek() {
   const bron = prWeekOffset;
-  const minDoel = Math.max(bron, 0);
+  const minDoel = Math.max(bron + 1, 0);
   const maxDoel = Math.min(bron + 2, 2);
   const opties = [];
   for (let o = minDoel; o <= maxDoel; o++) opties.push(o);
