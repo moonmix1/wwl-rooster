@@ -1136,9 +1136,19 @@ function renderWeekALabel() {
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
   const toekomst = weekAOffset > 0;
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
-  labelEl.innerHTML = `
-    <div style="color:${kleur};font-weight:700;white-space:nowrap">${nietActueel ? '🕓 ' : ''}${offsetTekst}</div>
-    <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>`;
+  if (weekAOffset === 0) {
+    labelEl.innerHTML = `
+      <div style="position:relative;border:3px solid #f5d800;border-radius:6px;padding:8px 20px;display:inline-block;margin:0 auto">
+        <div style="position:absolute;top:-3px;left:-3px;width:16px;height:3px;background:#f5d800;transform:rotate(35deg);transform-origin:left center"></div>
+        <div style="position:absolute;bottom:-3px;right:-3px;width:16px;height:3px;background:#f5d800;transform:rotate(35deg);transform-origin:right center"></div>
+        <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+        <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:2px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
+      </div>`;
+  } else {
+    labelEl.innerHTML = `
+      <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
+      <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>`;
+  }
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
   const volgendeBtn = document.getElementById('week-a-volgende-btn');
@@ -4033,9 +4043,19 @@ async function renderPapierRooster(voorafGeladenData) {
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
-    labelEl.innerHTML = `
-      <div style="color:${kleur};white-space:nowrap">${nietActueel ? '🕓 ' : ''}${offsetTekst}</div>
-      <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>`;
+    if (prWeekOffset === 0) {
+      labelEl.innerHTML = `
+        <div style="position:relative;border:3px solid #f5d800;border-radius:6px;padding:8px 20px;display:inline-block;margin:0 auto">
+          <div style="position:absolute;top:-3px;left:-3px;width:16px;height:3px;background:#f5d800;transform:rotate(35deg);transform-origin:left center"></div>
+          <div style="position:absolute;bottom:-3px;right:-3px;width:16px;height:3px;background:#f5d800;transform:rotate(35deg);transform-origin:right center"></div>
+          <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+          <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:2px">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
+        </div>`;
+    } else {
+      labelEl.innerHTML = `
+        <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
+        <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>`;
+    }
     labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
