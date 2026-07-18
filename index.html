@@ -1068,10 +1068,10 @@ function renderWeekAKopieerKnop() {
   const plek = document.getElementById('week-a-kopieer-knop-plek');
   if (!plek) return;
   if (!isCoordinator()) { plek.innerHTML = ''; return; }
-  if (weekAOffset < -2 || weekAOffset > 0) { plek.innerHTML = ''; return; }
+  if (weekAOffset < -2 || weekAOffset > 1) { plek.innerHTML = ''; return; }
   plek.innerHTML = `
-    <button class="cam-btn" style="width:100%;background:#3b5998;border-color:#3b5998;color:#fff" onclick="weekAToonKopieerNaarAndereWeek()">
-      📋 Kopieer rooster naar actuele of toekomstige week
+    <button class="cam-btn" style="width:100%;background:#2050c7;border-color:#2050c7;color:#fff" onclick="weekAToonKopieerNaarAndereWeek()">
+      📋 Kopieer naar een toekomstige week
     </button>
     <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
       Kopieert dit rooster naar een andere week — bestaande gegevens in die week worden overschreven.
@@ -1093,7 +1093,7 @@ async function weekAKopieerNaarOffset(doelOffset) {
 function weekAToonKopieerNaarAndereWeek() {
   const bron = weekAOffset;
   const minDoel = Math.max(bron, 0);
-  const maxDoel = bron + 2;
+  const maxDoel = Math.min(bron + 2, 2);
   const opties = [];
   for (let o = minDoel; o <= maxDoel; o++) opties.push(o);
   const keuzeTekst = opties.map((o, i) => `${i + 1}: ${weekALabelTekstVoorOffset(o)}`).join('\n');
@@ -3927,10 +3927,10 @@ function renderPrScanKnop() {
         🖼️ Bestand kiezen
       </button>
     </div>
-    ${(prWeekOffset >= -2 && prWeekOffset <= 0) ? `
+    ${(prWeekOffset >= -2 && prWeekOffset <= 1) ? `
     <div style="margin-bottom:6px">
-      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#3b5998;border-color:#3b5998;color:#fff" onclick="prToonKopieerNaarAndereWeek()">
-        📋 Kopieer rooster naar actuele of toekomstige week
+      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#2050c7;border-color:#2050c7;color:#fff" onclick="prToonKopieerNaarAndereWeek()">
+        📋 Kopieer naar een toekomstige week
       </button>
     </div>` : ''}
     <p style="font-size:0.68rem;color:var(--subtle);margin-top:2px">
@@ -4458,7 +4458,7 @@ async function prKopieerNaarOffset(doelOffset) {
 function prToonKopieerNaarAndereWeek() {
   const bron = prWeekOffset;
   const minDoel = Math.max(bron, 0);
-  const maxDoel = bron + 2;
+  const maxDoel = Math.min(bron + 2, 2);
   const opties = [];
   for (let o = minDoel; o <= maxDoel; o++) opties.push(o);
   const keuzeTekst = opties.map((o, i) => `${i + 1}: ${prLabelTekstVoorOffset(o)}`).join('\n');
