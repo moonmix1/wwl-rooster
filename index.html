@@ -1835,10 +1835,11 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
 function renderWeek() {
   renderWeekALabel();
   renderWeekAKopieerKnop();
-  const aantalIngevuldA = Object.values(huidigRooster).reduce((som, d) => {
+  const dagenA = Object.values(huidigRooster);
+  const aantalIngevuldA = dagenA.reduce((som, d) => {
     return som + ['bankOch','bank','kook','corvee'].filter(k => d[k]).length;
   }, 0);
-  if (aantalIngevuldA === 0) toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
+  if (weekAOffset !== 0) toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -4067,11 +4068,12 @@ async function renderPapierRooster(voorafGeladenData) {
   }
   papierRoosterCache[weekKey] = weekData;
 
-  const aantalIngevuldB = Object.keys(weekData).filter(k => k !== '_status').reduce((som, dagKey) => {
+  const dagenB = Object.keys(weekData).filter(k => k !== '_status');
+  const aantalIngevuldB = dagenB.reduce((som, dagKey) => {
     const dagData = weekData[dagKey] || {};
     return som + PR_DIENSTEN.filter(dk => dagData[dk] && dagData[dk].naam1).length;
   }, 0);
-  if (aantalIngevuldB === 0) toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b');
+  if (prWeekOffset !== 0) toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b');
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
