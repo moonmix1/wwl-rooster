@@ -606,10 +606,11 @@
   .lege-week-banner-in-content {
     position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
     z-index: 500; background: rgba(248,113,113,0.32); border: 2px solid rgba(248,113,113,0.55);
-    color: #fff; padding: 34px 24px 16px 24px; border-radius: 16px; font-size: 1rem; font-weight: 800;
+    color: #fff3b0; padding: 34px 24px 16px 24px; border-radius: 16px; font-size: 1rem; font-weight: 800;
     text-align: center; max-width: 90%; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     backdrop-filter: blur(3px); pointer-events: none;
     opacity: 0; transition: opacity 2s ease; white-space: nowrap;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
   .lege-week-banner-in-content.zichtbaar { opacity: 1; transition: opacity 0.15s ease; }
   .lege-week-banner-in-content .lwb-pijl { font-size: 1.4rem; display: block; margin-bottom: 4px; }
@@ -997,8 +998,8 @@ function toonLegeWeekBanner(offset, elementId) {
     el.style.background = 'rgba(96,165,250,0.32)';
     el.style.borderColor = 'rgba(96,165,250,0.55)';
   } else {
-    el.style.background = 'rgba(248,113,113,0.32)';
-    el.style.borderColor = 'rgba(248,113,113,0.55)';
+    el.style.background = 'rgba(248,113,113,0.22)';
+    el.style.borderColor = 'rgba(248,113,113,0.45)';
   }
   el.innerHTML = `<span class="lwb-pijl" style="font-size:2.2rem">${pijl}</span>${richtingTekst}`;
   if (legeWeekBannerTimeout) clearTimeout(legeWeekBannerTimeout);
