@@ -772,6 +772,7 @@
   <div id="s-papierrooster" class="sectie">
     <div id="pr-scan-knop-plek" style="margin-bottom:10px"></div>
     <input type="file" id="pr-scan-input" accept="image/*" style="display:none" onchange="prVerwerkScanFoto(event)">
+    <input type="file" id="pr-scan-input-camera" accept="image/*" capture="environment" style="display:none" onchange="prVerwerkScanFoto(event)">
     <div id="pr-scan-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;background:#1a2744;border:1.5px solid #3d5a8a;font-size:0.8rem;color:#b0c4de"></div>
     <div class="pr-nav" style="margin-bottom:14px">
       <button class="pr-nav-btn" onclick="prWeekNavigeer(-1)">◀ Vorige week</button>
@@ -3900,10 +3901,15 @@ function renderPrScanKnop() {
   if (!isCoordinator()) { plek.innerHTML = ''; return; }
   plek.innerHTML = `
     <div style="display:flex;gap:8px;margin-bottom:6px">
-      <button class="cam-btn cam-btn-primary" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem" onclick="document.getElementById('pr-scan-input').click()">
-        📷 Scannen
+      <button class="cam-btn cam-btn-primary" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem" onclick="document.getElementById('pr-scan-input-camera').click()">
+        📷 Foto maken
       </button>
-      <button class="cam-btn" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem" onclick="prKopieerNaarVolgende()">
+      <button class="cam-btn cam-btn-primary" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem" onclick="document.getElementById('pr-scan-input').click()">
+        🖼️ Bestand kiezen
+      </button>
+    </div>
+    <div style="margin-bottom:6px">
+      <button class="cam-btn" style="width:100%;font-size:0.78rem" onclick="prKopieerNaarVolgende()">
         📋 Kopieer volgende week
       </button>
     </div>
