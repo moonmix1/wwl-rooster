@@ -4298,6 +4298,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
              style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;font-size:1px">
              ${statusOpties(status)}
              <option value="__huisje__">${huisjeOptieTekst}</option>
+             <option value="__verwijder__">🗑 naam verwijderen</option>
            </select>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
@@ -4330,6 +4331,11 @@ async function prVerwerkUrenKeuze(weekKey, naam, selectEl) {
   const waarde = selectEl.value;
   if (waarde === '__huisje__') {
     await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
+    renderPapierRooster();
+    return;
+  }
+  if (waarde === '__verwijder__') {
+    await bewonerVerwijderen(naam);
     renderPapierRooster();
     return;
   }
