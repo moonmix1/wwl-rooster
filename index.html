@@ -4392,9 +4392,13 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>Status wijzigen</h2>
     <p class="gp-modal-intro">${escHtml(naam)}</p>
-    <div style="margin-top:10px">${statusRijenHtml}${huisjeRijHtml}${verwijderRijHtml}</div>
+    <div id="pr-uren-keuze-inhoud" style="margin-top:10px;pointer-events:none">${statusRijenHtml}${huisjeRijHtml}${verwijderRijHtml}</div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
+  setTimeout(() => {
+    const inhoud = document.getElementById('pr-uren-keuze-inhoud');
+    if (inhoud) inhoud.style.pointerEvents = 'auto';
+  }, 400);
 }
 
 async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
