@@ -4398,10 +4398,6 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
   const labelOpties = (huidig) => `
     <option value="" ${!huidig?'selected':''}>— geen label —</option>
     <option value="kok" ${huidig==='kok'?'selected':''}>🍳 kok</option>`;
-  const huisjeCheckbox = (naam, veldId) => naam ? `
-      <label style="display:flex;align-items:center;gap:8px;margin:-6px 0 14px;font-weight:400;text-transform:none;font-size:0.82rem">
-        <input type="checkbox" id="${veldId}" ${bewonersBeheerSet.has(naam)?'checked':''} style="width:auto"> 🏠 ${escHtml(naam)} heeft een beheerderswoning
-      </label>` : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>✏️ ${PR_DIENST_NAMEN[dienstKey]}</h2>
     <p class="gp-modal-intro">${dagKey}<br><span style="font-size:0.75rem;color:var(--subtle)">Status (vrijwilliger/gast/oud bewoner/etc.) stel je in bij "Uren deze week" rechts.</span></p>
@@ -4413,7 +4409,6 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
       </div>
       <label>Label bij naam 1 (optioneel)</label>
       <select id="pr-cel-label1">${labelOpties(info.label1 || '')}</select>
-      ${huisjeCheckbox(info.naam1, 'pr-cel-huisje1')}
       <label>Naam 2 (optioneel)</label>
       <select id="pr-cel-naam2" onchange="prCheckNieuweNaam(this,'2')">${prNaamOpties(info.naam2 || '')}</select>
       <div id="pr-nieuwe-naam2-veld" style="display:none">
@@ -4421,7 +4416,6 @@ function prBewerkCel(weekKey, dagKey, dienstKey) {
       </div>
       <label>Label bij naam 2 (optioneel)</label>
       <select id="pr-cel-label2">${labelOpties(info.label2 || '')}</select>
-      ${huisjeCheckbox(info.naam2, 'pr-cel-huisje2')}
       <label>Opmerking (optioneel, geel briefje)</label>
       <input type="text" id="pr-cel-opmerking" placeholder="bijv. 'komt iets later'" value="${escHtml(info.opmerking || '')}">
       <button class="verstuur-btn" onclick="prBevestigCel('${weekKey}','${dagKey}','${dienstKey}')">Opslaan →</button>
