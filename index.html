@@ -1133,12 +1133,10 @@ function renderWeekALabel() {
   if (weekAOffset === 0) {
     labelEl.innerHTML = `
       <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin:0 auto">
-        <div style="flex:1 1 0;height:5px;background:#b35900;min-width:6px"></div>
-        <div style="position:relative;border:8px solid #b35900;outline:1px solid #f5d800;outline-offset:-1px;border-radius:6px;padding:8px 26px;display:inline-block;background:#b35900">
+        <div style="position:relative;border:8px solid #fff;border-radius:6px;padding:8px 26px;display:inline-block;background:#b35900">
           <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
-        <div style="flex:1 1 0;height:5px;background:#b35900;min-width:6px"></div>
       </div>`;
   } else {
     labelEl.innerHTML = `
@@ -4041,12 +4039,10 @@ async function renderPapierRooster(voorafGeladenData) {
     if (prWeekOffset === 0) {
       labelEl.innerHTML = `
         <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin:0 auto">
-          <div style="flex:1 1 0;height:5px;background:#b35900;min-width:6px"></div>
-          <div style="position:relative;border:8px solid #b35900;outline:1px solid #f5d800;outline-offset:-1px;border-radius:6px;padding:8px 26px;display:inline-block;background:#b35900">
+          <div style="position:relative;border:8px solid #fff;border-radius:6px;padding:8px 26px;display:inline-block;background:#b35900">
             <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
             <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
           </div>
-          <div style="flex:1 1 0;height:5px;background:#b35900;min-width:6px"></div>
         </div>`;
     } else {
       labelEl.innerHTML = `
