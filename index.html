@@ -4326,37 +4326,64 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
 function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
   const heeftHuisje = bewonersBeheerSet.has(naam);
-  const huisjeTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
-  const OPTIES = [
+  const statusBlokkeertHuisje = ['gast', 'gast_week', 'inwerk'].includes(huidigeStatus);
+  const huisjeTekst = heeftHuisje ? '🏠 heeft beheerderswoning' : '🏠 beheerderswoning';
+
+  const toggle = (aan, uitgeschakeld) => `
+    <span style="position:relative;flex-shrink:0;width:38px;height:22px;border-radius:11px;margin-right:12px;
+      background:${uitgeschakeld ? '#3a3a3a' : (aan ? '#1f9e4a' : '#555')};opacity:${uitgeschakeld ? '0.5' : '1'};
+      display:inline-block;transition:background 0.15s">
+      <span style="position:absolute;top:2px;left:${aan ? '18px' : '2px'};width:18px;height:18px;border-radius:50%;
+        background:#fff;transition:left 0.15s"></span>
+    </span>`;
+
+  const STATUSSEN = [
     { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff' },
     { waarde: 'gast', tekst: 'gast', bg: '#7a2530', kleur: '#fff' },
-    { waarde: 'inwerk', tekst: 'gast (inwerkperiode)', bg: '#7a2530', kleur: '#fff', strepen: '#f5d800', rand: '#f5d800' },
+    { waarde: 'inwerk', tekst: 'gast (inwerkperiode)', bg: '#7a2530', kleur: '#fff', strepen: '#f5d800', rand: '#f5d800', randDikte: '4px' },
     { waarde: 'gast_week', tekst: 'gast van de week', bg: '#774e09', kleur: '#fff' },
     { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff' },
     { waarde: 'extern', tekst: 'extern persoon', bg: '#4a2e6f', kleur: '#fff' },
-    { waarde: '__huisje__', tekst: huisjeTekst, bg: '#888888', kleur: '#fff' },
-    { waarde: '__verwijder__', tekst: '🗑 naam verwijderen', bg: '#7a2530', kleur: '#fff', strepen: '#fff', rand: '#fff' },
   ];
   const naamVeilig = naam.replace(/'/g, "\\'");
-  const rijenHtml = OPTIES.map(o => {
-    const isHuidig = o.waarde === huidigeStatus;
+
+  const statusRijenHtml = STATUSSEN.map(o => {
+    const aan = o.waarde === huidigeStatus;
     const strepenHtml = o.strepen
       ? `<span style="flex:1 1 0;min-width:24px;margin-left:10px;align-self:stretch;border-radius:4px;
           background:repeating-linear-gradient(45deg, ${o.strepen} 0 6px, transparent 6px 12px)"></span>`
       : '';
-    const randKleur = isHuidig ? '#f5d800' : (o.rand || 'transparent');
-    const randDikte = isHuidig ? '2px' : (o.rand ? '1px' : '2px');
     return `<button type="button" onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','${o.waarde}')"
-      style="display:flex;align-items:center;width:100%;text-align:left;padding:12px 16px;margin-bottom:6px;border-radius:8px;
-      border:${randDikte} solid ${randKleur};background:${o.bg};color:${o.kleur};
-      font-weight:700;font-size:0.92rem;cursor:pointer">
+      style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border-radius:8px;
+      border:${o.randDikte || '2px'} solid ${o.rand || 'transparent'};background:${o.bg};color:${o.kleur};
+      font-weight:700;font-size:0.9rem;cursor:pointer">
+      ${toggle(aan, false)}
       <span style="white-space:nowrap">${o.tekst}</span>${strepenHtml}
       </button>`;
   }).join('');
+
+  const huisjeRijHtml = `<button type="button" ${statusBlokkeertHuisje ? 'disabled' : `onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','__huisje__')"`}
+      style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border-radius:8px;
+      border:2px solid transparent;background:#888888;color:#fff;
+      font-weight:700;font-size:0.9rem;${statusBlokkeertHuisje ? 'cursor:not-allowed' : 'cursor:pointer'};opacity:${statusBlokkeertHuisje ? '0.6' : '1'}">
+      ${toggle(heeftHuisje, statusBlokkeertHuisje)}
+      <span style="white-space:nowrap">${huisjeTekst}</span>
+      </button>
+      ${statusBlokkeertHuisje ? `<p style="font-size:0.68rem;color:var(--subtle);margin:-2px 0 10px 4px">Niet mogelijk in combinatie met gast, gast van de week of inwerkperiode.</p>` : ''}`;
+
+  const verwijderRijHtml = `<button type="button" onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','__verwijder__')"
+      style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-top:10px;border-radius:8px;
+      border:4px solid #fff;background:#7a2530;color:#fff;
+      font-weight:700;font-size:0.9rem;cursor:pointer">
+      <span style="white-space:nowrap">🗑 naam verwijderen</span>
+      <span style="flex:1 1 0;min-width:24px;margin-left:10px;align-self:stretch;border-radius:4px;
+        background:repeating-linear-gradient(45deg, #fff 0 6px, transparent 6px 12px)"></span>
+      </button>`;
+
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>Status wijzigen</h2>
     <p class="gp-modal-intro">${escHtml(naam)}</p>
-    <div style="margin-top:10px">${rijenHtml}</div>
+    <div style="margin-top:10px">${statusRijenHtml}${huisjeRijHtml}${verwijderRijHtml}</div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
 }
@@ -4364,6 +4391,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
 async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
   sluitGPModal();
   if (waarde === '__huisje__') {
+    if (['gast', 'gast_week', 'inwerk'].includes(papierRoosterCache[weekKey]?._status?.[naam])) return;
     await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
     renderPapierRooster();
     return;
@@ -4372,6 +4400,9 @@ async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
     await bewonerVerwijderen(naam);
     renderPapierRooster();
     return;
+  }
+  if (['gast', 'gast_week', 'inwerk'].includes(waarde) && bewonersBeheerSet.has(naam)) {
+    await zetBeheerderswoning(naam, false);
   }
   await prZetStatus(weekKey, naam, waarde);
 }
