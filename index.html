@@ -4086,7 +4086,7 @@ async function renderPapierRooster(voorafGeladenData) {
   const dinsdagBody = document.getElementById('pr-dinsdag-body');
   const restBody = document.getElementById('pr-body');
   if (!dinsdagBody || !restBody) return;
-  restBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">⏳ Laden…</td></tr>';
+  restBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px;height:540px;vertical-align:middle">⏳ Laden…</td></tr>';
 
   let weekData = {};
   if (voorafGeladenData) {
