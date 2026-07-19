@@ -1132,9 +1132,9 @@ function renderWeekALabel() {
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
   if (weekAOffset === 0) {
     labelEl.innerHTML = `
-      <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:14px;margin:0 auto">
+      <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:22px;margin:0 auto">
         <div style="width:0;height:0;border-top:11px solid transparent;border-bottom:11px solid transparent;border-left:18px solid #b35900;flex-shrink:0"></div>
-        <div style="position:relative;border:8px solid #0e0613;border-radius:6px;padding:8px 26px;display:inline-block">
+        <div style="position:relative;border:8px solid #b35900;border-radius:6px;padding:8px 26px;display:inline-block">
           <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:2px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
@@ -4040,9 +4040,9 @@ async function renderPapierRooster(voorafGeladenData) {
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
     if (prWeekOffset === 0) {
       labelEl.innerHTML = `
-        <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:14px;margin:0 auto">
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:22px;margin:0 auto">
           <div style="width:0;height:0;border-top:11px solid transparent;border-bottom:11px solid transparent;border-left:18px solid #b35900;flex-shrink:0"></div>
-          <div style="position:relative;border:8px solid #0e0613;border-radius:6px;padding:8px 26px;display:inline-block">
+          <div style="position:relative;border:8px solid #b35900;border-radius:6px;padding:8px 26px;display:inline-block">
             <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
             <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:2px">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
           </div>
