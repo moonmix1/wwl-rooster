@@ -4295,14 +4295,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}`;
     const statusVeld = beheer
-      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative">
-           ${statusTekstZichtbaar}
-           <select class="pr-uren-status-select" onchange="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}', this)"
-             style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;font-size:1px">
-             ${statusOpties(status)}
-             <option value="__huisje__" style="background:#8a4b1e;color:#fff">${huisjeOptieTekst}</option>
-             <option value="__verwijder__" style="background:#7a2530;color:#fff">🗑 naam verwijderen</option>
-           </select>
+      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
+           ${statusTekstZichtbaar} ▾
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
@@ -4330,8 +4324,37 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   el.innerHTML = eindHtml;
 }
 
-async function prVerwerkUrenKeuze(weekKey, naam, selectEl) {
-  const waarde = selectEl.value;
+function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
+  const heeftHuisje = bewonersBeheerSet.has(naam);
+  const huisjeTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
+  const OPTIES = [
+    { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff' },
+    { waarde: 'gast', tekst: 'gast', bg: '#7a2530', kleur: '#fff' },
+    { waarde: 'inwerk', tekst: '🔶 gast (inwerkperiode)', bg: '#7a2530', kleur: '#f5d800' },
+    { waarde: 'gast_week', tekst: 'gast van de week', bg: '#774e09', kleur: '#fff' },
+    { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff' },
+    { waarde: 'extern', tekst: 'extern persoon', bg: '#4a2e6f', kleur: '#fff' },
+    { waarde: '__huisje__', tekst: huisjeTekst, bg: '#8a4b1e', kleur: '#fff' },
+    { waarde: '__verwijder__', tekst: '🗑 naam verwijderen', bg: '#7a2530', kleur: '#fff' },
+  ];
+  const naamVeilig = naam.replace(/'/g, "\\'");
+  const rijenHtml = OPTIES.map(o => {
+    const isHuidig = o.waarde === huidigeStatus;
+    return `<button type="button" onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','${o.waarde}')"
+      style="display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:6px;border-radius:8px;
+      border:${isHuidig ? '2px solid #f5d800' : '2px solid transparent'};background:${o.bg};color:${o.kleur};
+      font-weight:700;font-size:0.92rem;cursor:pointer">${o.tekst}${isHuidig ? ' ✓' : ''}</button>`;
+  }).join('');
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>Status wijzigen</h2>
+    <p class="gp-modal-intro">${escHtml(naam)}</p>
+    <div style="margin-top:10px">${rijenHtml}</div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
+  sluitGPModal();
   if (waarde === '__huisje__') {
     await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
     renderPapierRooster();
