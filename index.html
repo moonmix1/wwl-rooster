@@ -4369,7 +4369,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       ${toggle(heeftHuisje, statusBlokkeertHuisje)}
       <span style="white-space:nowrap">${huisjeTekst}</span>
       </button>
-      ${statusBlokkeertHuisje ? `<p style="font-size:0.68rem;color:var(--subtle);margin:-2px 0 10px 4px">Niet mogelijk in combinatie met gast, gast van de week of inwerkperiode.</p>` : ''}`;
+      ${statusBlokkeertHuisje ? `<p style="font-size:0.68rem;color:var(--subtle);margin:-2px 0 10px 4px">Optie beheerderswoning niet mogelijk in combinatie met gast, gast van de week of inwerkperiode.</p>` : ''}`;
 
   const verwijderRijHtml = `<button type="button" onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','__verwijder__')"
       style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-top:10px;border-radius:8px;
