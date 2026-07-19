@@ -147,7 +147,7 @@
   .pr-cel:focus, .pr-cel:active { outline: none !important; }
   .pr-cel-vw   { background-color: #0a4a87; }
   .pr-cel-gast { background-color: #7a2530; }
-  .pr-cel-gvdw { background-color: #3a3a3a; }
+  .pr-cel-gvdw { background-color: #453a30; }
   .pr-cel-oud  { background-color: #15503f; }
   .pr-cel-ext  { background-color: #4a2e6f; }
   .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
@@ -170,10 +170,10 @@
 
   .pr-uren-status-vw   { background: #0a4a87; }
   .pr-uren-status-gast { background: #7a2530; }
-  .pr-uren-status-gvdw { background: #3a3a3a; }
+  .pr-uren-status-gvdw { background: #453a30; }
   .pr-uren-status-oud  { background: #15503f; }
   .pr-uren-status-ext  { background: #4a2e6f; }
-  .pr-uren-status-geen { background: #3a3a3a; }
+  .pr-uren-status-geen { background: #453a30; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
@@ -4316,7 +4316,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     <option value="vrijwilliger" style="background:#0a4a87;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
     <option value="gast" style="background:#7a2530;color:#fff" ${huidigeStatus==='gast'?'selected':''}>gast</option>
     <option value="inwerk" style="background:#7a2530;color:#f5d800" ${huidigeStatus==='inwerk'?'selected':''}>🔶 gast (inwerkperiode)</option>
-    <option value="gast_week" style="background:#3a3a3a;color:#fff" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
+    <option value="gast_week" style="background:#453a30;color:#fff" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
     <option value="oud_bewoner" style="background:#15503f;color:#fff" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
     <option value="extern" style="background:#4a2e6f;color:#fff" ${huidigeStatus==='extern'?'selected':''}>extern persoon</option>`;
 
@@ -4379,7 +4379,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
     { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff' },
     { waarde: 'gast', tekst: 'gast', bg: '#7a2530', kleur: '#fff' },
     { waarde: 'inwerk', tekst: 'gast (inwerkperiode)', bg: '#7a2530', kleur: '#fff', strepen: '#f5d800', rand: '#f5d800', randDikte: '4px' },
-    { waarde: 'gast_week', tekst: 'gast van de week', bg: '#3a3a3a', kleur: '#fff' },
+    { waarde: 'gast_week', tekst: 'gast van de week', bg: '#453a30', kleur: '#fff' },
     { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff' },
     { waarde: 'extern', tekst: 'extern persoon', bg: '#4a2e6f', kleur: '#fff' },
   ];
