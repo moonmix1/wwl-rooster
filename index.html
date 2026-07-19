@@ -1829,7 +1829,7 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
   let stijl = '';
   if (kleur) stijl += `box-shadow:0 0 0 3px ${kleur};`;
   if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
-  const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` onclick="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
+  const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
   return `<span class="pill pill-${type}"${attrs}>
     <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
     ${isB?'<span class="pill-sub">🏠 beheederswoning</span>':''}
@@ -4152,7 +4152,7 @@ async function renderPapierRooster(voorafGeladenData) {
         }
         if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
       }
-      const klik = beheer ? `onclick="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
+      const klik = beheer ? `data-dubbeltik="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
       return `<td><div class="pr-cel ${cellClasses}" ${klik}>${cellHtml}</div></td>`;
     }).join('');
     return `<tr>
@@ -4549,6 +4549,25 @@ setInterval(() => {
   initWeekSwipe('week-a-tabel-wrap', weekANavigeer);
   initWeekSwipe('pr-layout-wrap', prWeekNavigeer);
 }, 800);
+
+// ── DUBBELTIK-DETECTIE VOOR DIENST-VAKJES (voorkomt per ongeluk bewerken) ──
+(function initDubbeltikDetectie() {
+  let laatsteTik = { el: null, tijd: 0 };
+  document.addEventListener('click', function(e) {
+    const doel = e.target.closest('[data-dubbeltik]');
+    if (!doel) return;
+    const nu = Date.now();
+    if (laatsteTik.el === doel && (nu - laatsteTik.tijd) < 500) {
+      laatsteTik = { el: null, tijd: 0 };
+      try {
+        // eslint-disable-next-line no-new-func
+        new Function(doel.getAttribute('data-dubbeltik'))();
+      } catch (err) { console.error('Dubbeltik-actie mislukt:', err); }
+    } else {
+      laatsteTik = { el: doel, tijd: nu };
+    }
+  }, true);
+})();
 
 initSupabase();
 
