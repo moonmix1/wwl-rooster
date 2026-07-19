@@ -533,11 +533,11 @@
   }
   #gp-nieuw-btn:hover { background: #052e16; }
   #account-btn {
-    background: #d8d8d8; border: 1.5px solid var(--border); color: #1a1a1a;
+    background: #d8d8d8; border: 1.8px solid #22c55e; color: #1a1a1a;
     border-radius: 99px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700;
     cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
   }
-  #account-btn:hover { border-color: var(--bank); }
+  #account-btn:hover, #account-btn.menu-open { border-color: var(--bank); border-width: 1.8px; }
   #account-dropdown {
     display: none; position: absolute; top: calc(100% + 6px); left: 0;
     background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
@@ -1573,12 +1573,14 @@ function vulAccountMenu() {
 
 function toggleAccountMenu() {
   document.getElementById('account-dropdown')?.classList.toggle('open');
+  document.getElementById('account-btn')?.classList.toggle('menu-open');
 }
 
 document.addEventListener('click', (e) => {
   const plek = document.getElementById('account-menu-plek');
   if (plek && !plek.contains(e.target)) {
     document.getElementById('account-dropdown')?.classList.remove('open');
+    document.getElementById('account-btn')?.classList.remove('menu-open');
   }
 });
 
