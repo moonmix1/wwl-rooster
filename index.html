@@ -4389,22 +4389,25 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
 }
 
 async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
-  sluitGPModal();
   if (waarde === '__huisje__') {
-    if (['gast', 'gast_week', 'inwerk'].includes(papierRoosterCache[weekKey]?._status?.[naam])) return;
+    const huidigeStatus = papierRoosterCache[weekKey]?._status?.[naam];
+    if (['gast', 'gast_week', 'inwerk'].includes(huidigeStatus)) return;
     await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
     renderPapierRooster();
+    prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus || 'vrijwilliger');
     return;
   }
   if (waarde === '__verwijder__') {
     await bewonerVerwijderen(naam);
     renderPapierRooster();
+    sluitGPModal();
     return;
   }
   if (['gast', 'gast_week', 'inwerk'].includes(waarde) && bewonersBeheerSet.has(naam)) {
     await zetBeheerderswoning(naam, false);
   }
   await prZetStatus(weekKey, naam, waarde);
+  prOpenUrenStatusKeuze(weekKey, naam, waarde);
 }
 
 async function prZetStatus(weekKey, naam, status) {
