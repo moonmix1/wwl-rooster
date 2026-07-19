@@ -3082,6 +3082,7 @@ const NAMEN_LIJST = ["Abdi","Adam","Altib","Antoine","Edgars","Frans","Gerry","H
   "Joey","Joël","Johnny","Jordy","Mark","Max","Nassir","Norman","Radwan","Sjoerd","Stan","Vu","Walter"];
 
 let bewonersCache = [...NAMEN_LIJST];
+let bewonersLaatsteStatus = {}; // naam -> laatst bekende status, reist automatisch mee tussen weken
 
 function naamOpties() {
   return '<option value="">— selecteer je naam —</option>' +
@@ -3094,10 +3095,17 @@ function vulNaamSelectMelding() {
 
 async function laadBewoners() {
   if (!supabaseActief) { vulNaamSelectMelding(); return; }
-  const {data, error} = await sb.from('bewoners').select('naam, beheerderswoning').order('naam', {ascending:true});
+  let {data, error} = await sb.from('bewoners').select('naam, beheerderswoning, laatste_status').order('naam', {ascending:true});
+  if (error) {
+    // Kolom 'laatste_status' bestaat mogelijk nog niet in Supabase — val terug zonder die kolom.
+    const fallback = await sb.from('bewoners').select('naam, beheerderswoning').order('naam', {ascending:true});
+    data = fallback.data; error = fallback.error;
+  }
   if (!error && data && data.length) {
     bewonersCache = data.map(r => r.naam);
     bewonersBeheerSet = new Set(data.filter(r => r.beheerderswoning).map(r => r.naam));
+    bewonersLaatsteStatus = {};
+    data.forEach(r => { if (r.laatste_status) bewonersLaatsteStatus[r.naam] = r.laatste_status; });
   }
   vulNaamSelectMelding();
   herRenderRoosterTabs();
@@ -4216,7 +4224,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // in plaats van dat het blauwe blok vooraf in een vast aantal stukken wordt opgeknipt.
   const alleStatussen = {}; // status -> [namen]
   Object.keys(uren).forEach(naam => {
-    const status = statusMap[naam] || 'geen_status';
+    const status = statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status';
     if (!alleStatussen[status]) alleStatussen[status] = [];
     alleStatussen[status].push(naam);
   });
@@ -4293,7 +4301,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
     : namen.map((naam, idx) => {
-    const status = statusMap[naam] || 'geen_status';
+    const status = statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status';
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.geen_status;
     const naamVeilig = naam.replace(/'/g,"\\'");
     const heeftHuisje = status !== 'geen_status' && bewonersBeheerSet.has(naam);
@@ -4403,11 +4411,11 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
 
 async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
   if (waarde === '__huisje__') {
-    const huidigeStatus = papierRoosterCache[weekKey]?._status?.[naam];
+    const huidigeStatus = papierRoosterCache[weekKey]?._status?.[naam] || bewonersLaatsteStatus[naam] || 'geen_status';
     if (['gast', 'gast_week', 'inwerk'].includes(huidigeStatus)) return;
     await zetBeheerderswoning(naam, !bewonersBeheerSet.has(naam));
     renderPapierRooster();
-    prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus || 'vrijwilliger');
+    prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus);
     return;
   }
   if (waarde === '__verwijder__') {
@@ -4428,6 +4436,11 @@ async function prZetStatus(weekKey, naam, status) {
   if (!weekData._status) weekData._status = {};
   weekData._status[naam] = status;
   await prOpslaanWeek(weekKey, weekData);
+  bewonersLaatsteStatus[naam] = status;
+  if (supabaseActief) {
+    const {error} = await sb.from('bewoners').update({ laatste_status: status }).eq('naam', naam);
+    if (error) console.warn('Kon laatste_status niet opslaan (kolom mist mogelijk in Supabase):', error.message);
+  }
   renderPapierRooster();
 }
 
