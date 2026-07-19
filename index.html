@@ -1082,13 +1082,15 @@ function renderWeekAKopieerKnop() {
   const zichtbaar = weekAOffset >= -2 && weekAOffset <= 1;
   plek.innerHTML = `
     <div style="${zichtbaar ? '' : 'visibility:hidden'}">
-      <button class="cam-btn" style="width:100%;background:#1a5424;border:8px solid #0a3312;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="weekAToonKopieerNaarAndereWeek()">
-        <span>📋 Kopieer rooster naar een toekomstige week</span>
-        <span style="display:inline-flex;align-items:center;flex-shrink:0">
-          <span style="width:8px;height:2px;background:#fff"></span>
-          <span style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #fff"></span>
-        </span>
-      </button>
+      <div style="padding:6px;border-radius:14px;background:repeating-linear-gradient(45deg, #0a3312 0 8px, #fff 8px 16px)">
+        <button class="cam-btn" style="width:100%;background:#1a5424;border:none;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="weekAToonKopieerNaarAndereWeek()">
+          <span>📋 Kopieer rooster naar een toekomstige week</span>
+          <span style="display:inline-flex;align-items:center;flex-shrink:0">
+            <span style="width:8px;height:2px;background:#fff"></span>
+            <span style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #fff"></span>
+          </span>
+        </button>
+      </div>
       <p style="font-size:0.68rem;color:var(--subtle);margin-top:6px">
         Kopieert dit rooster naar een andere week — bestaande gegevens in die week worden overschreven.
       </p>
@@ -3948,13 +3950,15 @@ function renderPrScanKnop() {
       Maakt een foto van het handgeschreven rooster en vult deze week automatisch in — controleer daarna zoals gewend.
     </p>
     <div style="margin-bottom:6px;${(prWeekOffset >= -2 && prWeekOffset <= 1) ? '' : 'visibility:hidden'}">
-      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#1a5424;border:8px solid #0a3312;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="prToonKopieerNaarAndereWeek()">
-        <span>📋 Kopieer rooster naar een toekomstige week</span>
-        <span style="display:inline-flex;align-items:center;flex-shrink:0">
-          <span style="width:8px;height:2px;background:#fff"></span>
-          <span style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #fff"></span>
-        </span>
-      </button>
+      <div style="padding:6px;border-radius:14px;background:repeating-linear-gradient(45deg, #0a3312 0 8px, #fff 8px 16px)">
+        <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#1a5424;border:none;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="prToonKopieerNaarAndereWeek()">
+          <span>📋 Kopieer rooster naar een toekomstige week</span>
+          <span style="display:inline-flex;align-items:center;flex-shrink:0">
+            <span style="width:8px;height:2px;background:#fff"></span>
+            <span style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #fff"></span>
+          </span>
+        </button>
+      </div>
     </div>`;
 }
 
