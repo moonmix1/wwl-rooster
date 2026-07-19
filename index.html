@@ -4327,7 +4327,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
   const heeftHuisje = bewonersBeheerSet.has(naam);
   const statusBlokkeertHuisje = ['gast', 'gast_week', 'inwerk'].includes(huidigeStatus);
-  const huisjeTekst = heeftHuisje ? '🏠 heeft beheerderswoning' : '🏠 beheerderswoning';
+  const huisjeTekst = 'beheerderswoning';
 
   const toggle = (aan, uitgeschakeld) => `
     <span style="position:relative;flex-shrink:0;width:38px;height:22px;border-radius:11px;margin-right:12px;
@@ -4336,6 +4336,9 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       <span style="position:absolute;top:2px;left:${aan ? '18px' : '2px'};width:18px;height:18px;border-radius:50%;
         background:#fff;transition:left 0.15s"></span>
     </span>`;
+
+  const prulbakPlek = `<span style="flex-shrink:0;width:38px;height:22px;margin-right:12px;
+      display:flex;align-items:center;justify-content:center">🗑</span>`;
 
   const STATUSSEN = [
     { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff' },
@@ -4367,7 +4370,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       border:2px solid transparent;background:#888888;color:#fff;
       font-weight:700;font-size:0.9rem;${statusBlokkeertHuisje ? 'cursor:not-allowed' : 'cursor:pointer'};opacity:${statusBlokkeertHuisje ? '0.6' : '1'}">
       ${toggle(heeftHuisje, statusBlokkeertHuisje)}
-      <span style="white-space:nowrap">${huisjeTekst}</span>
+      <span style="white-space:nowrap">${huisjeTekst} 🏠</span>
       </button>
       ${statusBlokkeertHuisje ? `<p style="font-size:0.68rem;color:var(--subtle);margin:-2px 0 10px 4px">Optie beheerderswoning niet mogelijk in combinatie met gast, gast van de week of inwerkperiode.</p>` : ''}`;
 
@@ -4375,7 +4378,8 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-top:10px;border-radius:8px;
       border:4px solid #fff;background:#7a2530;color:#fff;
       font-weight:700;font-size:0.9rem;cursor:pointer">
-      <span style="white-space:nowrap">🗑 naam verwijderen</span>
+      ${prulbakPlek}
+      <span style="white-space:nowrap">naam verwijderen</span>
       <span style="flex:1 1 0;min-width:24px;margin-left:10px;align-self:stretch;border-radius:4px;
         background:repeating-linear-gradient(45deg, #fff 0 6px, transparent 6px 12px)"></span>
       </button>`;
