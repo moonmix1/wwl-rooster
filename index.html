@@ -4110,16 +4110,16 @@ async function renderPapierRooster(voorafGeladenData) {
 
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
-  const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
+  const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw', inwerk: 'pr-cel-gast' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger', inwerk: 'gast' };
   const statusKlasse = (status) => STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
   const statusLabelTekst = (status) => STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger;
 
   const naamRegelHtml = (naam, status, celLabel) => {
     const kokExtra = (celLabel === 'kok') ? ' · kok' : '';
     const huisje = bewonersBeheerSet.has(naam) ? '<span class="pr-naam-regel-huisje">🏠</span>' : '';
-    const inwerkVoor = status === 'gast' ? '<span class="pr-inwerk-tekst">Inwerk </span>' : '';
-    const inwerkNa = status === 'gast' ? '<span class="pr-inwerk-tekst"> Periode</span>' : '';
+    const inwerkVoor = status === 'inwerk' ? '<span class="pr-inwerk-tekst">Inwerk </span>' : '';
+    const inwerkNa = status === 'inwerk' ? '<span class="pr-inwerk-tekst"> Periode</span>' : '';
     return `<span class="pr-naam-regel">
       <span class="pr-naam-regel-top">
         <span class="pr-naam-regel-naam">${escHtml(naam)}</span>
@@ -4271,12 +4271,13 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   }
   while (kgIndex < kleurGroepen.length) { namen.push(...kleurGroepen[kgIndex].namen); kgIndex++; }
 
-  const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger' };
+  const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw', inwerk: 'pr-uren-status-gast' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)' };
 
   const statusOpties = (huidigeStatus) => `
     <option value="vrijwilliger" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
     <option value="gast" ${huidigeStatus==='gast'?'selected':''}>gast</option>
+    <option value="inwerk" ${huidigeStatus==='inwerk'?'selected':''}>gast (inwerkperiode)</option>
     <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
     <option value="oud_bewoner" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
     <option value="extern" ${huidigeStatus==='extern'?'selected':''}>extern persoon</option>`;
