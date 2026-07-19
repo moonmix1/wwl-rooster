@@ -1156,9 +1156,20 @@ function renderWeekALabel() {
         </div>
       </div>`;
   } else {
+    const waarschuwing = toekomst ? `
+      <span style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:3px 8px;
+        color:#ff3b3b;font-weight:800;font-size:0.62rem;line-height:1.2;text-align:center;white-space:nowrap">
+        Dit is <span style="text-decoration:underline">NIET</span><br>de actuele week
+      </span>` : '';
     labelEl.innerHTML = `
-      <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
-      <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>`;
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
+        ${waarschuwing}
+        <div>
+          <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
+          <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
+        </div>
+        ${waarschuwing}
+      </div>`;
   }
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
@@ -4076,9 +4087,20 @@ async function renderPapierRooster(voorafGeladenData) {
           </div>
         </div>`;
     } else {
+      const waarschuwing = toekomst ? `
+        <span style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:3px 8px;
+          color:#ff3b3b;font-weight:800;font-size:0.62rem;line-height:1.2;text-align:center;white-space:nowrap">
+          Dit is <span style="text-decoration:underline">NIET</span><br>de actuele week
+        </span>` : '';
       labelEl.innerHTML = `
-        <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
-        <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>`;
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
+          ${waarschuwing}
+          <div>
+            <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
+            <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
+          </div>
+          ${waarschuwing}
+        </div>`;
     }
     labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
   }
