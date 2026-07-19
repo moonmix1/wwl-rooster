@@ -1855,7 +1855,7 @@ function renderWeek() {
   const aantalIngevuldA = dagenA.reduce((som, d) => {
     return som + ['bankOch','bank','kook','corvee'].filter(k => d[k]).length;
   }, 0);
-  if (weekAOffset !== 0) toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
+  // Banner uitgeschakeld op verzoek van gebruiker: toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
   const vandaag = dagNaam();
   const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
   const beheer = gpBeheerActief();
@@ -4102,7 +4102,7 @@ async function renderPapierRooster(voorafGeladenData) {
     const dagData = weekData[dagKey] || {};
     return som + PR_DIENSTEN.filter(dk => dagData[dk] && dagData[dk].naam1).length;
   }, 0);
-  if (prWeekOffset !== 0) toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b');
+  // Banner uitgeschakeld op verzoek van gebruiker: toonLegeWeekBanner(prWeekOffset, 'lege-week-banner-b');
 
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
