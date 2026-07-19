@@ -1156,11 +1156,11 @@ function renderWeekALabel() {
         </div>
       </div>`;
   } else {
-    const waarschuwing = toekomst ? `
+    const waarschuwing = `
       <span style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:3px 8px;
         color:#ff3b3b;font-weight:800;font-size:0.62rem;line-height:1.2;text-align:center;white-space:nowrap">
         Dit is <span style="text-decoration:underline">NIET</span><br>de actuele week
-      </span>` : '';
+      </span>`;
     labelEl.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
         ${waarschuwing}
@@ -4087,11 +4087,11 @@ async function renderPapierRooster(voorafGeladenData) {
           </div>
         </div>`;
     } else {
-      const waarschuwing = toekomst ? `
+      const waarschuwing = `
         <span style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:3px 8px;
           color:#ff3b3b;font-weight:800;font-size:0.62rem;line-height:1.2;text-align:center;white-space:nowrap">
           Dit is <span style="text-decoration:underline">NIET</span><br>de actuele week
-        </span>` : '';
+        </span>`;
       labelEl.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
           ${waarschuwing}
