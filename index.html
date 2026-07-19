@@ -4333,7 +4333,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
-           ${statusTekstZichtbaar} <span style="font-size:3em;vertical-align:middle;margin-left:10px;display:inline-block">▾</span>
+           ${statusTekstZichtbaar} <span style="font-size:2em;line-height:1;vertical-align:middle;margin-left:8px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
