@@ -184,6 +184,9 @@
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 20px; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+  .pr-uren-rij, .pr-uren-rij * {
+    -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pr-uren-rij-top { display: contents; }
   .pr-uren-naam { grid-column: 2; position: relative; overflow: hidden; min-width: 0; }
   .pr-uren-naam-tekst { display: block; font-size: 0.82rem; color: #e0e0e0; font-weight: 600;
@@ -4275,12 +4278,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)' };
 
   const statusOpties = (huidigeStatus) => `
-    <option value="vrijwilliger" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
-    <option value="gast" ${huidigeStatus==='gast'?'selected':''}>gast</option>
-    <option value="inwerk" ${huidigeStatus==='inwerk'?'selected':''}>gast (inwerkperiode)</option>
-    <option value="gast_week" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
-    <option value="oud_bewoner" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
-    <option value="extern" ${huidigeStatus==='extern'?'selected':''}>extern persoon</option>`;
+    <option value="vrijwilliger" style="background:#0a4a87;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
+    <option value="gast" style="background:#7a2530;color:#fff" ${huidigeStatus==='gast'?'selected':''}>gast</option>
+    <option value="inwerk" style="background:#7a2530;color:#f5d800" ${huidigeStatus==='inwerk'?'selected':''}>🔶 gast (inwerkperiode)</option>
+    <option value="gast_week" style="background:#774e09;color:#fff" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
+    <option value="oud_bewoner" style="background:#15503f;color:#fff" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
+    <option value="extern" style="background:#4a2e6f;color:#fff" ${huidigeStatus==='extern'?'selected':''}>extern persoon</option>`;
 
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
@@ -4297,8 +4300,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
            <select class="pr-uren-status-select" onchange="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}', this)"
              style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;font-size:1px">
              ${statusOpties(status)}
-             <option value="__huisje__">${huisjeOptieTekst}</option>
-             <option value="__verwijder__">🗑 naam verwijderen</option>
+             <option value="__huisje__" style="background:#8a4b1e;color:#fff">${huisjeOptieTekst}</option>
+             <option value="__verwijder__" style="background:#7a2530;color:#fff">🗑 naam verwijderen</option>
            </select>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
