@@ -173,6 +173,7 @@
   .pr-uren-status-gvdw { background: #774e09; }
   .pr-uren-status-oud  { background: #15503f; }
   .pr-uren-status-ext  { background: #4a2e6f; }
+  .pr-uren-status-geen { background: #3a3a3a; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
@@ -4211,7 +4212,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // in plaats van dat het blauwe blok vooraf in een vast aantal stukken wordt opgeknipt.
   const alleStatussen = {}; // status -> [namen]
   Object.keys(uren).forEach(naam => {
-    const status = statusMap[naam] || 'vrijwilliger';
+    const status = statusMap[naam] || 'geen_status';
     if (!alleStatussen[status]) alleStatussen[status] = [];
     alleStatussen[status].push(naam);
   });
@@ -4222,8 +4223,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     });
   });
 
-  const vrijwilligerNamen = alleStatussen['vrijwilliger'] || [];
-  delete alleStatussen['vrijwilliger'];
+  const vrijwilligerNamen = alleStatussen['geen_status'] || [];
+  delete alleStatussen['geen_status'];
 
   // Elke niet-blauwe kleurgroep blijft altijd één ondeelbaar blok, met zijn hoogste urenaantal als sleutel.
   const kleurGroepen = Object.keys(alleStatussen).map(status => ({
@@ -4274,8 +4275,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   }
   while (kgIndex < kleurGroepen.length) { namen.push(...kleurGroepen[kgIndex].namen); kgIndex++; }
 
-  const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw', inwerk: 'pr-uren-status-gast' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)' };
+  const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw', inwerk: 'pr-uren-status-gast', geen_status: 'pr-uren-status-geen' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'extern persoon', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)', geen_status: '- nog geen status -' };
 
   const statusOpties = (huidigeStatus) => `
     <option value="vrijwilliger" style="background:#0a4a87;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
@@ -4288,12 +4289,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
     : namen.map((naam, idx) => {
-    const status = statusMap[naam] || 'vrijwilliger';
-    const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
+    const status = statusMap[naam] || 'geen_status';
+    const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.geen_status;
     const naamVeilig = naam.replace(/'/g,"\\'");
-    const heeftHuisje = bewonersBeheerSet.has(naam);
+    const heeftHuisje = status !== 'geen_status' && bewonersBeheerSet.has(naam);
     const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
-    const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger}`;
+    const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
            ${statusTekstZichtbaar} ▾
@@ -4417,8 +4418,7 @@ async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
 async function prZetStatus(weekKey, naam, status) {
   const weekData = papierRoosterCache[weekKey] || {};
   if (!weekData._status) weekData._status = {};
-  if (status === 'vrijwilliger') delete weekData._status[naam];
-  else weekData._status[naam] = status;
+  weekData._status[naam] = status;
   await prOpslaanWeek(weekKey, weekData);
   renderPapierRooster();
 }
