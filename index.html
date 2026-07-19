@@ -1078,7 +1078,7 @@ function renderWeekAKopieerKnop() {
   const zichtbaar = weekAOffset >= -2 && weekAOffset <= 1;
   plek.innerHTML = `
     <div style="${zichtbaar ? '' : 'visibility:hidden'}">
-      <button class="cam-btn" style="width:100%;background:#8f2f2b;border:8px solid #4b2050;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="weekAToonKopieerNaarAndereWeek()">
+      <button class="cam-btn" style="width:100%;background:#701f1c;border:8px solid #4b2050;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="weekAToonKopieerNaarAndereWeek()">
         <span>📋 Kopieer rooster naar een toekomstige week</span>
         <span style="display:inline-flex;align-items:center;flex-shrink:0">
           <span style="width:8px;height:2px;background:#fff"></span>
@@ -1144,7 +1144,7 @@ function renderWeekALabel() {
   if (weekAOffset === 0) {
     labelEl.innerHTML = `
       <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin:0 auto">
-        <div style="position:relative;border:2px solid #f5d800;outline:2px solid #8a4400;outline-offset:-2px;border-radius:6px;padding:8px 40px;display:inline-block;background:#8a4400">
+        <div style="position:relative;border:3px solid #f5d800;outline:4px solid #8a4400;outline-offset:2px;border-radius:6px;padding:8px 34px;display:inline-block;background:#8a4400">
           <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
@@ -3944,7 +3944,7 @@ function renderPrScanKnop() {
       Maakt een foto van het handgeschreven rooster en vult deze week automatisch in — controleer daarna zoals gewend.
     </p>
     <div style="margin-bottom:6px;${(prWeekOffset >= -2 && prWeekOffset <= 1) ? '' : 'visibility:hidden'}">
-      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#8f2f2b;border:8px solid #4b2050;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="prToonKopieerNaarAndereWeek()">
+      <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#701f1c;border:8px solid #4b2050;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="prToonKopieerNaarAndereWeek()">
         <span>📋 Kopieer rooster naar een toekomstige week</span>
         <span style="display:inline-flex;align-items:center;flex-shrink:0">
           <span style="width:8px;height:2px;background:#fff"></span>
@@ -4054,7 +4054,7 @@ async function renderPapierRooster(voorafGeladenData) {
     if (prWeekOffset === 0) {
       labelEl.innerHTML = `
         <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin:0 auto">
-          <div style="position:relative;border:2px solid #f5d800;outline:2px solid #8a4400;outline-offset:-2px;border-radius:6px;padding:8px 40px;display:inline-block;background:#8a4400">
+          <div style="position:relative;border:3px solid #f5d800;outline:4px solid #8a4400;outline-offset:2px;border-radius:6px;padding:8px 34px;display:inline-block;background:#8a4400">
             <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
             <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
           </div>
