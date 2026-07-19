@@ -4353,7 +4353,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
   const statusRijenHtml = STATUSSEN.map(o => {
     const aan = o.waarde === huidigeStatus;
     const strepenHtml = o.strepen
-      ? `<span style="flex:1 1 0;min-width:24px;margin-left:10px;align-self:stretch;border-radius:4px;
+      ? `<span style="flex-shrink:0;width:60px;margin-left:10px;align-self:stretch;border-radius:4px;
           background:repeating-linear-gradient(45deg, ${o.strepen} 0 6px, transparent 6px 12px)"></span>`
       : '';
     return `<button type="button" onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','${o.waarde}')"
@@ -4380,7 +4380,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       font-weight:700;font-size:0.9rem;cursor:pointer">
       ${prulbakPlek}
       <span style="white-space:nowrap">naam verwijderen</span>
-      <span style="flex:1 1 0;min-width:24px;margin-left:10px;align-self:stretch;border-radius:4px;
+      <span style="flex-shrink:0;width:60px;margin-left:10px;align-self:stretch;border-radius:4px;
         background:repeating-linear-gradient(45deg, #fff 0 6px, transparent 6px 12px)"></span>
       </button>`;
 
