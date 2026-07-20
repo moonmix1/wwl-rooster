@@ -1210,9 +1210,10 @@ function renderWeekAKiezerStrip() {
   plek.innerHTML = chipHtml + verderHtml;
 }
 
-function weekASpringNaar(offset) {
+async function weekASpringNaar(offset) {
   weekAOffset = offset;
-  weekALaadVoorOffset();
+  await weekALaadVoorOffset();
+  renderWeek();
 }
 
 function weekASpringVerder() {
