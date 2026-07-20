@@ -1071,6 +1071,39 @@ async function weekALaadVoorOffset() {
   huidigRooster = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
 }
 
+function weekAWisKnopHtml() {
+  return `<button type="button" onclick="weekAToonWisBevestiging()"
+    style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:5px 10px;
+    color:#ff3b3b;background:transparent;font-weight:800;font-size:0.68rem;line-height:1.2;cursor:pointer">
+    🗑 Wis namen</button>`;
+}
+
+function weekAToonWisBevestiging() {
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>⚠️ Namen wissen</h2>
+    <p class="gp-modal-intro">
+      Weet je zeker dat je <strong>alle namen</strong> uit het rooster van deze week wilt verwijderen?
+      Dit kan niet ongedaan worden gemaakt.
+    </p>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="cam-btn" style="flex:1" onclick="sluitGPModal()">Annuleren</button>
+      <button class="cam-btn" style="flex:1;background:var(--warn);border-color:var(--warn);color:#fff" onclick="weekAWisNamen()">Ja, alles wissen</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+async function weekAWisNamen() {
+  sluitGPModal();
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
+  const legeDagen = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: legeDagen });
+  if (error) { alert('Wissen mislukt: ' + error.message); return; }
+  await weekALaadVoorOffset();
+  renderWeek();
+}
+
 // ── ROOSTER A: HUIDIGE WEEK KOPIËREN NAAR EEN VOLGENDE WEEK ──
 function renderWeekAKopieerKnop() {
   const plek = document.getElementById('week-a-kopieer-knop-plek');
@@ -1153,11 +1186,12 @@ function renderWeekALabel() {
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
   if (weekAOffset === 0) {
     labelEl.innerHTML = `
-      <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin:0 auto">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
         <div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 34px;display:inline-block;background:#5c0a1e">
           <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
+        ${weekAWisKnopHtml()}
       </div>`;
   } else {
     const waarschuwing = `
@@ -1172,7 +1206,7 @@ function renderWeekALabel() {
           <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
           <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
-        ${waarschuwing}
+        ${weekAOffset > 0 ? weekAWisKnopHtml() : ''}
       </div>`;
   }
 
@@ -4120,11 +4154,12 @@ async function renderPapierRooster(voorafGeladenData) {
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
     if (prWeekOffset === 0) {
       labelEl.innerHTML = `
-        <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
           <div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 34px;display:inline-block;background:#5c0a1e">
             <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
             <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
           </div>
+          ${prWisKnopHtml(weekKey, dinsdag)}
         </div>`;
     } else {
       const waarschuwing = `
@@ -4139,7 +4174,7 @@ async function renderPapierRooster(voorafGeladenData) {
             <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
             <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
           </div>
-          ${waarschuwing}
+          ${prWeekOffset > 0 ? prWisKnopHtml(weekKey, dinsdag) : ''}
         </div>`;
     }
     labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
@@ -4627,6 +4662,41 @@ async function prOpslaanWeek(weekKey, weekData) {
   const { error } = await sb.from('papieren_rooster')
     .upsert({ week_start: weekKey, dagen: weekData, updated_at: new Date().toISOString() }, { onConflict: 'week_start' });
   if (error) { alert('Opslaan mislukt: ' + error.message); }
+}
+
+function prWisKnopHtml(weekKey, dinsdag) {
+  return `<button type="button" onclick="prToonWisBevestiging('${weekKey}')"
+    style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:5px 10px;
+    color:#ff3b3b;background:transparent;font-weight:800;font-size:0.68rem;line-height:1.2;cursor:pointer">
+    🗑 Wis namen</button>`;
+}
+
+function prToonWisBevestiging(weekKey) {
+  document.getElementById('gp-modal-inhoud').innerHTML = `
+    <h2>⚠️ Namen wissen</h2>
+    <p class="gp-modal-intro">
+      Weet je zeker dat je <strong>alle namen</strong> uit het rooster van deze week wilt verwijderen?
+      Dit kan niet ongedaan worden gemaakt.
+    </p>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="cam-btn" style="flex:1" onclick="sluitGPModal()">Annuleren</button>
+      <button class="cam-btn" style="flex:1;background:var(--warn);border-color:var(--warn);color:#fff" onclick="prWisNamen('${weekKey}')">Ja, alles wissen</button>
+    </div>
+  `;
+  document.getElementById('gp-overlay').classList.add('open');
+}
+
+async function prWisNamen(weekKey) {
+  sluitGPModal();
+  const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const weekData = papierRoosterCache[weekKey] || {};
+  const nieuweData = { _status: weekData._status || {} };
+  for (let i = 0; i < 7; i++) {
+    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
+    nieuweData[prDatumKey(datum)] = {};
+  }
+  await prOpslaanWeek(weekKey, nieuweData);
+  renderPapierRooster();
 }
 
 // ── ROOSTER B: HUIDIGE WEEK KOPIËREN NAAR EEN VOLGENDE WEEK ──
