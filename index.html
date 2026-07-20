@@ -1167,8 +1167,8 @@ async function weekAVerwerkHerkendRooster(herkendRooster, weekStart) {
 function weekAWaarschuwingHtml() {
   return `
     <div style="width:100%;padding:3px;border-radius:8px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px)">
-      <div style="width:100%;height:48px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:2px;box-sizing:border-box">
-        <div style="color:#ff8c00;font-weight:900;font-size:0.86rem;line-height:1.15;text-align:center">
+      <div style="width:100%;height:48px;background:#ff8c00;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:2px;box-sizing:border-box">
+        <div style="color:#fff;font-weight:900;font-size:0.86rem;line-height:1.15;text-align:center">
           Dit is <span style="text-decoration:underline">NIET</span><br>de actuele week
         </div>
       </div>
@@ -1332,7 +1332,7 @@ function renderWeekAKiezerStrip() {
   const plek = document.getElementById('week-a-kiezer-strip');
   if (!plek) return;
   const minOffset = weekAMinimaleOffset();
-  const opties = [-2, -1, 0, 1, 2, 3].filter(o => o >= minOffset);
+  const opties = [-2, -1, 0, 1, 2].filter(o => o >= minOffset);
   const chipHtml = opties.map(o => {
     const actief = o === weekAOffset;
     const tekst = o === 0 ? 'ACTUELE WEEK' : weekAKorteTekstVoorOffset(o);
@@ -4760,8 +4760,8 @@ async function prOpslaanWeek(weekKey, weekData) {
 function prWaarschuwingHtml() {
   return `
     <div style="width:100%;padding:3px;border-radius:8px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px)">
-      <div style="width:100%;height:48px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:2px;box-sizing:border-box">
-        <div style="color:#ff8c00;font-weight:900;font-size:0.86rem;line-height:1.15;text-align:center">
+      <div style="width:100%;height:48px;background:#ff8c00;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:2px;box-sizing:border-box">
+        <div style="color:#fff;font-weight:900;font-size:0.86rem;line-height:1.15;text-align:center">
           Dit is <span style="text-decoration:underline">NIET</span><br>de actuele week
         </div>
       </div>
