@@ -209,12 +209,12 @@
 
   .pill { display: inline-flex; flex-direction: column; align-items: flex-start;
           padding: 4px 10px; border-radius: 3px; font-size: 0.75rem; font-weight: 700; line-height: 1.3;
-          width: 100px; box-sizing: border-box; white-space: normal; overflow-wrap: break-word; }
+          width: 100px; box-sizing: border-box; min-height: 42px; }
   .pill, .pill * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pill:focus, .pill:active { outline: none !important; }
-  .pill-naam { display: block; padding-right: 14px; }
+  .pill-naam { display: block; padding-right: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 76px; }
   .pill-sub  { display: block; font-size: 0.6rem; font-weight: 500; opacity: 0.8; margin-top: 1px; }
   .pill-huisje-topright { position: absolute; top: 2px; right: 3px; font-size: 0.62rem; line-height: 1; }
   .pill-bank    { background: var(--bank-bg);    color: var(--bank);    border: 1px solid var(--bank-border); }
@@ -667,7 +667,8 @@
     .pr-naam-regel-naam, .pr-naam-regel-top { font-size: 0.9em; }
     .pr-cel-label, .pr-status-label { font-size: 0.4rem; }
     .week-tabel td, .week-tabel th { padding: 6px 10px; }
-    .pill { padding: 2px 7px; font-size: 0.68rem; width: 88px; }
+    .pill { padding: 2px 7px; font-size: 0.68rem; width: 88px; min-height: 36px; }
+    .pill-naam { max-width: 66px; }
     .sectie-titel { margin-bottom: 6px; }
     .pr-nav, .header { padding-top: 8px; padding-bottom: 8px; }
   }
@@ -1898,7 +1899,7 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
   if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
   const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
   return `<span class="pill pill-${type}"${attrs}>
-    <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
+    <span class="pill-naam">${rawNaam}</span>
     ${isB?'<span class="pill-huisje-topright">🏠</span>':''}
     ${bewerkbaar?' <span style="font-size:0.65rem;opacity:0.8">✏️</span>':''}
   </span>`;
