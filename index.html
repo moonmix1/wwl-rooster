@@ -1179,8 +1179,6 @@ function renderWeekALabel() {
   if (wrapEl) {
     wrapEl.classList.remove('week-afzetlint-verleden', 'week-afzetlint-toekomst');
     wrapEl.style.outline = 'none';
-    if (weekAOffset < 0) wrapEl.classList.add('week-afzetlint-verleden');
-    else if (weekAOffset > 0) wrapEl.classList.add('week-afzetlint-toekomst');
   }
 }
 
@@ -1873,7 +1871,7 @@ function renderWeek() {
   const beheer = gpBeheerActief();
   const meervoudig = berekenMeervoudigeDiensten(huidigRooster);
   const legePlek = (dag, rolKey, standaardTekst) => beheer
-    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px" onclick="bewerkRoosterCel('${dag}','${rolKey}')">+ toewijzen</button>`
+    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px" onclick="bewerkRoosterCel('${dag}','${rolKey}')">+ toewijzen</button>`
     : standaardTekst;
   document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
     const d = huidigRooster[dag]||{};
