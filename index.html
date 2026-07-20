@@ -751,6 +751,7 @@
       <div class="pr-week-label" id="week-a-label"></div>
       <button class="pr-nav-btn" id="week-a-volgende-btn" style="display:none" onclick="weekANavigeer(1)">Volgende week ▶</button>
     </div>
+    <div id="week-a-kiezer-strip" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;-webkit-overflow-scrolling:touch"></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
@@ -1127,6 +1128,13 @@ function weekALabelTekstVoorOffset(offset) {
   return `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
 }
 
+function weekAKorteTekstVoorOffset(offset) {
+  return offset === 0 ? 'Deze week'
+    : (offset === -1 ? 'Vorige week'
+    : (offset === 1 ? 'Volgende week'
+    : (offset < 0 ? `${Math.abs(offset)} wk geleden` : `Over ${offset} wk`)));
+}
+
 function renderWeekALabel() {
   const labelEl = document.getElementById('week-a-label');
   if (!labelEl) return;
@@ -1180,6 +1188,41 @@ function renderWeekALabel() {
     wrapEl.classList.remove('week-afzetlint-verleden', 'week-afzetlint-toekomst');
     wrapEl.style.outline = 'none';
   }
+  renderWeekAKiezerStrip();
+}
+
+function renderWeekAKiezerStrip() {
+  const plek = document.getElementById('week-a-kiezer-strip');
+  if (!plek) return;
+  const minOffset = weekAMinimaleOffset();
+  const opties = [-2, -1, 0, 1, 2, 3].filter(o => o >= minOffset);
+  const chipHtml = opties.map(o => {
+    const actief = o === weekAOffset;
+    const tekst = o === 0 ? 'ACTUELE WEEK' : weekAKorteTekstVoorOffset(o);
+    return `<button type="button" onclick="weekASpringNaar(${o})"
+      style="flex-shrink:0;white-space:nowrap;padding:7px 12px;border-radius:8px;font-size:0.72rem;font-weight:700;
+      cursor:pointer;border:2px solid ${actief ? '#f5d800' : 'var(--border)'};
+      background:${actief ? '#8a4400' : 'var(--surface2)'};color:${actief ? '#f5d800' : 'var(--text)'}">${tekst}</button>`;
+  }).join('');
+  const verderHtml = `<button type="button" onclick="weekASpringVerder()"
+    style="flex-shrink:0;white-space:nowrap;padding:7px 12px;border-radius:8px;font-size:0.72rem;font-weight:700;
+    cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--subtle)">▸ verder</button>`;
+  plek.innerHTML = chipHtml + verderHtml;
+}
+
+function weekASpringNaar(offset) {
+  weekAOffset = offset;
+  weekALaadVoorOffset();
+}
+
+function weekASpringVerder() {
+  const invoer = prompt('Hoeveel weken vooruit (positief getal) of terug (negatief getal) wil je springen?\n\nBijvoorbeeld: 5 (over 5 weken) of -5 (5 weken geleden)', '4');
+  if (invoer === null) return;
+  const offset = parseInt(invoer, 10);
+  if (isNaN(offset)) { alert('Vul een geldig getal in.'); return; }
+  const minOffset = weekAMinimaleOffset();
+  if (offset < minOffset) { alert(`Je kunt niet verder terug dan ${Math.abs(minOffset)} weken geleden.`); return; }
+  weekASpringNaar(offset);
 }
 
 let huidigRooster = JSON.parse(JSON.stringify(ROOSTER_SEED));
@@ -4740,7 +4783,6 @@ function initWeekSwipe(elementId, navigeerFn) {
   }, { passive: true });
 }
 setInterval(() => {
-  initWeekSwipe('week-a-tabel-wrap', weekANavigeer);
   initWeekSwipe('pr-layout-wrap', prWeekNavigeer);
 }, 800);
 
