@@ -214,8 +214,9 @@
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pill:focus, .pill:active { outline: none !important; }
-  .pill-naam { display: block; }
+  .pill-naam { display: block; padding-right: 14px; }
   .pill-sub  { display: block; font-size: 0.6rem; font-weight: 500; opacity: 0.8; margin-top: 1px; }
+  .pill-huisje-topright { position: absolute; top: 2px; right: 3px; font-size: 0.62rem; line-height: 1; }
   .pill-bank    { background: var(--bank-bg);    color: var(--bank);    border: 1px solid var(--bank-border); }
   .pill-bankoch { background: var(--bankoch-bg); color: var(--bankoch); border: 1px solid var(--bankoch-border); }
   .pill-corvee  { background: var(--corvee-bg);  color: var(--corvee);  border: 1px solid var(--corvee-border); }
@@ -1892,13 +1893,13 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
   const isExtra = meervoudigSet ? meervoudigSet.has(rawNaam) : naam.includes('★');
   const kleur = naamMatchKleuren[rawNaam];
   const bewerkbaar = gpBeheerActief() && dag && rolKey;
-  let stijl = '';
+  let stijl = 'position:relative;';
   if (kleur) stijl += `box-shadow:0 0 0 3px ${kleur};`;
   if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
   const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
   return `<span class="pill pill-${type}"${attrs}>
     <span class="pill-naam">${rawNaam}${isExtra?' ★':''}</span>
-    ${isB?'<span class="pill-sub">🏠 beheederswoning</span>':''}
+    ${isB?'<span class="pill-huisje-topright">🏠</span>':''}
     ${bewerkbaar?' <span style="font-size:0.65rem;opacity:0.8">✏️</span>':''}
   </span>`;
 }
