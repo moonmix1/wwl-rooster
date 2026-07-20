@@ -749,6 +749,22 @@
   </div>
 
   <div id="s-weekrooster" class="sectie">
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button class="cam-btn cam-btn-primary" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem;background:#7c1fd6;border-color:#7c1fd6" onclick="document.getElementById('week-a-scan-input-camera').click()">
+        📷 Foto maken
+      </button>
+      <button class="cam-btn cam-btn-primary" style="flex:1 1 0;min-width:0;padding-left:6px;padding-right:6px;font-size:0.78rem;background:#3d5fe0;border-color:#3d5fe0" onclick="document.getElementById('week-a-scan-input').click()">
+        🖼️ Bestand kiezen
+      </button>
+    </div>
+    <input type="file" id="week-a-scan-input" accept="image/*" style="display:none" onchange="weekAVerwerkScanFoto(event)">
+    <input type="file" id="week-a-scan-input-camera" accept="image/*" capture="environment" style="display:none" onchange="weekAVerwerkScanFoto(event)">
+    <p style="font-size:0.68rem;color:var(--subtle);margin-top:2px;margin-bottom:6px">
+      Maakt een foto van het handgeschreven rooster en vult deze week automatisch in — controleer daarna zoals gewend.
+    </p>
+    <div id="week-a-scan-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;background:#1a2744;border:1.5px solid #3d5a8a;font-size:0.8rem;color:#b0c4de"></div>
+    <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
+    <div id="week-a-wis-knop-plek" style="margin-bottom:14px"></div>
     <div class="pr-nav" style="margin-bottom:14px">
       <button class="pr-nav-btn" id="week-a-vorige-btn" style="display:none" onclick="weekANavigeer(-1)">◀ Vorige week</button>
       <div class="pr-week-label" id="week-a-label"></div>
@@ -759,7 +775,6 @@
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
-    <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
     <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
       <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
       <table class="week-tabel">
@@ -1071,11 +1086,90 @@ async function weekALaadVoorOffset() {
   huidigRooster = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
 }
 
+function weekAZetScanStatus(tekst, kleur) {
+  const el = document.getElementById('week-a-scan-status');
+  if (!el) return;
+  if (!tekst) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = tekst;
+  el.style.borderColor = kleur || '#3d5a8a';
+  el.style.color = kleur || '#b0c4de';
+}
+
+async function weekAVerwerkScanFoto(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
+
+  weekAZetScanStatus('⏳ Foto wordt gecomprimeerd...', '#7eb8f7');
+
+  const dataUrl = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+
+  const fotoBase64 = await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX_BREEDTE = 1400;
+      let breedte = img.width, hoogte = img.height;
+      if (breedte > MAX_BREEDTE) {
+        hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
+        breedte = MAX_BREEDTE;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = breedte; canvas.height = hoogte;
+      canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      resolve(jpegDataUrl.split(',')[1]);
+    };
+    img.src = dataUrl;
+  });
+
+  weekAZetScanStatus('⏳ AI leest het rooster... dit kan 10-20 seconden duren.', '#7eb8f7');
+
+  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
+
+  try {
+    const { data, error } = await sb.functions.invoke('scan-rooster-a', {
+      body: { fotoBase64, weekStart },
+    });
+
+    if (error) { weekAZetScanStatus('⚠️ Fout bij scannen: ' + error.message, '#f87171'); return; }
+    if (!data || !data.succes) { weekAZetScanStatus('⚠️ Fout: ' + (data?.error || 'onbekende fout'), '#f87171'); return; }
+
+    await weekAVerwerkHerkendRooster(data.rooster, weekStart);
+    weekAZetScanStatus('✅ Rooster automatisch ingevuld! Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+  } catch (e) {
+    weekAZetScanStatus('⚠️ Onverwachte fout: ' + e.message, '#f87171');
+  }
+}
+
+async function weekAVerwerkHerkendRooster(herkendRooster, weekStart) {
+  const DAG_KEYS = ['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+  const ROL_KEYS = ['bankOch','bank','kook','corvee'];
+  const nieuweDagen = JSON.parse(JSON.stringify(huidigRooster || {}));
+  DAG_KEYS.forEach(dagKey => {
+    const herkendDag = herkendRooster[dagKey];
+    if (!herkendDag) return;
+    if (!nieuweDagen[dagKey]) nieuweDagen[dagKey] = {};
+    ROL_KEYS.forEach(rolKey => {
+      if (herkendDag[rolKey]) nieuweDagen[dagKey][rolKey] = herkendDag[rolKey];
+    });
+  });
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: nieuweDagen });
+  if (error) { alert('Opslaan mislukt: ' + error.message); return; }
+  huidigRooster = nieuweDagen;
+  renderWeek();
+}
+
 function weekAWisKnopHtml() {
   return `<button type="button" onclick="weekAToonWisBevestiging()"
     style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:5px 10px;
     color:#ff3b3b;background:transparent;font-weight:800;font-size:0.68rem;line-height:1.2;cursor:pointer">
-    🗑 Wis namen</button>`;
+    🗑 Wis alle namen</button>`;
 }
 
 function weekAToonWisBevestiging() {
@@ -1186,12 +1280,11 @@ function renderWeekALabel() {
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
   if (weekAOffset === 0) {
     labelEl.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
+      <div style="display:flex;align-items:center;justify-content:center;width:100%">
         <div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 34px;display:inline-block;background:#5c0a1e">
           <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
-        ${weekAWisKnopHtml()}
       </div>`;
   } else {
     const waarschuwing = `
@@ -1206,8 +1299,13 @@ function renderWeekALabel() {
           <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
           <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
-        ${weekAOffset > 0 ? weekAWisKnopHtml() : ''}
+        ${waarschuwing}
       </div>`;
+  }
+
+  const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
+  if (wisKnopPlek) {
+    wisKnopPlek.innerHTML = (isCoordinator() && weekAOffset >= 0) ? weekAWisKnopHtml() : '';
   }
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
@@ -4668,7 +4766,7 @@ function prWisKnopHtml(weekKey, dinsdag) {
   return `<button type="button" onclick="prToonWisBevestiging('${weekKey}')"
     style="flex-shrink:0;border:2px solid #ff3b3b;border-radius:6px;padding:5px 10px;
     color:#ff3b3b;background:transparent;font-weight:800;font-size:0.68rem;line-height:1.2;cursor:pointer">
-    🗑 Wis namen</button>`;
+    🗑 Wis alle namen</button>`;
 }
 
 function prToonWisBevestiging(weekKey) {
