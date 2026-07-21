@@ -4086,26 +4086,22 @@ function zetActiefRooster(type) {
 
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
+  const kleur24 = isB ? '#ff3b3b' : '#7a2020';
+  const kleur6 = !isB ? '#22e065' : '#1f5c34';
   const switchHtml = `
     <div style="display:inline-block">
       <div style="display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;
         border:2px solid #f5d800;border-radius:10px;padding:4px 8px">
-        <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">24</div>
+        <div style="font-size:1.15rem;font-weight:900;color:${kleur24};line-height:1">24</div>
         <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
           <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
         </div>
-        <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">6</div>
+        <div style="font-size:1.15rem;font-weight:900;color:${kleur6};line-height:1">6</div>
       </div>
-      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:3px;overflow:visible">
-        <div style="text-align:center">
-          <span style="font-size:0.95rem;color:#888">↓</span>
-          <div style="font-size:0.72rem;color:var(--subtle);white-space:nowrap;line-height:1.2">uren per week</div>
-        </div>
+      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:2px;overflow:visible">
+        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(-14deg)">uren/week</div>
         <div></div>
-        <div style="text-align:center;position:relative">
-          <span style="font-size:0.95rem;color:#888">↓</span>
-          <div style="font-size:0.72rem;color:var(--subtle);white-space:nowrap;line-height:1.2;position:relative">uren per week</div>
-        </div>
+        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg)">uren/week</div>
       </div>
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
