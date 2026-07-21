@@ -101,7 +101,7 @@
   .kaart-bankoch .rol { color: var(--bankoch); }
   .kaart-corvee .rol  { color: var(--corvee); }
   .kaart-kook .rol    { color: var(--kook); }
-  .week-tabel { width: auto; min-width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .week-tabel { width: 520px; border-collapse: collapse; table-layout: fixed; }
   .week-tabel th:first-child, .week-tabel td:first-child { width: 72px; min-width: 72px; }
   .week-tabel th:not(:first-child), .week-tabel td:not(:first-child) { width: 112px; min-width: 112px; }
   .week-tabel th { background: var(--surface2); color: var(--muted); padding: 10px 14px;
@@ -4087,21 +4087,25 @@ function zetActiefRooster(type) {
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
   const switchHtml = `
-    <div style="display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;row-gap:2px">
-      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">24</div>
-      <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
-        <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
+    <div style="display:inline-block">
+      <div style="display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;
+        border:2px solid #f5d800;border-radius:10px;padding:4px 8px">
+        <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">24</div>
+        <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
+          <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
+        </div>
+        <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">6</div>
       </div>
-      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">6</div>
-
-      <div style="justify-self:start">
-        <span style="font-size:1rem;color:#888">↘</span>
-        <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2">uren per week</div>
-      </div>
-      <div></div>
-      <div style="justify-self:end">
-        <span style="font-size:1rem;color:#888">↙</span>
-        <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2">uren per week</div>
+      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:3px;overflow:visible">
+        <div style="text-align:center">
+          <span style="font-size:0.95rem;color:#888">↓</span>
+          <div style="font-size:0.72rem;color:var(--subtle);white-space:nowrap;line-height:1.2">uren per week</div>
+        </div>
+        <div></div>
+        <div style="text-align:center;position:relative">
+          <span style="font-size:0.95rem;color:#888">↓</span>
+          <div style="font-size:0.72rem;color:var(--subtle);white-space:nowrap;line-height:1.2;position:relative">uren per week</div>
+        </div>
       </div>
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
