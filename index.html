@@ -4093,13 +4093,13 @@ function renderRoosterKeuzeKnoppen() {
   const kleur6 = !isB ? '#22e065' : '#1f5c34';
   const switchHtml = `
     <div style="display:inline-block">
-      <div style="position:relative;display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;width:130px;box-sizing:border-box;
         border:2px solid #f5d800;border-radius:10px;padding:4px 8px">
-        <div style="font-size:1.15rem;font-weight:900;color:${kleur24};line-height:1;width:30px;text-align:center">24</div>
+        <div style="font-size:1.15rem;font-weight:900;color:${kleur24};line-height:1">24</div>
         <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
           <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
         </div>
-        <div style="font-size:1.15rem;font-weight:900;color:${kleur6};line-height:1;width:30px;text-align:center">6</div>
+        <div style="font-size:1.15rem;font-weight:900;color:${kleur6};line-height:1">6</div>
         <div style="position:absolute;top:100%;left:28.5px;width:2px;height:15px;background:#f5d800;transform:translateX(-50%)"></div>
         <div style="position:absolute;top:calc(100% + 15px);left:28.5px;transform:translate(-50%, -50%);width:5px;height:5px;border-radius:50%;background:#f5d800"></div>
         <div style="position:absolute;top:100%;left:102.5px;width:2px;height:15px;background:#f5d800;transform:translateX(-50%)"></div>
