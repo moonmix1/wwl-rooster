@@ -433,7 +433,7 @@
                     font-size: 0.8rem; cursor: pointer; }
 
   /* ── GEAVANCEERD KNOP & PANEEL ── */
-  .header { flex-wrap: wrap; row-gap: 10px; }
+  .header { flex-wrap: wrap; row-gap: 2px; }
   #geavanceerd-btn {
     background: linear-gradient(180deg, #d97706, #b45309);
     color: #f5e6c8;
@@ -4088,20 +4088,15 @@ function zetActiefRooster(type) {
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
   const zijBlok = (getal) => `
-    <div style="flex:0 0 70px;width:70px;text-align:center">
-      <div style="font-size:1.25rem;font-weight:900;color:#fff;line-height:1">${getal}</div>
-      <div style="font-size:1rem;line-height:1.1;color:#888">↓</div>
-      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap">uren per week</div>
+    <div style="flex:0 0 62px;width:62px;text-align:center">
+      <div style="font-size:1.15rem;font-weight:900;color:#fff;line-height:1.1">${getal}</div>
+      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2">↓ uren/week</div>
     </div>`;
   const switchHtml = `
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px">
       ${zijBlok(24)}
-      <div class="rooster-switch-wrap" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
-        <span class="rooster-switch-label ${isB ? 'actief' : ''}">Papier</span>
-        <div class="rooster-switch">
-          <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
-        </div>
-        <span class="rooster-switch-label ${!isB ? 'actief' : ''}">Digitaal</span>
+      <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
+        <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
       </div>
       ${zijBlok(6)}
     </div>`;
