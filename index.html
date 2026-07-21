@@ -4087,18 +4087,25 @@ function zetActiefRooster(type) {
 
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
-  const zijBlok = (getal) => `
-    <div style="flex:0 0 62px;width:62px;text-align:center">
-      <div style="font-size:1.15rem;font-weight:900;color:#fff;line-height:1.1">${getal}</div>
-      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2">↓ uren/week</div>
+  const linkerBlok = `
+    <div style="text-align:center">
+      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1.1">24</div>
+      <div style="font-size:1rem;line-height:1;color:#888">↘</div>
+      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2;margin-left:8px">uren per week</div>
+    </div>`;
+  const rechterBlok = `
+    <div style="text-align:center">
+      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1.1">6</div>
+      <div style="font-size:1rem;line-height:1;color:#888">↙</div>
+      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2;margin-right:8px">uren per week</div>
     </div>`;
   const switchHtml = `
-    <div style="display:flex;align-items:center;justify-content:center;gap:6px">
-      ${zijBlok(24)}
+    <div style="display:flex;align-items:center;justify-content:center;gap:3px">
+      ${linkerBlok}
       <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
         <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
       </div>
-      ${zijBlok(6)}
+      ${rechterBlok}
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
     const el = document.getElementById(id);
