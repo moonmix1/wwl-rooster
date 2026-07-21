@@ -4093,15 +4093,17 @@ function renderRoosterKeuzeKnoppen() {
   const kleur6 = !isB ? '#22e065' : '#1f5c34';
   const switchHtml = `
     <div style="display:inline-block">
-      <div style="display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;
+      <div style="position:relative;display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;
         border:2px solid #f5d800;border-radius:10px;padding:4px 8px">
         <div style="font-size:1.15rem;font-weight:900;color:${kleur24};line-height:1">24</div>
         <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
           <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
         </div>
         <div style="font-size:1.15rem;font-weight:900;color:${kleur6};line-height:1">6</div>
+        <div style="position:absolute;top:100%;left:35px;width:2px;height:15px;background:#f5d800"></div>
+        <div style="position:absolute;top:calc(100% + 15px);left:35px;transform:translate(-50%, -50%);width:5px;height:5px;border-radius:50%;background:#f5d800"></div>
       </div>
-      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:8px;margin-left:38px;overflow:visible">
+      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:8px;margin-left:42px;overflow:visible">
         <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg);transform-origin:left center">uren/week</div>
         <div></div>
         <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg);transform-origin:left center">uren/week</div>
