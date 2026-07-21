@@ -1301,8 +1301,8 @@ function renderWeekALabel() {
 
   const waarschuwingHtml = nietActueel ? weekAWaarschuwingHtml() : '';
   const wisKnopHtml = (isCoordinator() && weekAOffset >= 0) ? weekAWisKnopHtml() : '';
-  const linkerSlot = toekomst ? wisKnopHtml : waarschuwingHtml;
-  const rechterSlot = toekomst ? waarschuwingHtml : wisKnopHtml;
+  const linkerSlot = waarschuwingHtml;
+  const rechterSlot = wisKnopHtml;
   const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
 
   const middenHtml = weekAOffset === 0
@@ -4274,8 +4274,8 @@ async function renderPapierRooster(voorafGeladenData) {
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
     const waarschuwingHtml = nietActueel ? prWaarschuwingHtml() : '';
     const wisKnopHtml = (isCoordinator() && prWeekOffset >= 0) ? prWisKnopHtml(weekKey, dinsdag) : '';
-    const linkerSlot = toekomst ? wisKnopHtml : waarschuwingHtml;
-    const rechterSlot = toekomst ? waarschuwingHtml : wisKnopHtml;
+    const linkerSlot = waarschuwingHtml;
+    const rechterSlot = wisKnopHtml;
     const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
     const middenHtml = prWeekOffset === 0
       ? `<div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 20px;display:inline-block;background:#5c0a1e">
