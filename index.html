@@ -102,8 +102,8 @@
   .kaart-corvee .rol  { color: var(--corvee); }
   .kaart-kook .rol    { color: var(--kook); }
   .week-tabel { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .week-tabel th:first-child, .week-tabel td:first-child { width: 19%; }
-  .week-tabel th:not(:first-child), .week-tabel td:not(:first-child) { width: 27%; }
+  .week-tabel th:first-child, .week-tabel td:first-child { width: 16%; }
+  .week-tabel th:not(:first-child), .week-tabel td:not(:first-child) { width: 21%; }
   .week-tabel th { background: var(--surface2); color: var(--muted); padding: 10px 14px;
                    text-align: left; font-size: 0.7rem; font-weight: 600; border-bottom: 1px solid var(--border); }
   .week-tabel td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -776,7 +776,7 @@
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
-    <div id="week-a-tabel-wrap" style="overflow-x:hidden;position:relative">
+    <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
       <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
       <table class="week-tabel">
         <thead><tr>
