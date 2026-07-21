@@ -776,7 +776,7 @@
       <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
-    <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
+    <div id="week-a-tabel-wrap" style="overflow-x:hidden;position:relative">
       <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
       <table class="week-tabel">
         <thead><tr>
@@ -4087,25 +4087,23 @@ function zetActiefRooster(type) {
 
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
-  const linkerBlok = `
-    <div style="text-align:center">
-      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1.1">24</div>
-      <div style="font-size:1rem;line-height:1;color:#888">↘</div>
-      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2;margin-left:8px">uren per week</div>
-    </div>`;
-  const rechterBlok = `
-    <div style="text-align:center">
-      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1.1">6</div>
-      <div style="font-size:1rem;line-height:1;color:#888">↙</div>
-      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2;margin-right:8px">uren per week</div>
-    </div>`;
   const switchHtml = `
-    <div style="display:flex;align-items:center;justify-content:center;gap:3px">
-      ${linkerBlok}
+    <div style="display:grid;grid-template-columns:40px 34px 40px;align-items:center;justify-items:center;row-gap:2px">
+      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">24</div>
       <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
         <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
       </div>
-      ${rechterBlok}
+      <div style="font-size:1.15rem;font-weight:900;color:#f5d800;line-height:1">6</div>
+
+      <div style="justify-self:end">
+        <span style="font-size:1rem;color:#888">↘</span>
+        <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2">uren per week</div>
+      </div>
+      <div></div>
+      <div style="justify-self:start">
+        <span style="font-size:1rem;color:#888">↙</span>
+        <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap;line-height:1.2">uren per week</div>
+      </div>
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
     const el = document.getElementById(id);
