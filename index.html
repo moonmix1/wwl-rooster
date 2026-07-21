@@ -216,7 +216,7 @@
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pill:focus, .pill:active { outline: none !important; }
-  .pill-naam { display: block; width: 100%; padding-right: 14px; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pill-naam { display: block; width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pill-sub  { display: block; font-size: 0.6rem; font-weight: 500; opacity: 0.8; margin-top: 1px; }
   .pill-huisje-topright { position: absolute; top: 2px; right: 3px; font-size: 0.62rem; line-height: 1; }
   .pill-bank    { background: var(--bank-bg);    color: var(--bank);    border: 1px solid var(--bank-border); }
@@ -2052,7 +2052,7 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
   if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
   const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
   return `<span class="pill pill-${type}"${attrs}>
-    <span class="pill-naam">${rawNaam}</span>
+    <span class="pill-naam"${isB?' style="padding-right:14px"':''}>${rawNaam}</span>
     ${isB?'<span class="pill-huisje-topright">🏠</span>':''}
     ${bewerkbaar?' <span style="font-size:0.65rem;opacity:0.8">✏️</span>':''}
   </span>`;
@@ -4098,10 +4098,10 @@ function renderRoosterKeuzeKnoppen() {
         </div>
         <div style="font-size:1.15rem;font-weight:900;color:${kleur6};line-height:1">6</div>
       </div>
-      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:8px;overflow:visible">
-        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg)">uren/week</div>
+      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:start;margin-top:8px;overflow:visible">
+        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg);transform-origin:left center;margin-left:10px">uren/week</div>
         <div></div>
-        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg)">uren/week</div>
+        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg);transform-origin:left center;margin-left:6px">uren/week</div>
       </div>
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
