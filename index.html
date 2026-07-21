@@ -101,7 +101,9 @@
   .kaart-bankoch .rol { color: var(--bankoch); }
   .kaart-corvee .rol  { color: var(--corvee); }
   .kaart-kook .rol    { color: var(--kook); }
-  .week-tabel { width: 100%; border-collapse: collapse; }
+  .week-tabel { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .week-tabel th:first-child, .week-tabel td:first-child { width: 19%; }
+  .week-tabel th:not(:first-child), .week-tabel td:not(:first-child) { width: 27%; }
   .week-tabel th { background: var(--surface2); color: var(--muted); padding: 10px 14px;
                    text-align: left; font-size: 0.7rem; font-weight: 600; border-bottom: 1px solid var(--border); }
   .week-tabel td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -4085,13 +4087,23 @@ function zetActiefRooster(type) {
 
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
+  const zijBlok = (getal) => `
+    <div style="flex:0 0 70px;width:70px;text-align:center">
+      <div style="font-size:1.25rem;font-weight:900;color:#fff;line-height:1">${getal}</div>
+      <div style="font-size:1rem;line-height:1.1;color:#888">↓</div>
+      <div style="font-size:0.5rem;color:var(--subtle);white-space:nowrap">uren per week</div>
+    </div>`;
   const switchHtml = `
-    <div class="rooster-switch-wrap" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
-      <span class="rooster-switch-label ${!isB ? 'actief' : ''}">Digitaal</span>
-      <div class="rooster-switch">
-        <div class="rooster-switch-knop ${isB ? 'rooster-switch-rechts' : ''}"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+      ${zijBlok(24)}
+      <div class="rooster-switch-wrap" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
+        <span class="rooster-switch-label ${isB ? 'actief' : ''}">Papier</span>
+        <div class="rooster-switch">
+          <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
+        </div>
+        <span class="rooster-switch-label ${!isB ? 'actief' : ''}">Digitaal</span>
       </div>
-      <span class="rooster-switch-label ${isB ? 'actief' : ''}">Papier</span>
+      ${zijBlok(6)}
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
     const el = document.getElementById(id);
