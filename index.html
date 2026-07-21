@@ -784,6 +784,16 @@
           <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
           <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
         </tr></thead>
+        <tbody id="week-a-dinsdag-body"></tbody>
+      </table>
+      <table class="week-tabel" style="margin-top:14px">
+        <thead><tr>
+          <th>Dag</th>
+          <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
+          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
+          <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
+          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
+        </tr></thead>
         <tbody id="week-body"></tbody>
       </table>
     </div>
@@ -2056,13 +2066,13 @@ function renderWeek() {
   }, 0);
   // Banner uitgeschakeld op verzoek van gebruiker: toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
   const vandaag = dagNaam();
-  const volgorde = ["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
+  const volgorde = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
   const beheer = gpBeheerActief();
   const meervoudig = berekenMeervoudigeDiensten(huidigRooster);
   const legePlek = (dag, rolKey, standaardTekst) => beheer
     ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px" onclick="bewerkRoosterCel('${dag}','${rolKey}')">+ toewijzen</button>`
     : standaardTekst;
-  document.getElementById('week-body').innerHTML = volgorde.map(dag=>{
+  const maakRij = (dag) => {
     const d = huidigRooster[dag]||{};
     return `<tr class="${dag===vandaag?'vandaag':''}">
       <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
@@ -2071,7 +2081,9 @@ function renderWeek() {
       <td>${d.bank?pill(d.bank,'bank',dag,'bank',meervoudig):legePlek(dag,'bank','—')}</td>
       <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee',meervoudig):legePlek(dag,'corvee','—')}</td>
     </tr>`;
-  }).join('');
+  };
+  document.getElementById('week-a-dinsdag-body').innerHTML = maakRij(volgorde[0]);
+  document.getElementById('week-body').innerHTML = volgorde.slice(1).map(maakRij).join('');
 }
 
 const ROOSTER_ROL_NAMEN = { bankOch:'Bank ochtend', bank:'Bank avond', kook:'Kook', corvee:'Corvee' };
