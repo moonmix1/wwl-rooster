@@ -1291,9 +1291,9 @@ function weekAToonKopieerNaarAndereWeek() {
 }
 
 function weekALabelTekstVoorOffset(offset) {
-  const weekStart = weekAWeekStartVoorOffset(offset);
-  const startDatum = new Date(weekStart + 'T00:00:00');
-  const eindDatum = new Date(startDatum); eindDatum.setDate(startDatum.getDate() + 6);
+  const dinsdag = prDinsdagVanWeek(offset);
+  const startDatum = new Date(dinsdag); startDatum.setDate(dinsdag.getDate() + 1);
+  const eindDatum = new Date(dinsdag); eindDatum.setDate(dinsdag.getDate() + 7);
   return `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
 }
 
@@ -1308,8 +1308,9 @@ function renderWeekALabel() {
   const labelEl = document.getElementById('week-a-label');
   if (!labelEl) return;
   const nietActueel = weekAOffset !== 0;
-  const startDatum = prDinsdagVanWeek(weekAOffset);
-  const eindDatum = new Date(startDatum); eindDatum.setDate(startDatum.getDate() + 6);
+  const dinsdagVoorLabel = prDinsdagVanWeek(weekAOffset);
+  const startDatum = new Date(dinsdagVoorLabel); startDatum.setDate(dinsdagVoorLabel.getDate() + 1);
+  const eindDatum = new Date(dinsdagVoorLabel); eindDatum.setDate(dinsdagVoorLabel.getDate() + 7);
   const offsetTekst = weekAOffset === 0 ? 'Deze week'
     : (weekAOffset === -1 ? 'Vorige week'
     : (weekAOffset === 1 ? 'Volgende week'
@@ -4365,6 +4366,8 @@ async function renderPapierRooster(voorafGeladenData) {
 
   const labelEl = document.getElementById('pr-week-label');
   if (labelEl) {
+    const labelStart = new Date(dinsdag); labelStart.setDate(dinsdag.getDate() + 1);
+    const labelEind = new Date(dinsdag); labelEind.setDate(dinsdag.getDate() + 7);
     const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
@@ -4377,11 +4380,11 @@ async function renderPapierRooster(voorafGeladenData) {
     const middenHtml = prWeekOffset === 0
       ? `<div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 20px;display:inline-block;background:#5c0a1e">
           <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
+          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`
       : `<div>
           <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
-          <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}</div>
+          <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`;
     labelEl.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px">
@@ -4945,8 +4948,9 @@ async function prWisNamen(weekKey) {
 // ── ROOSTER B: HUIDIGE WEEK KOPIËREN NAAR EEN VOLGENDE WEEK ──
 function prLabelTekstVoorOffset(offset) {
   const dinsdag = prDinsdagVanWeek(offset);
-  const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
-  return `${prFormatDatum(dinsdag)} – ${prFormatDatum(maandag)}`;
+  const labelStart = new Date(dinsdag); labelStart.setDate(dinsdag.getDate() + 1);
+  const labelEind = new Date(dinsdag); labelEind.setDate(dinsdag.getDate() + 7);
+  return `${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}`;
 }
 
 async function prKopieerNaarOffset(doelOffset) {
