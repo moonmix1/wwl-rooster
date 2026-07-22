@@ -800,6 +800,16 @@
         </tr></thead>
         <tbody id="week-body"></tbody>
       </table>
+      <table class="week-tabel" style="margin-top:14px">
+        <thead><tr>
+          <th>Dag</th>
+          <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
+          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
+          <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
+          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
+        </tr></thead>
+        <tbody id="week-a-sluitings-dinsdag-body"></tbody>
+      </table>
     </div>
     <p style="font-size:0.7rem;color:var(--subtle);margin-top:10px">
       ★ = deze persoon draait deze week 2 diensten (uitzondering, normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
@@ -839,6 +849,17 @@
               <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
             </tr></thead>
             <tbody id="pr-body"></tbody>
+          </table>
+        </div>
+        <div style="overflow-x:auto;margin-top:14px">
+          <table class="pr-tabel">
+            <thead><tr>
+              <th>Dag</th>
+              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
+              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
+              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
+            </tr></thead>
+            <tbody id="pr-sluitings-dinsdag-body"></tbody>
           </table>
         </div>
       </div>
@@ -1090,13 +1111,22 @@ async function weekANavigeer(richting) {
   renderWeek();
 }
 
+let weekAVolgendeData = {};
+
 async function weekALaadVoorOffset() {
   if (!supabaseActief) return;
   const weekStart = weekAWeekStartVoorOffset(weekAOffset);
+  const tuesday = prDinsdagVanWeek(weekAOffset);
   const {data: rij} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
-  if (rij) { huidigRooster = rij.dagen; return; }
-  if (weekAOffset === 0) { await zorgVoorHuidigeWeek(); return; }
-  huidigRooster = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
+  if (rij) { huidigRooster = weekAMigreerNaarDatumKeys(rij.dagen, tuesday); }
+  else if (weekAOffset === 0) { await zorgVoorHuidigeWeek(); }
+  else { huidigRooster = weekALegeWeek(tuesday); }
+
+  // Vooraf laden van volgende week se dinsdag, voor de sluitingsrij onderaan het rooster.
+  const weekStartVolgende = weekAWeekStartVoorOffset(weekAOffset + 1);
+  const tuesdayVolgende = prDinsdagVanWeek(weekAOffset + 1);
+  const {data: rijVolgende} = await sb.from('rooster_weken').select('*').eq('week_start', weekStartVolgende).maybeSingle();
+  weekAVolgendeData = rijVolgende ? weekAMigreerNaarDatumKeys(rijVolgende.dagen, tuesdayVolgende) : weekALegeWeek(tuesdayVolgende);
 }
 
 function weekAZetScanStatus(tekst, kleur) {
@@ -1161,12 +1191,13 @@ async function weekAVerwerkScanFoto(event) {
 }
 
 async function weekAVerwerkHerkendRooster(herkendRooster, weekStart) {
-  const DAG_KEYS = ['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
   const ROL_KEYS = ['bankOch','bank','kook','corvee'];
+  const tuesday = prDinsdagVanWeek(weekAOffset);
   const nieuweDagen = JSON.parse(JSON.stringify(huidigRooster || {}));
-  DAG_KEYS.forEach(dagKey => {
-    const herkendDag = herkendRooster[dagKey];
+  WEEK_A_VOLGORDE.forEach((weekdagNaam, i) => {
+    const herkendDag = herkendRooster[weekdagNaam];
     if (!herkendDag) return;
+    const dagKey = prDatumKey(new Date(tuesday.getTime() + i * 86400000));
     if (!nieuweDagen[dagKey]) nieuweDagen[dagKey] = {};
     ROL_KEYS.forEach(rolKey => {
       if (herkendDag[rolKey]) nieuweDagen[dagKey][rolKey] = herkendDag[rolKey];
@@ -1215,7 +1246,8 @@ async function weekAWisNamen() {
   sluitGPModal();
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
   const weekStart = weekAWeekStartVoorOffset(weekAOffset);
-  const legeDagen = { Maandag:{}, Dinsdag:{}, Woensdag:{}, Donderdag:{}, Vrijdag:{}, Zaterdag:{}, Zondag:{} };
+  const tuesday = prDinsdagVanWeek(weekAOffset);
+  const legeDagen = weekALegeWeek(tuesday);
   const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: legeDagen });
   if (error) { alert('Wissen mislukt: ' + error.message); return; }
   await weekALaadVoorOffset();
@@ -1249,7 +1281,9 @@ async function weekAKopieerNaarOffset(doelOffset) {
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
   const bronWeekStart = weekAWeekStartVoorOffset(weekAOffset);
   const doelWeekStart = weekAWeekStartVoorOffset(doelOffset);
-  const bronDagen = JSON.parse(JSON.stringify(huidigRooster));
+  const bronTuesday = prDinsdagVanWeek(weekAOffset);
+  const doelTuesday = prDinsdagVanWeek(doelOffset);
+  const bronDagen = weekAVerschuifNaarWeek(JSON.parse(JSON.stringify(huidigRooster)), bronTuesday, doelTuesday);
   const {error} = await sb.from('rooster_weken').upsert({ week_start: doelWeekStart, dagen: bronDagen });
   if (error) { alert('Kopiëren mislukt: ' + error.message); return; }
   weekAOffset = doelOffset;
@@ -1293,8 +1327,7 @@ function renderWeekALabel() {
   const labelEl = document.getElementById('week-a-label');
   if (!labelEl) return;
   const nietActueel = weekAOffset !== 0;
-  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
-  const startDatum = new Date(weekStart + 'T00:00:00');
+  const startDatum = prDinsdagVanWeek(weekAOffset);
   const eindDatum = new Date(startDatum); eindDatum.setDate(startDatum.getDate() + 6);
   const offsetTekst = weekAOffset === 0 ? 'Deze week'
     : (weekAOffset === -1 ? 'Vorige week'
@@ -1408,6 +1441,43 @@ function weekStartVan(datum) {
   const maand = String(d.getMonth() + 1).padStart(2, '0');
   const dagVanMaand = String(d.getDate()).padStart(2, '0');
   return `${jaar}-${maand}-${dagVanMaand}`;
+}
+
+// ── ROOSTER A: DATUM-SLEUTELS I.P.V. WEEKDAG-NAMEN ──
+const WEEK_A_VOLGORDE = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
+
+function weekADatumKeys(tuesdayDate) {
+  return WEEK_A_VOLGORDE.map((_, i) => prDatumKey(new Date(tuesdayDate.getTime() + i * 86400000)));
+}
+
+function weekALegeWeek(tuesdayDate) {
+  const obj = {};
+  weekADatumKeys(tuesdayDate).forEach(k => { obj[k] = {}; });
+  return obj;
+}
+
+// Migreert oude weekdag-naam-sleutels (Dinsdag, Woensdag, ...) naar echte datumsleutels.
+// Data die al datumsleutels heeft, komt ongewijzigd terug.
+function weekAMigreerNaarDatumKeys(dagenObject, tuesdayDate) {
+  if (!dagenObject) return weekALegeWeek(tuesdayDate);
+  const heeftOudeSleutels = WEEK_A_VOLGORDE.some(naam => Object.prototype.hasOwnProperty.call(dagenObject, naam));
+  if (!heeftOudeSleutels) return dagenObject;
+  const nieuw = {};
+  const datumKeys = weekADatumKeys(tuesdayDate);
+  WEEK_A_VOLGORDE.forEach((naam, i) => { nieuw[datumKeys[i]] = dagenObject[naam] || {}; });
+  return nieuw;
+}
+
+// Verschuift een datumsleutel-object van de ene week naar de andere (zelfde dag-op-dag-positie).
+function weekAVerschuifNaarWeek(dagenObject, vanTuesday, naarTuesday) {
+  const nieuw = {};
+  Object.keys(dagenObject).forEach(key => {
+    const datum = new Date(key + 'T00:00:00');
+    const verschilDagen = Math.round((datum - vanTuesday) / 86400000);
+    const nieuweDatum = new Date(naarTuesday.getTime() + verschilDagen * 86400000);
+    nieuw[prDatumKey(nieuweDatum)] = dagenObject[key];
+  });
+  return nieuw;
 }
 
 function vindRolVanPersoon(dagen, naam) {
@@ -1527,10 +1597,11 @@ function herRenderRoosterTabs() {
 async function zorgVoorHuidigeWeek() {
   if (!supabaseActief) return;
   const weekStart = weekStartVan(new Date());
+  const tuesday = prDinsdagVanWeek(0);
 
   const {data: huidigeRij} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
   if (huidigeRij) {
-    huidigRooster = huidigeRij.dagen;
+    huidigRooster = weekAMigreerNaarDatumKeys(huidigeRij.dagen, tuesday);
     await laadRotatieStatusVanuitSupabase();
     herRenderRoosterTabs();
     return;
@@ -1538,9 +1609,11 @@ async function zorgVoorHuidigeWeek() {
 
   const {data: vorigeRij} = await sb.from('rooster_weken')
     .select('*').lt('week_start', weekStart).order('week_start', {ascending:false}).limit(1).maybeSingle();
-  const vorigeDagen = vorigeRij ? vorigeRij.dagen : ROOSTER_SEED;
+  const vorigeTuesday = new Date(tuesday.getTime() - 7 * 86400000);
+  const vorigeDagen = weekAMigreerNaarDatumKeys(vorigeRij ? vorigeRij.dagen : ROOSTER_SEED, vorigeTuesday);
   const statusMap = await laadRotatieStatusMapVoorGeneratie();
-  const { nieuweDagen, nieuweStatus } = genereerNieuweWeek(vorigeDagen, statusMap);
+  const { nieuweDagen: nieuweDagenRuw, nieuweStatus } = genereerNieuweWeek(vorigeDagen, statusMap);
+  const nieuweDagen = weekAVerschuifNaarWeek(nieuweDagenRuw, vorigeTuesday, tuesday);
 
   const { error: insertError } = await sb.from('rooster_weken').insert([{ week_start: weekStart, dagen: nieuweDagen }]);
   if (!insertError) {
@@ -1549,7 +1622,7 @@ async function zorgVoorHuidigeWeek() {
     await opslaanRotatieStatus(nieuweStatus);
   } else {
     const {data: canoniek} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
-    huidigRooster = canoniek ? canoniek.dagen : nieuweDagen;
+    huidigRooster = canoniek ? weekAMigreerNaarDatumKeys(canoniek.dagen, tuesday) : nieuweDagen;
     await laadRotatieStatusVanuitSupabase();
   }
   herRenderRoosterTabs();
@@ -2016,7 +2089,8 @@ function berekenMeervoudigeDiensten(dagen) {
 
 function renderVandaagMetMeldingen(meldingen) {
   const dag = dagNaam();
-  const d = huidigRooster[dag]||{};
+  const vandaagKey = prDatumKey(new Date());
+  const d = huidigRooster[vandaagKey]||{};
   const ziek = meldingen.filter(m=>m.type==='ziek').map(m=>m.naam.toLowerCase());
   document.getElementById('vandaag-label').textContent = `Diensten vandaag — ${dag}`;
   const kaarten = [];
@@ -2044,7 +2118,7 @@ function renderVandaag() {
   laadMeldingen();
 }
 
-function pill(naam, type, dag, rolKey, meervoudigSet) {
+function pill(naam, type, dag, rolKey, meervoudigSet, weekStartOverride) {
   const rawNaam = naam.replace('★','').trim();
   const isB = bewonersBeheerSet.has(rawNaam);
   const isExtra = meervoudigSet ? meervoudigSet.has(rawNaam) : naam.includes('★');
@@ -2053,7 +2127,7 @@ function pill(naam, type, dag, rolKey, meervoudigSet) {
   let stijl = 'position:relative;';
   if (kleur) stijl += `box-shadow:0 0 0 3px ${kleur};`;
   if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
-  const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}')"` : '');
+  const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}','${weekStartOverride||''}')"` : '');
   return `<span class="pill pill-${type}"${attrs}>
     <span class="pill-naam"${isB?' style="padding-right:14px"':''}>${rawNaam}</span>
     ${isB?'<span class="pill-huisje-topright">🏠</span>':''}
@@ -2069,34 +2143,53 @@ function renderWeek() {
     return som + ['bankOch','bank','kook','corvee'].filter(k => d[k]).length;
   }, 0);
   // Banner uitgeschakeld op verzoek van gebruiker: toonLegeWeekBanner(weekAOffset, 'lege-week-banner-a');
-  const vandaag = dagNaam();
-  const volgorde = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
+  const vandaagKey = prDatumKey(new Date());
+  const tuesday = prDinsdagVanWeek(weekAOffset);
+  const weekStartHuidig = weekAWeekStartVoorOffset(weekAOffset);
+  const weekStartVolgende = weekAWeekStartVoorOffset(weekAOffset + 1);
+  const tuesdayVolgende = prDinsdagVanWeek(weekAOffset + 1);
   const beheer = gpBeheerActief();
   const meervoudig = berekenMeervoudigeDiensten(huidigRooster);
-  const legePlek = (dag, rolKey, standaardTekst) => beheer
-    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px" onclick="bewerkRoosterCel('${dag}','${rolKey}')">+ toewijzen</button>`
+  const legePlek = (dagKey, rolKey, standaardTekst, weekStartVoorRij) => beheer
+    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px" onclick="bewerkRoosterCel('${dagKey}','${rolKey}','${weekStartVoorRij}')">+ toewijzen</button>`
     : standaardTekst;
-  const maakRij = (dag) => {
-    const d = huidigRooster[dag]||{};
-    return `<tr class="${dag===vandaag?'vandaag':''}">
-      <td><span class="dag-label">${dag}${dag===vandaag?' 📍':''}</span></td>
-      <td>${d.bankOch?pill(d.bankOch,'bankoch',dag,'bankOch',meervoudig):legePlek(dag,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>')}</td>
-      <td>${d.kook?pill(d.kook,'kook',dag,'kook',meervoudig):legePlek(dag,'kook','—')}</td>
-      <td>${d.bank?pill(d.bank,'bank',dag,'bank',meervoudig):legePlek(dag,'bank','—')}</td>
-      <td>${d.corvee?pill(d.corvee,'corvee',dag,'corvee',meervoudig):legePlek(dag,'corvee','—')}</td>
+  const maakRij = (dagNaamLabel, i, basisTuesday, dataBron, weekStartVoorRij) => {
+    const datum = new Date(basisTuesday.getTime() + i * 86400000);
+    const dagKey = prDatumKey(datum);
+    const isVandaag = dagKey === vandaagKey;
+    const d = dataBron[dagKey] || {};
+    return `<tr class="${isVandaag?'vandaag':''}">
+      <td><span class="dag-label">${dagNaamLabel}${isVandaag?' 📍':''}</span> <span class="week-a-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
+      <td>${d.bankOch?pill(d.bankOch,'bankoch',dagKey,'bankOch',meervoudig,weekStartVoorRij):legePlek(dagKey,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>',weekStartVoorRij)}</td>
+      <td>${d.kook?pill(d.kook,'kook',dagKey,'kook',meervoudig,weekStartVoorRij):legePlek(dagKey,'kook','—',weekStartVoorRij)}</td>
+      <td>${d.bank?pill(d.bank,'bank',dagKey,'bank',meervoudig,weekStartVoorRij):legePlek(dagKey,'bank','—',weekStartVoorRij)}</td>
+      <td>${d.corvee?pill(d.corvee,'corvee',dagKey,'corvee',meervoudig,weekStartVoorRij):legePlek(dagKey,'corvee','—',weekStartVoorRij)}</td>
     </tr>`;
   };
-  document.getElementById('week-a-dinsdag-body').innerHTML = maakRij(volgorde[0]);
-  document.getElementById('week-body').innerHTML = volgorde.slice(1).map(maakRij).join('');
+  document.getElementById('week-a-dinsdag-body').innerHTML = maakRij(WEEK_A_VOLGORDE[0], 0, tuesday, huidigRooster, weekStartHuidig);
+  document.getElementById('week-body').innerHTML = WEEK_A_VOLGORDE.slice(1).map((naam, idx) => maakRij(naam, idx + 1, tuesday, huidigRooster, weekStartHuidig)).join('');
+  const sluitingsBody = document.getElementById('week-a-sluitings-dinsdag-body');
+  if (sluitingsBody) {
+    sluitingsBody.innerHTML = maakRij(WEEK_A_VOLGORDE[0], 0, tuesdayVolgende, weekAVolgendeData, weekStartVolgende);
+  }
 }
 
 const ROOSTER_ROL_NAMEN = { bankOch:'Bank ochtend', bank:'Bank avond', kook:'Kook', corvee:'Corvee' };
 
-function bewerkRoosterCel(dag, rolKey) {
-  const huidige = huidigRooster[dag][rolKey] ? huidigRooster[dag][rolKey].replace('★','').trim() : '';
+function weekADatumKeyNaarLabel(dateKey) {
+  const datum = new Date(dateKey + 'T00:00:00');
+  return datum.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function bewerkRoosterCel(dag, rolKey, weekStartOverride) {
+  const weekStartHuidig = weekAWeekStartVoorOffset(weekAOffset);
+  const targetWeekStart = weekStartOverride || weekStartHuidig;
+  const isVolgendeWeek = targetWeekStart !== weekStartHuidig;
+  const dataBron = isVolgendeWeek ? weekAVolgendeData : huidigRooster;
+  const huidige = (dataBron[dag] && dataBron[dag][rolKey]) ? dataBron[dag][rolKey].replace('★','').trim() : '';
   document.getElementById('gp-modal-inhoud').innerHTML = `
-    <h2>✏️ ${ROOSTER_ROL_NAMEN[rolKey] || rolKey} — ${dag}</h2>
-    <p class="gp-modal-intro">Kies wie deze dienst doet, of verwijder de dienst voor deze dag. Dit wijzigt alleen de huidige week.</p>
+    <h2>✏️ ${ROOSTER_ROL_NAMEN[rolKey] || rolKey} — ${weekADatumKeyNaarLabel(dag)}</h2>
+    <p class="gp-modal-intro">Kies wie deze dienst doet, of verwijder de dienst voor deze dag. ${isVolgendeWeek ? 'Dit wijzigt volgende week.' : 'Dit wijzigt alleen de huidige week.'}</p>
     <div class="melding-form" style="margin-top:4px">
       <label>Naam</label>
       <select id="rooster-edit-naam">${naamOpties()}</select>
@@ -2108,8 +2201,8 @@ function bewerkRoosterCel(dag, rolKey) {
         <input type="text" id="rooster-nieuwe-naam-input" placeholder="Nieuwe naam">
         <button type="button" class="cam-btn cam-btn-primary" style="margin-bottom:16px" onclick="voegNaamToeVanuitRooster()">Toevoegen aan lijst</button>
       </div>
-      <button class="verstuur-btn" onclick="bevestigRoosterWijziging('${dag}','${rolKey}')">Opslaan →</button>
-      ${huidige ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="verwijderRoosterCel('${dag}','${rolKey}')">🗑 Dienst verwijderen voor deze dag</button>` : ''}
+      <button class="verstuur-btn" onclick="bevestigRoosterWijziging('${dag}','${rolKey}','${targetWeekStart}')">Opslaan →</button>
+      ${huidige ? `<button class="poll-sluit-btn" style="color:var(--warn);border-color:var(--warn)" onclick="verwijderRoosterCel('${dag}','${rolKey}','${targetWeekStart}')">🗑 Dienst verwijderen voor deze dag</button>` : ''}
     </div>
   `;
   document.getElementById('gp-overlay').classList.add('open');
@@ -2148,28 +2241,35 @@ async function verwijderGeselecteerdeRoosterNaam() {
   if (sel) sel.innerHTML = naamOpties();
 }
 
-async function verwijderRoosterCel(dag, rolKey) {
-  if (!confirm(`Weet je zeker dat je deze dienst (${ROOSTER_ROL_NAMEN[rolKey]||rolKey}, ${dag}) wilt verwijderen?`)) return;
-  delete huidigRooster[dag][rolKey];
+async function verwijderRoosterCel(dag, rolKey, weekStartOverride) {
+  if (!confirm(`Weet je zeker dat je deze dienst (${ROOSTER_ROL_NAMEN[rolKey]||rolKey}, ${weekADatumKeyNaarLabel(dag)}) wilt verwijderen?`)) return;
+  const weekStartHuidig = weekAWeekStartVoorOffset(weekAOffset);
+  const targetWeekStart = weekStartOverride || weekStartHuidig;
+  const isVolgendeWeek = targetWeekStart !== weekStartHuidig;
+  const dataBron = isVolgendeWeek ? weekAVolgendeData : huidigRooster;
+  if (dataBron[dag]) delete dataBron[dag][rolKey];
   sluitGPModal();
   renderWeek();
   renderVandaag();
   if (!supabaseActief) return;
-  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
-  const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: targetWeekStart, dagen: dataBron });
   if (error) alert('Opslaan mislukt: ' + error.message);
 }
 
-async function bevestigRoosterWijziging(dag, rolKey) {
+async function bevestigRoosterWijziging(dag, rolKey, weekStartOverride) {
   const nieuweNaam = document.getElementById('rooster-edit-naam').value;
   if (!nieuweNaam) { alert('Kies een naam.'); return; }
-  huidigRooster[dag][rolKey] = nieuweNaam;
+  const weekStartHuidig = weekAWeekStartVoorOffset(weekAOffset);
+  const targetWeekStart = weekStartOverride || weekStartHuidig;
+  const isVolgendeWeek = targetWeekStart !== weekStartHuidig;
+  const dataBron = isVolgendeWeek ? weekAVolgendeData : huidigRooster;
+  if (!dataBron[dag]) dataBron[dag] = {};
+  dataBron[dag][rolKey] = nieuweNaam;
   sluitGPModal();
   renderWeek();
   renderVandaag();
   if (!supabaseActief) return;
-  const weekStart = weekAWeekStartVoorOffset(weekAOffset);
-  const {error} = await sb.from('rooster_weken').upsert({ week_start: weekStart, dagen: huidigRooster });
+  const {error} = await sb.from('rooster_weken').upsert({ week_start: targetWeekStart, dagen: dataBron });
   if (error) alert('Opslaan mislukt: ' + error.message);
 }
 
@@ -4343,6 +4443,16 @@ async function renderPapierRooster(voorafGeladenData) {
   }
   papierRoosterCache[weekKey] = weekData;
 
+  const dinsdagVolgende = new Date(dinsdag); dinsdagVolgende.setDate(dinsdag.getDate() + 7);
+  const weekKeyVolgende = prDatumKey(dinsdagVolgende);
+  let weekDataVolgende = papierRoosterCache[weekKeyVolgende];
+  if (!weekDataVolgende && supabaseActief) {
+    const { data: dataVolgende } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKeyVolgende).maybeSingle();
+    weekDataVolgende = (dataVolgende && dataVolgende.dagen) || {};
+    papierRoosterCache[weekKeyVolgende] = weekDataVolgende;
+  }
+  weekDataVolgende = weekDataVolgende || {};
+
   const dagenB = Object.keys(weekData).filter(k => k !== '_status');
   const aantalIngevuldB = dagenB.reduce((som, dagKey) => {
     const dagData = weekData[dagKey] || {};
@@ -4353,6 +4463,7 @@ async function renderPapierRooster(voorafGeladenData) {
   const beheer = gpBeheerActief();
   const vandaagKey = prDatumKey(new Date(new Date().setHours(0,0,0,0)));
   const statusMap = weekData._status || {}; // naam -> 'vrijwilliger' | 'gast' | 'gast_week' | 'oud_bewoner' | 'extern'
+  const statusMapVolgende = weekDataVolgende._status || {};
 
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
@@ -4375,19 +4486,24 @@ async function renderPapierRooster(voorafGeladenData) {
     </span>`;
   };
 
-  const maakRij = (dagNaam, i) => {
-    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
+  const maakRij = (dagNaam, i, opties) => {
+    opties = opties || {};
+    const basisDatum = opties.basisDatum || dinsdag;
+    const dataVoorRij = opties.weekData || weekData;
+    const keyVoorRij = opties.weekKey || weekKey;
+    const statusVoorRij = opties.statusMap || statusMap;
+    const datum = new Date(basisDatum); datum.setDate(basisDatum.getDate() + i);
     const dagKey = prDatumKey(datum);
     const isVandaag = dagKey === vandaagKey;
-    const dagData = weekData[dagKey] || {};
+    const dagData = dataVoorRij[dagKey] || {};
     const cellen = PR_DIENSTEN.map(dienstKey => {
       const info = dagData[dienstKey] || {};
       let cellHtml, cellClasses = '';
       if (!info.naam1) {
         cellHtml = `<span class="pr-leeg">—</span>`;
       } else {
-        const status1 = statusMap[info.naam1] || 'vrijwilliger';
-        const status2 = info.naam2 ? (statusMap[info.naam2] || 'vrijwilliger') : null;
+        const status1 = statusVoorRij[info.naam1] || 'vrijwilliger';
+        const status2 = info.naam2 ? (statusVoorRij[info.naam2] || 'vrijwilliger') : null;
         if (!status2 || status1 === status2) {
           // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
           cellClasses = statusKlasse(status1);
@@ -4413,7 +4529,7 @@ async function renderPapierRooster(voorafGeladenData) {
         }
         if (info.opmerking) cellHtml += `<span class="pr-opmerking">${escHtml(info.opmerking)}</span>`;
       }
-      const klik = beheer ? `data-dubbeltik="prBewerkCel('${weekKey}','${dagKey}','${dienstKey}')"` : '';
+      const klik = beheer ? `data-dubbeltik="prBewerkCel('${keyVoorRij}','${dagKey}','${dienstKey}')"` : '';
       return `<td><div class="pr-cel ${cellClasses}" ${klik}>${cellHtml}</div></td>`;
     }).join('');
     return `<tr>
@@ -4424,6 +4540,12 @@ async function renderPapierRooster(voorafGeladenData) {
 
   dinsdagBody.innerHTML = maakRij(PR_DAGEN[0], 0);
   restBody.innerHTML = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('');
+  const sluitingsBody = document.getElementById('pr-sluitings-dinsdag-body');
+  if (sluitingsBody) {
+    sluitingsBody.innerHTML = maakRij(PR_DAGEN[0], 0, {
+      basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende
+    });
+  }
 }
 
 const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
