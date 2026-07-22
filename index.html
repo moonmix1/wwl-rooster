@@ -1328,8 +1328,8 @@ function renderWeekALabel() {
   const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
 
   const middenHtml = weekAOffset === 0
-    ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);display:inline-block">
-        <div style="border-radius:6px;padding:8px 20px;display:inline-block;background:#ff8c00">
+    ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);width:100%;box-sizing:border-box">
+        <div style="border-radius:6px;padding:8px 20px;background:#ff8c00;width:100%;box-sizing:border-box;text-align:center">
           <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
@@ -1342,7 +1342,7 @@ function renderWeekALabel() {
   labelEl.innerHTML = `
     <div style="display:flex;align-items:stretch;justify-content:space-between;width:100%;gap:6px">
       <div style="${SLOT_STIJL}">${linkerSlot}</div>
-      <div style="flex:1;display:flex;justify-content:center;min-width:0">${middenHtml}</div>
+      <div style="flex:1;display:flex;justify-content:flex-start;min-width:0">${middenHtml}</div>
       <div style="${SLOT_STIJL}">${rechterSlot}</div>
     </div>`;
 
