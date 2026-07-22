@@ -1368,7 +1368,7 @@ function renderWeekAKiezerStrip() {
   const plek = document.getElementById('week-a-kiezer-strip');
   if (!plek) return;
   const minOffset = weekAMinimaleOffset();
-  const opties = [-2, -1, 0, 1, 2].filter(o => o >= minOffset);
+  const opties = [-1, 0, 1].filter(o => o >= minOffset);
   const compactTekst = (o) => {
     if (o === 0) return 'NU';
     if (o === -1) return 'Vorige';
