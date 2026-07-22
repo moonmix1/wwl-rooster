@@ -109,7 +109,9 @@
   .week-tabel td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .week-tabel tr.vandaag td { background: #1c2a1a; }
   .week-tabel tr:hover td { background: var(--surface2); }
-  .dag-label { font-weight: 700; color: white; font-size: 0.85rem; }
+  .dag-label { font-weight: 700; color: white; font-size: 0.68rem; }
+  .week-a-dag-datum { font-size: 0.58rem; color: var(--subtle); }
+  .week-a-pin { font-size: 0.62rem; }
   .kantoor-label { font-size: 0.65rem; color: var(--subtle); font-style: italic; }
 
   /* ── PAPIEREN-STIJL ROOSTER (sober, grijs/zwart-wit) ── */
@@ -800,16 +802,6 @@
         </tr></thead>
         <tbody id="week-body"></tbody>
       </table>
-      <table class="week-tabel" style="margin-top:14px">
-        <thead><tr>
-          <th>Dag</th>
-          <th style="color:var(--bankoch)">Bank och<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u · za+zo</span></th>
-          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
-          <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
-          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
-        </tr></thead>
-        <tbody id="week-a-sluitings-dinsdag-body"></tbody>
-      </table>
     </div>
     <p style="font-size:0.7rem;color:var(--subtle);margin-top:10px">
       ★ = deze persoon draait deze week 2 diensten (uitzondering, normaal max. 1 shift/week) &nbsp;|&nbsp; 🏠 = beheederswoning
@@ -849,17 +841,6 @@
               <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
             </tr></thead>
             <tbody id="pr-body"></tbody>
-          </table>
-        </div>
-        <div style="overflow-x:auto;margin-top:14px">
-          <table class="pr-tabel">
-            <thead><tr>
-              <th>Dag</th>
-              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
-              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
-              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
-            </tr></thead>
-            <tbody id="pr-sluitings-dinsdag-body"></tbody>
           </table>
         </div>
       </div>
@@ -2159,7 +2140,7 @@ function renderWeek() {
     const isVandaag = dagKey === vandaagKey;
     const d = dataBron[dagKey] || {};
     return `<tr class="${isVandaag?'vandaag':''}">
-      <td><span class="dag-label">${dagNaamLabel}${isVandaag?' 📍':''}</span> <span class="week-a-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span></td>
+      <td style="white-space:nowrap"><span class="dag-label">${dagNaamLabel}</span> <span class="week-a-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span>${isVandaag?' <span class="week-a-pin">📍</span>':''}</td>
       <td>${d.bankOch?pill(d.bankOch,'bankoch',dagKey,'bankOch',meervoudig,weekStartVoorRij):legePlek(dagKey,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>',weekStartVoorRij)}</td>
       <td>${d.kook?pill(d.kook,'kook',dagKey,'kook',meervoudig,weekStartVoorRij):legePlek(dagKey,'kook','—',weekStartVoorRij)}</td>
       <td>${d.bank?pill(d.bank,'bank',dagKey,'bank',meervoudig,weekStartVoorRij):legePlek(dagKey,'bank','—',weekStartVoorRij)}</td>
@@ -2167,11 +2148,9 @@ function renderWeek() {
     </tr>`;
   };
   document.getElementById('week-a-dinsdag-body').innerHTML = maakRij(WEEK_A_VOLGORDE[0], 0, tuesday, huidigRooster, weekStartHuidig);
-  document.getElementById('week-body').innerHTML = WEEK_A_VOLGORDE.slice(1).map((naam, idx) => maakRij(naam, idx + 1, tuesday, huidigRooster, weekStartHuidig)).join('');
-  const sluitingsBody = document.getElementById('week-a-sluitings-dinsdag-body');
-  if (sluitingsBody) {
-    sluitingsBody.innerHTML = maakRij(WEEK_A_VOLGORDE[0], 0, tuesdayVolgende, weekAVolgendeData, weekStartVolgende);
-  }
+  const middenRijen = WEEK_A_VOLGORDE.slice(1).map((naam, idx) => maakRij(naam, idx + 1, tuesday, huidigRooster, weekStartHuidig)).join('');
+  const sluitingsRij = maakRij(WEEK_A_VOLGORDE[0], 0, tuesdayVolgende, weekAVolgendeData, weekStartVolgende);
+  document.getElementById('week-body').innerHTML = middenRijen + sluitingsRij;
 }
 
 const ROOSTER_ROL_NAMEN = { bankOch:'Bank ochtend', bank:'Bank avond', kook:'Kook', corvee:'Corvee' };
@@ -4539,13 +4518,11 @@ async function renderPapierRooster(voorafGeladenData) {
   };
 
   dinsdagBody.innerHTML = maakRij(PR_DAGEN[0], 0);
-  restBody.innerHTML = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('');
-  const sluitingsBody = document.getElementById('pr-sluitings-dinsdag-body');
-  if (sluitingsBody) {
-    sluitingsBody.innerHTML = maakRij(PR_DAGEN[0], 0, {
-      basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende
-    });
-  }
+  const middenRijenB = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('');
+  const sluitingsRijB = maakRij(PR_DAGEN[0], 0, {
+    basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende
+  });
+  restBody.innerHTML = middenRijenB + sluitingsRijB;
 }
 
 const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
