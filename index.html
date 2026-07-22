@@ -679,18 +679,19 @@
 </head>
 <body>
 
-<div class="header">
+<div class="header" style="align-items:flex-start">
   <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
-  <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd <span id="goedkeuring-teller" style="display:none;background:var(--warn);color:white;border-radius:99px;padding:1px 6px;font-size:0.65rem;margin-left:4px"></span></button>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-    <div id="account-menu-plek" style="position:relative"></div>
-    <div id="klok" style="font-size:1.3rem;white-space:nowrap">--:--</div>
-    <div id="datum" style="font-size:0.7rem;color:var(--muted);text-align:right;white-space:nowrap"></div>
+  <div style="display:flex;align-items:flex-end;gap:10px">
+    <button id="geavanceerd-btn" onclick="toggleGeavanceerd()">Geavanceerd <span id="goedkeuring-teller" style="display:none;background:var(--warn);color:white;border-radius:99px;padding:1px 6px;font-size:0.65rem;margin-left:4px"></span></button>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      <div id="klok" style="font-size:1.3rem;white-space:nowrap">--:--</div>
+      <div id="datum" style="font-size:0.7rem;color:var(--muted);text-align:right;white-space:nowrap"></div>
+    </div>
   </div>
   <div style="display:flex;align-items:flex-start;gap:10px">
     <div id="rooster-keuze-header"></div>
-    <button id="actuele-week-btn" onclick="gaNaarActueleWeek()" style="background:#f5d800;color:#1a1a1a;border:none;border-radius:8px;padding:6px 12px;font-size:0.7rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;align-self:flex-start;white-space:nowrap;margin-left:auto">Actuele week</button>
   </div>
+  <div id="account-menu-plek" style="position:relative;margin-left:auto"></div>
 </div>
 
 <div id="geavanceerd-paneel">
