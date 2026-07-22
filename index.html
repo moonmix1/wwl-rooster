@@ -689,7 +689,7 @@
   </div>
   <div style="display:flex;align-items:flex-start;gap:10px">
     <div id="rooster-keuze-header"></div>
-    <button id="actuele-week-btn" onclick="gaNaarActueleWeek()" style="background:#f5d800;color:#1a1a1a;border:none;border-radius:8px;padding:6px 12px;font-size:0.7rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;align-self:flex-start;white-space:nowrap">Actuele week</button>
+    <button id="actuele-week-btn" onclick="gaNaarActueleWeek()" style="background:#f5d800;color:#1a1a1a;border:none;border-radius:8px;padding:6px 12px;font-size:0.7rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;align-self:flex-start;white-space:nowrap;margin-left:auto">Actuele week</button>
   </div>
 </div>
 
@@ -1325,9 +1325,11 @@ function renderWeekALabel() {
   const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
 
   const middenHtml = weekAOffset === 0
-    ? `<div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 20px;display:inline-block;background:#5c0a1e">
-        <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-        <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
+    ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);display:inline-block">
+        <div style="border-radius:6px;padding:8px 20px;display:inline-block;background:#ff8c00">
+          <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
+        </div>
       </div>`
     : `<div>
         <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
@@ -4171,24 +4173,22 @@ function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
   const kleur24 = isB ? '#ff3b3b' : '#7a2020';
   const kleur6 = !isB ? '#22e065' : '#1f5c34';
+  const urenWeekBlok = `
+    <div style="text-align:center;line-height:1.15">
+      <div style="font-size:0.58rem;font-weight:800;color:#fff">uren/</div>
+      <div style="font-size:0.58rem;font-weight:800;color:#fff">week</div>
+    </div>`;
   const switchHtml = `
     <div style="display:inline-block">
-      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;width:130px;box-sizing:border-box;
-        border:2px solid #f5d800;border-radius:10px;padding:4px 8px">
+      <div style="position:relative;display:grid;grid-template-columns:34px 40px 34px 40px 34px;align-items:center;justify-items:center;width:182px;box-sizing:border-box;
+        border:2px solid #f5d800;border-radius:10px;padding:4px 6px">
+        ${urenWeekBlok}
         <div style="font-size:1.15rem;font-weight:900;color:${kleur24};line-height:1">24</div>
         <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer">
           <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
         </div>
         <div style="font-size:1.15rem;font-weight:900;color:${kleur6};line-height:1">6</div>
-        <div style="position:absolute;top:100%;left:28.5px;width:2px;height:15px;background:#f5d800;transform:translateX(-50%)"></div>
-        <div style="position:absolute;top:calc(100% + 15px);left:28.5px;transform:translate(-50%, -50%);width:5px;height:5px;border-radius:50%;background:#f5d800"></div>
-        <div style="position:absolute;top:100%;left:102.5px;width:2px;height:15px;background:#f5d800;transform:translateX(-50%)"></div>
-        <div style="position:absolute;top:calc(100% + 15px);left:102.5px;transform:translate(-50%, -50%);width:5px;height:5px;border-radius:50%;background:#f5d800"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:40px 34px 40px;justify-items:center;margin-top:8px;margin-left:42px;overflow:visible">
-        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg);transform-origin:left center">uren/week</div>
-        <div></div>
-        <div style="font-size:0.68rem;color:var(--subtle);white-space:nowrap;transform:rotate(14deg);transform-origin:left center">uren/week</div>
+        ${urenWeekBlok}
       </div>
     </div>`;
   ['rooster-keuze-header'].forEach(id => {
@@ -4378,9 +4378,11 @@ async function renderPapierRooster(voorafGeladenData) {
     const rechterSlot = wisKnopHtml;
     const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
     const middenHtml = prWeekOffset === 0
-      ? `<div style="position:relative;border:3px solid #f5d800;outline:4px solid #5c0a1e;outline-offset:2px;border-radius:6px;padding:8px 20px;display:inline-block;background:#5c0a1e">
-          <div style="color:#f5d800;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#f5d800;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
+      ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);display:inline-block">
+          <div style="border-radius:6px;padding:8px 20px;display:inline-block;background:#ff8c00">
+            <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+            <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
+          </div>
         </div>`
       : `<div>
           <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
