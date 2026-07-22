@@ -4184,16 +4184,14 @@ function renderRoosterKeuzeKnoppen() {
     </div>`;
   const switchHtml = `
     <div style="display:inline-block">
-      <div style="position:relative;display:grid;grid-template-columns:36px 40px 34px 40px 36px;align-items:center;width:171px;box-sizing:border-box;
-        border:2px solid #f5d800;border-radius:10px;padding:4px 6px 4px 18px">
-        <div style="display:flex;align-items:center;gap:0;grid-column:1 / span 2;transform:translateX(12px)">
-          ${urenWeekBlok}
-          ${cijferBlok('24', kleur24)}
-        </div>
+      <div style="position:relative;display:grid;grid-template-columns:36px 40px 34px 40px 36px;align-items:center;width:193px;box-sizing:border-box;
+        border:2px solid #f5d800;border-radius:10px;padding:4px 6px">
+        ${urenWeekBlok}
+        ${cijferBlok('24', kleur24)}
         <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer;justify-self:center">
           <div class="rooster-switch-knop ${!isB ? 'rooster-switch-rechts' : ''}"></div>
         </div>
-        <div style="display:flex;align-items:center;gap:0;grid-column:4 / span 2;transform:translateX(-12px)">
+        <div style="display:flex;align-items:center;gap:0;grid-column:4 / span 2;transform:translateX(-5px)">
           ${cijferBlok('6', kleur6)}
           ${urenWeekBlok}
         </div>
