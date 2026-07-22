@@ -108,10 +108,10 @@
                    text-align: left; font-size: 0.7rem; font-weight: 600; border-bottom: 1px solid var(--border); }
   .week-tabel td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .week-tabel tr.vandaag td { background: #1c2a1a; }
-  .week-tabel tr:hover td { background: var(--surface2); }
-  .dag-label { font-weight: 700; color: white; font-size: 0.68rem; }
-  .week-a-dag-datum { font-size: 0.58rem; color: var(--subtle); }
-  .week-a-pin { font-size: 0.62rem; }
+  .week-tabel tr:hover td { background: #10182a; }
+  .dag-label { font-weight: 700; color: white; font-size: 0.74rem; }
+  .week-a-dag-datum { font-size: 0.64rem; color: var(--subtle); }
+  .week-a-pin { font-size: 0.68rem; }
   .kantoor-label { font-size: 0.65rem; color: var(--subtle); font-style: italic; }
 
   /* ── PAPIEREN-STIJL ROOSTER (sober, grijs/zwart-wit) ── */
@@ -2140,7 +2140,7 @@ function renderWeek() {
     const isVandaag = dagKey === vandaagKey;
     const d = dataBron[dagKey] || {};
     return `<tr class="${isVandaag?'vandaag':''}">
-      <td style="white-space:nowrap"><span class="dag-label">${dagNaamLabel}</span> <span class="week-a-dag-datum">${datum.getDate()}-${datum.getMonth()+1}</span>${isVandaag?' <span class="week-a-pin">📍</span>':''}</td>
+      <td><span class="dag-label" style="display:block">${dagNaamLabel}</span><span class="week-a-dag-datum" style="display:block">${datum.getDate()}-${datum.getMonth()+1}${isVandaag?' <span class="week-a-pin">📍</span>':''}</span></td>
       <td>${d.bankOch?pill(d.bankOch,'bankoch',dagKey,'bankOch',meervoudig,weekStartVoorRij):legePlek(dagKey,'bankOch','<span class="kantoor-label">kantoor aanwezig</span>',weekStartVoorRij)}</td>
       <td>${d.kook?pill(d.kook,'kook',dagKey,'kook',meervoudig,weekStartVoorRij):legePlek(dagKey,'kook','—',weekStartVoorRij)}</td>
       <td>${d.bank?pill(d.bank,'bank',dagKey,'bank',meervoudig,weekStartVoorRij):legePlek(dagKey,'bank','—',weekStartVoorRij)}</td>
