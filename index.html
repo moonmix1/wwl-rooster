@@ -1318,7 +1318,7 @@ function renderWeekALabel() {
     : (weekAOffset === 1 ? 'Volgende week'
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
   const toekomst = weekAOffset > 0;
-  const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
+  const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
 
   const wisKnopHtml = (isCoordinator() && weekAOffset >= 0) ? weekAWisKnopHtml() : '';
   const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
@@ -1370,8 +1370,8 @@ function renderWeekAKiezerStrip() {
     const actief = weekAActieveKnop === naam;
     return `<button type="button" onclick="${onclickCode}" ${disabled ? 'disabled' : ''}
       style="flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
-      cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.35' : '1'};border:2px solid ${actief ? '#2dd4bf' : 'var(--border)'};
-      background:${actief ? '#134e4a' : 'var(--surface2)'};color:${actief ? '#2dd4bf' : 'var(--text)'}">${label}</button>`;
+      cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.35' : '1'};border:2px solid ${actief ? '#2dd4bf' : '#1a6b63'};
+      background:${actief ? '#134e4a' : '#0d2e2b'};color:${actief ? '#2dd4bf' : '#5eaba3'}">${label}</button>`;
   };
 
   const vorigeHtml = maakKnop('vorige', 'Vorige', `weekAKnopKlik('vorige', -1)`, !magVorige);
@@ -4379,7 +4379,7 @@ async function renderPapierRooster(voorafGeladenData) {
     const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
-    const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
+    const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
     const waarschuwingHtml = nietActueel ? prWaarschuwingHtml() : '';
     const wisKnopHtml = (isCoordinator() && prWeekOffset >= 0) ? prWisKnopHtml(weekKey, dinsdag) : '';
     const linkerSlot = waarschuwingHtml;
