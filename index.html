@@ -1393,10 +1393,14 @@ function renderWeekAKiezerStrip() {
   plek.innerHTML = vorigeHtml + verderHtml + volgendeHtml;
 }
 
-function weekAKnopKlik(naam, offset) {
+async function weekAKnopKlik(naam, richting) {
   weekAActieveKnop = naam;
   if (naam === 'verder') { weekASpringVerder(); return; }
-  weekASpringNaar(offset);
+  const nieuweOffset = weekAOffset + richting;
+  if (nieuweOffset < weekAMinimaleOffset()) { renderWeekAKiezerStrip(); return; }
+  weekAOffset = nieuweOffset;
+  await weekALaadVoorOffset();
+  renderWeek();
 }
 
 async function weekASpringNaar(offset) {
