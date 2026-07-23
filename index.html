@@ -2039,10 +2039,14 @@ function alleBekendeNamen() {
   return Array.from(set);
 }
 
+function verwijderAccenten(tekst) {
+  return tekst.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function berekenNaamMatches(term) {
   if (!term) return {};
-  const t = term.toLowerCase();
-  const matches = alleBekendeNamen().filter(n => n.toLowerCase().startsWith(t));
+  const t = verwijderAccenten(term.toLowerCase());
+  const matches = alleBekendeNamen().filter(n => verwijderAccenten(n.toLowerCase()).startsWith(t));
   const kaart = {};
   matches.forEach((naam, i) => { kaart[naam] = NAAM_HIGHLIGHT_KLEUREN[i % NAAM_HIGHLIGHT_KLEUREN.length]; });
   return kaart;
