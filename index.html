@@ -781,7 +781,10 @@
     <div id="week-a-kiezer-strip" style="display:flex;gap:4px;padding-bottom:6px;margin-bottom:14px"></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <div id="week-a-wis-knop-plek" style="flex-shrink:0"></div>
-      <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ iemand naam ⏎" oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
+      <div style="position:relative;flex:1;min-width:120px">
+        <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ iemands naam + enter" oninput="naamZoekVerander(this.value)" style="margin-bottom:0;width:100%;padding-right:42px">
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:1.3rem;font-weight:900;color:#22d3ee;pointer-events:none;text-shadow:0 0 6px rgba(34,211,238,0.6)">⏎</span>
+      </div>
     </div>
     <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
       <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
@@ -857,7 +860,10 @@
 
   <div id="s-rotatie" class="sectie">
     <div class="sectie-titel">Rotatieschema – laatste 4 weken</div>
-    <input type="text" id="naam-zoek-rotatie" class="poll-input" placeholder="🔍 Typ iemand naam ⏎" oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
+    <div style="position:relative;margin-bottom:14px">
+      <input type="text" id="naam-zoek-rotatie" class="poll-input" placeholder="🔍 Typ iemands naam + enter" oninput="naamZoekVerander(this.value)" style="margin-bottom:0;width:100%;padding-right:42px">
+      <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:1.3rem;font-weight:900;color:#22d3ee;pointer-events:none;text-shadow:0 0 6px rgba(34,211,238,0.6)">⏎</span>
+    </div>
     <p style="font-size:0.75rem;color:var(--muted);margin-bottom:14px">Na 4× bank op rij: verplicht minimaal 2 weken corvee.</p>
     <div class="rot-wrap"><table class="rot-tabel" id="rot-tabel"></table></div>
     <div style="display:flex;gap:16px;margin-top:12px;font-size:0.72rem;flex-wrap:wrap;color:var(--muted)">
@@ -1325,8 +1331,8 @@ function renderWeekALabel() {
   if (wisKnopPlek) wisKnopPlek.innerHTML = wisKnopHtml ? `<div style="width:84px">${wisKnopHtml}</div>` : '';
 
   const middenHtml = weekAOffset === 0
-    ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);width:100%;box-sizing:border-box">
-        <div style="border-radius:6px;padding:8px 20px;background:#ff8c00;width:100%;box-sizing:border-box;text-align:center">
+    ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #d87700 0 7px, #fff 7px 14px);width:100%;box-sizing:border-box">
+        <div style="border-radius:6px;padding:8px 20px;background:#d87700;width:100%;box-sizing:border-box;text-align:center">
           <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
