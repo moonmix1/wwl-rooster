@@ -780,7 +780,7 @@
     </div>
     <div id="week-a-kiezer-strip" style="display:flex;gap:4px;padding-bottom:6px;margin-bottom:14px"></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <div class="sectie-titel" style="margin-bottom:0;white-space:nowrap">Volledig weekrooster</div>
+      <div id="week-a-wis-knop-plek" style="flex-shrink:0"></div>
       <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ een naam om 'm overal te laten oplichten..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
     <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
@@ -1322,8 +1322,8 @@ function renderWeekALabel() {
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
 
   const wisKnopHtml = (isCoordinator() && weekAOffset >= 0) ? weekAWisKnopHtml() : '';
-  const rechterSlot = wisKnopHtml;
-  const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
+  const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
+  if (wisKnopPlek) wisKnopPlek.innerHTML = wisKnopHtml ? `<div style="width:84px">${wisKnopHtml}</div>` : '';
 
   const middenHtml = weekAOffset === 0
     ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);width:100%;box-sizing:border-box">
@@ -1338,10 +1338,7 @@ function renderWeekALabel() {
       </div>`;
 
   labelEl.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px">
-      <div style="flex-grow:1;flex-shrink:1;flex-basis:0;display:flex;justify-content:center;overflow:hidden">${middenHtml}</div>
-      <div style="${SLOT_STIJL}">${rechterSlot}</div>
-    </div>`;
+    <div style="width:100%">${middenHtml}</div>`;
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
   const volgendeBtn = document.getElementById('week-a-volgende-btn');
