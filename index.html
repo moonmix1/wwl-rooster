@@ -1321,9 +1321,7 @@ function renderWeekALabel() {
   const toekomst = weekAOffset > 0;
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#ff9800');
 
-  const waarschuwingHtml = nietActueel ? weekAWaarschuwingHtml() : '';
   const wisKnopHtml = (isCoordinator() && weekAOffset >= 0) ? weekAWisKnopHtml() : '';
-  const linkerSlot = waarschuwingHtml;
   const rechterSlot = wisKnopHtml;
   const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
 
@@ -1334,15 +1332,14 @@ function renderWeekALabel() {
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
         </div>
       </div>`
-    : `<div>
+    : `<div style="width:100%;text-align:center">
         <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
         <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
       </div>`;
 
   labelEl.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px">
-      <div style="${SLOT_STIJL}">${linkerSlot}</div>
-      <div style="flex-grow:1;flex-shrink:1;flex-basis:0;display:flex;justify-content:flex-start;overflow:hidden">${middenHtml}</div>
+      <div style="flex-grow:1;flex-shrink:1;flex-basis:0;display:flex;justify-content:center;overflow:hidden">${middenHtml}</div>
       <div style="${SLOT_STIJL}">${rechterSlot}</div>
     </div>`;
 
