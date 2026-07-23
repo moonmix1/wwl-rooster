@@ -1364,31 +1364,39 @@ function renderWeekALabel() {
   renderWeekAKiezerStrip();
 }
 
+let weekAActieveKnop = 'verder';
+
 function renderWeekAKiezerStrip() {
   const plek = document.getElementById('week-a-kiezer-strip');
   if (!plek) return;
   const minOffset = weekAMinimaleOffset();
-  const opties = [-1, 1].filter(o => o >= minOffset);
-  const compactTekst = (o) => {
-    if (o === 0) return 'NU';
-    if (o === -1) return 'Vorige';
-    if (o === 1) return 'Volgende';
-    return o < 0 ? `${Math.abs(o)} wk terug` : `+${o} wk`;
-  };
-  const chipHtml = opties.map(o => {
-    const actief = o === 1;
-    const tekst = compactTekst(o);
-    return `<button type="button" onclick="weekASpringNaar(${o})"
+  const magVorige = (-1) >= minOffset;
+  const magVolgende = true;
+
+  const maakKnop = (naam, label, onclickCode, disabled) => {
+    const actief = weekAActieveKnop === naam;
+    return `<button type="button" onclick="${onclickCode}" ${disabled ? 'disabled' : ''}
       style="flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
-      cursor:pointer;border:2px solid ${actief ? '#2dd4bf' : 'var(--border)'};
-      background:${actief ? '#134e4a' : 'var(--surface2)'};color:${actief ? '#2dd4bf' : 'var(--text)'}">${tekst}</button>`;
-  }).join('');
-  const verderHtml = `<button type="button" onclick="weekASpringVerder()"
+      cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.35' : '1'};border:2px solid ${actief ? '#2dd4bf' : 'var(--border)'};
+      background:${actief ? '#134e4a' : 'var(--surface2)'};color:${actief ? '#2dd4bf' : 'var(--text)'}">${label}</button>`;
+  };
+
+  const vorigeHtml = maakKnop('vorige', 'Vorige', `weekAKnopKlik('vorige', -1)`, !magVorige);
+  const volgendeHtml = maakKnop('volgende', 'Volgende', `weekAKnopKlik('volgende', 1)`, !magVolgende);
+  const verderActief = weekAActieveKnop === 'verder';
+  const verderHtml = `<button type="button" onclick="weekAKnopKlik('verder')"
     style="flex:1.6 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 4px;border-radius:6px;font-size:0.62rem;font-weight:700;
-    cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--subtle);display:flex;align-items:center;justify-content:center;gap:3px">
-    <span style="font-size:0.75rem">←</span><span>terug</span><span style="opacity:0.6">·</span><span>verder</span><span style="font-size:0.75rem">→</span>
+    cursor:pointer;border:2px solid ${verderActief ? '#2dd4bf' : 'var(--border)'};background:${verderActief ? '#134e4a' : 'transparent'};color:${verderActief ? '#2dd4bf' : 'var(--subtle)'};
+    display:flex;align-items:center;justify-content:center;gap:3px;line-height:1">
+    <span style="font-size:0.75rem;line-height:1">←</span><span style="line-height:1">terug</span><span style="opacity:0.6;line-height:1">·</span><span style="line-height:1">verder</span><span style="font-size:0.75rem;line-height:1">→</span>
   </button>`;
-  plek.innerHTML = chipHtml + verderHtml;
+  plek.innerHTML = vorigeHtml + verderHtml + volgendeHtml;
+}
+
+function weekAKnopKlik(naam, offset) {
+  weekAActieveKnop = naam;
+  if (naam === 'verder') { weekASpringVerder(); return; }
+  weekASpringNaar(offset);
 }
 
 async function weekASpringNaar(offset) {
@@ -1399,11 +1407,11 @@ async function weekASpringNaar(offset) {
 
 function weekASpringVerder() {
   const invoer = prompt('Hoeveel weken vooruit (positief getal) of terug (negatief getal) wil je springen?\n\nBijvoorbeeld: 5 (over 5 weken) of -5 (5 weken geleden)', '4');
-  if (invoer === null) return;
+  if (invoer === null) { renderWeekAKiezerStrip(); return; }
   const offset = parseInt(invoer, 10);
-  if (isNaN(offset)) { alert('Vul een geldig getal in.'); return; }
+  if (isNaN(offset)) { alert('Vul een geldig getal in.'); renderWeekAKiezerStrip(); return; }
   const minOffset = weekAMinimaleOffset();
-  if (offset < minOffset) { alert(`Je kunt niet verder terug dan ${Math.abs(minOffset)} weken geleden.`); return; }
+  if (offset < minOffset) { alert(`Je kunt niet verder terug dan ${Math.abs(minOffset)} weken geleden.`); renderWeekAKiezerStrip(); return; }
   weekASpringNaar(offset);
 }
 
