@@ -1376,19 +1376,11 @@ function renderWeekAKiezerStrip() {
 
   const vorigeHtml = maakKnop('vorige', 'Vorige', `weekAKnopKlik('vorige', -1)`, !magVorige);
   const volgendeHtml = maakKnop('volgende', 'Volgende', `weekAKnopKlik('volgende', 1)`, !magVolgende);
-  const verderActief = weekAActieveKnop === 'verder';
-  const verderHtml = `<button type="button" onclick="weekAKnopKlik('verder')"
-    style="flex:1.6 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 4px;border-radius:6px;font-size:0.62rem;font-weight:700;
-    cursor:pointer;border:2px solid ${verderActief ? '#2dd4bf' : 'var(--border)'};background:${verderActief ? '#134e4a' : 'transparent'};color:${verderActief ? '#2dd4bf' : 'var(--subtle)'};
-    display:flex;align-items:center;justify-content:center;gap:3px;line-height:1">
-    <span style="font-size:0.75rem;line-height:1">←</span><span style="line-height:1">terug</span><span style="opacity:0.6;line-height:1">·</span><span style="line-height:1">verder</span><span style="font-size:0.75rem;line-height:1">→</span>
-  </button>`;
-  plek.innerHTML = vorigeHtml + verderHtml + volgendeHtml;
+  plek.innerHTML = vorigeHtml + volgendeHtml;
 }
 
 async function weekAKnopKlik(naam, richting) {
   weekAActieveKnop = naam;
-  if (naam === 'verder') { weekASpringVerder(); return; }
   const nieuweOffset = weekAOffset + richting;
   if (nieuweOffset < weekAMinimaleOffset()) { renderWeekAKiezerStrip(); return; }
   weekAOffset = nieuweOffset;
