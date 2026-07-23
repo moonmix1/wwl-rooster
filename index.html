@@ -1376,7 +1376,7 @@ function renderWeekAKiezerStrip() {
     return o < 0 ? `${Math.abs(o)} wk terug` : `+${o} wk`;
   };
   const chipHtml = opties.map(o => {
-    const actief = o === weekAOffset;
+    const actief = o === 1;
     const tekst = compactTekst(o);
     return `<button type="button" onclick="weekASpringNaar(${o})"
       style="flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
@@ -1384,8 +1384,10 @@ function renderWeekAKiezerStrip() {
       background:${actief ? '#134e4a' : 'var(--surface2)'};color:${actief ? '#2dd4bf' : 'var(--text)'}">${tekst}</button>`;
   }).join('');
   const verderHtml = `<button type="button" onclick="weekASpringVerder()"
-    style="flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
-    cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--subtle)">◂▸ verder/terug</button>`;
+    style="flex:1.6 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 4px;border-radius:6px;font-size:0.62rem;font-weight:700;
+    cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--subtle);display:flex;align-items:center;justify-content:center;gap:3px">
+    <span style="font-size:0.75rem">←</span><span>terug</span><span style="opacity:0.6">·</span><span>verder</span><span style="font-size:0.75rem">→</span>
+  </button>`;
   plek.innerHTML = chipHtml + verderHtml;
 }
 
