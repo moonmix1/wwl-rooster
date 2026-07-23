@@ -781,7 +781,7 @@
     <div id="week-a-kiezer-strip" style="display:flex;gap:4px;padding-bottom:6px;margin-bottom:14px"></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <div id="week-a-wis-knop-plek" style="flex-shrink:0"></div>
-      <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ hier iemands naam..." oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
+      <input type="text" id="naam-zoek-week" class="poll-input" placeholder="🔍 Typ iemand naam ⏎" oninput="naamZoekVerander(this.value)" style="margin-bottom:0;flex:1;min-width:120px">
     </div>
     <div id="week-a-tabel-wrap" style="overflow-x:auto;position:relative">
       <div id="lege-week-banner-a" class="lege-week-banner-in-content"></div>
@@ -857,7 +857,7 @@
 
   <div id="s-rotatie" class="sectie">
     <div class="sectie-titel">Rotatieschema – laatste 4 weken</div>
-    <input type="text" id="naam-zoek-rotatie" class="poll-input" placeholder="🔍 Typ hier iemands naam..." oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
+    <input type="text" id="naam-zoek-rotatie" class="poll-input" placeholder="🔍 Typ iemand naam ⏎" oninput="naamZoekVerander(this.value)" style="margin-bottom:14px">
     <p style="font-size:0.75rem;color:var(--muted);margin-bottom:14px">Na 4× bank op rij: verplicht minimaal 2 weken corvee.</p>
     <div class="rot-wrap"><table class="rot-tabel" id="rot-tabel"></table></div>
     <div style="display:flex;gap:16px;margin-top:12px;font-size:0.72rem;flex-wrap:wrap;color:var(--muted)">
@@ -1370,8 +1370,8 @@ function renderWeekAKiezerStrip() {
     const actief = weekAActieveKnop === naam;
     return `<button type="button" onclick="${onclickCode}" ${disabled ? 'disabled' : ''}
       style="flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
-      cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.35' : '1'};border:2px solid ${actief ? '#2dd4bf' : '#1a6b63'};
-      background:${actief ? '#134e4a' : '#0d2e2b'};color:${actief ? '#2dd4bf' : '#5eaba3'}">${label}</button>`;
+      cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.35' : '1'};border:2px solid ${actief ? '#22d3ee' : '#155e75'};
+      background:${actief ? '#134155' : '#0c2733'};color:${actief ? '#22d3ee' : '#5fb8cf'}">${label}</button>`;
   };
 
   const vorigeHtml = maakKnop('vorige', 'Vorige', `weekAKnopKlik('vorige', -1)`, !magVorige);
