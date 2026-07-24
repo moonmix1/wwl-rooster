@@ -27,7 +27,7 @@
   .header { background: var(--surface); border-bottom: 1px solid var(--border);
             padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
   .header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; color: white; }
-  .header p  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .header p  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; white-space: nowrap; }
   #klok  { font-size: 2rem; font-weight: 700; color: white; text-align: right; font-variant-numeric: tabular-nums; }
   #datum { font-size: 0.75rem; color: var(--muted); text-align: right; margin-top: 2px; }
   .setup-banner { background: #422006; border-bottom: 2px solid #f97316; padding: 12px 24px;
@@ -681,11 +681,11 @@
 
 <div class="header" style="flex-wrap:wrap;align-items:flex-start">
   <div style="display:flex;width:100%;align-items:flex-start;justify-content:space-between">
+    <div id="rooster-keuze-header" style="flex-shrink:0"></div>
     <div><h1>WWL</h1><p>Woon, Werk en Leerplek · Nijmegen</p></div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
       <div id="klok" style="font-size:1.3rem;white-space:nowrap">--:--</div>
       <div id="datum" style="font-size:0.7rem;color:var(--muted);text-align:right;white-space:nowrap"></div>
-      <div id="rooster-keuze-header"></div>
     </div>
   </div>
   <div style="display:flex;width:100%;align-items:flex-start;justify-content:space-between;margin-top:8px">
