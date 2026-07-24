@@ -1319,7 +1319,7 @@ function renderWeekANavigatieIndicator() {
   const plek = document.getElementById('week-a-navigatie-indicator');
   if (!plek) return;
   const MAX_STREEPJES = 4;
-  const AANTAL_ACTIEF = Math.min(Math.abs(weekAOffset), MAX_STREEPJES);
+  const AFSTAND = Math.min(Math.abs(weekAOffset), MAX_STREEPJES);
   const verleden = weekAOffset < 0;
   const toekomst = weekAOffset > 0;
   const isActueel = weekAOffset === 0;
@@ -1327,8 +1327,8 @@ function renderWeekANavigatieIndicator() {
   const maakZijde = (richting) => {
     const streepjes = [];
     for (let i = 0; i < MAX_STREEPJES; i++) {
-      const actief = (richting === 'links' && verleden && i < AANTAL_ACTIEF)
-        || (richting === 'rechts' && toekomst && i < AANTAL_ACTIEF);
+      const actief = (richting === 'links' && verleden && i === AFSTAND - 1)
+        || (richting === 'rechts' && toekomst && i === AFSTAND - 1);
       const kleur = richting === 'links' ? '#d2691e' : '#38bdf8';
       streepjes.push(`<div style="flex:1;height:100%;border-radius:3px;background:${actief ? kleur : 'rgba(255,255,255,0.08)'};transition:background 0.2s"></div>`);
     }
