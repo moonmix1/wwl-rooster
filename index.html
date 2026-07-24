@@ -4183,8 +4183,8 @@ function zetActiefRooster(type) {
 
 function renderRoosterKeuzeKnoppen() {
   const isB = actiefRoosterType === 'b';
-  const kleur24 = isB ? '#ff4d4d' : '#4a1414';
-  const kleur6 = !isB ? '#2eff85' : '#123d2c';
+  const kleur24 = isB ? '#ff3b3b' : '#7a2020';
+  const kleur6 = !isB ? '#22e065' : '#1f5c34';
   const urenWeekBlok = `
     <div style="width:36px;box-sizing:border-box;text-align:center;line-height:1.15">
       <div style="font-size:0.55rem;font-weight:800;color:#fff;white-space:nowrap">uren per</div>
@@ -4194,10 +4194,13 @@ function renderRoosterKeuzeKnoppen() {
     <div style="width:40px;box-sizing:border-box;text-align:center">
       <span style="font-size:1.15rem;font-weight:900;color:${kleur};line-height:1">${tekst}</span>
     </div>`;
+  const achtergrondTint = isB
+    ? 'linear-gradient(to right, rgba(255,59,59,0.18) 0%, rgba(255,59,59,0.18) 50%, transparent 50%, transparent 100%)'
+    : 'linear-gradient(to right, transparent 0%, transparent 50%, rgba(34,224,101,0.18) 50%, rgba(34,224,101,0.18) 100%)';
   const switchHtml = `
     <div style="display:inline-block">
       <div style="position:relative;display:grid;grid-template-columns:36px 40px 34px 40px 36px;align-items:center;width:193px;box-sizing:border-box;
-        border:2px solid #f5d800;border-radius:10px;padding:4px 6px">
+        border:2px solid #f5d800;border-radius:10px;padding:4px 6px;background:${achtergrondTint}">
         ${urenWeekBlok}
         ${cijferBlok('24', kleur24)}
         <div class="rooster-switch" onclick="zetActiefRooster('${isB ? 'a' : 'b'}')" style="cursor:pointer;justify-self:center">
