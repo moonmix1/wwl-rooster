@@ -1408,7 +1408,7 @@ function renderWeekAKiezerStrip() {
   const maakKnop = (naam, label, onclickCode, disabled) => {
     const actief = weekAActieveKnop === naam;
     return `<button type="button" onclick="${onclickCode}" ${disabled ? 'disabled' : ''}
-      style="flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
+      style="flex:0 0 auto;width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;
       cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.35' : '1'};border:2px solid ${actief ? '#22d3ee' : '#155e75'};
       background:${actief ? '#134155' : '#0c2733'};color:${actief ? '#22d3ee' : '#5fb8cf'}">${label}</button>`;
   };
