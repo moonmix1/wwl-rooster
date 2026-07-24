@@ -1209,10 +1209,14 @@ function weekAWaarschuwingHtml() {
     </div>`;
 }
 
-function weekAWisKnopHtml() {
-  return `<button type="button" onclick="weekAToonWisBevestiging()"
-    style="width:100%;height:100%;border:2px solid #ff3b3b;border-radius:8px;
-    color:#ff3b3b;background:transparent;font-weight:900;font-size:0.8rem;line-height:1.15;cursor:pointer">
+function weekAWisKnopHtml(gedempt) {
+  const randKleur = gedempt ? '#8a3030' : '#ff3b3b';
+  const tekstKleur = gedempt ? '#8a3030' : '#ff3b3b';
+  const disabledAttr = gedempt ? 'disabled' : '';
+  const cursor = gedempt ? 'not-allowed' : 'pointer';
+  return `<button type="button" onclick="weekAToonWisBevestiging()" ${disabledAttr}
+    style="width:100%;height:100%;border:2px solid ${randKleur};border-radius:8px;
+    color:${tekstKleur};background:#fff;font-weight:900;font-size:0.8rem;line-height:1.15;cursor:${cursor}">
     🗑 Wis alle<br>namen</button>`;
 }
 
@@ -1359,7 +1363,7 @@ function renderWeekALabel() {
   const toekomst = weekAOffset > 0;
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
 
-  const wisKnopHtml = (isCoordinator() && weekAOffset >= 0) ? weekAWisKnopHtml() : '';
+  const wisKnopHtml = isCoordinator() ? weekAWisKnopHtml(weekAOffset < 0) : '';
   const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
   if (wisKnopPlek) wisKnopPlek.innerHTML = wisKnopHtml ? `<div style="width:84px">${wisKnopHtml}</div>` : '';
 
