@@ -1415,7 +1415,7 @@ function renderWeekAKiezerStrip() {
 
   const vorigeHtml = maakKnop('vorige', 'Vorige', `weekAKnopKlik('vorige', -1)`, !magVorige);
   const volgendeHtml = maakKnop('volgende', 'Volgende', `weekAKnopKlik('volgende', 1)`, !magVolgende);
-  plek.innerHTML = vorigeHtml + volgendeHtml;
+  plek.innerHTML = `<div style="flex:1"></div>` + vorigeHtml + volgendeHtml;
 }
 
 async function weekAKnopKlik(naam, richting) {
