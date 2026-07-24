@@ -1314,10 +1314,11 @@ function weekAKorteTekstVoorOffset(offset) {
 function renderWeekANavigatieIndicator() {
   const plek = document.getElementById('week-a-navigatie-indicator');
   if (!plek) return;
-  const MAX_STREEPJES = 12;
+  const MAX_STREEPJES = 4;
   const AANTAL_ACTIEF = Math.min(Math.abs(weekAOffset), MAX_STREEPJES);
   const verleden = weekAOffset < 0;
   const toekomst = weekAOffset > 0;
+  const isActueel = weekAOffset === 0;
 
   const maakZijde = (richting) => {
     const streepjes = [];
@@ -1325,19 +1326,21 @@ function renderWeekANavigatieIndicator() {
       const actief = (richting === 'links' && verleden && i < AANTAL_ACTIEF)
         || (richting === 'rechts' && toekomst && i < AANTAL_ACTIEF);
       const kleur = richting === 'links' ? '#d2691e' : '#38bdf8';
-      streepjes.push(`<div style="flex:1;height:100%;border-radius:2px;background:${actief ? kleur : 'rgba(255,255,255,0.08)'};transition:background 0.2s"></div>`);
+      streepjes.push(`<div style="flex:1;height:100%;border-radius:3px;background:${actief ? kleur : 'rgba(255,255,255,0.08)'};transition:background 0.2s"></div>`);
     }
     return richting === 'links' ? streepjes.reverse() : streepjes;
   };
 
   const linksHtml = maakZijde('links').join('');
   const rechtsHtml = maakZijde('rechts').join('');
+  const nuKleur = isActueel ? '#f5d800' : 'rgba(255,255,255,0.08)';
+  const nuTekstKleur = isActueel ? '#1a1a1a' : 'rgba(255,255,255,0.3)';
 
   plek.innerHTML = `
-    <div style="display:flex;align-items:center;gap:2px;height:20px;padding:0 4px">
-      <div style="display:flex;gap:2px;flex:1;height:100%">${linksHtml}</div>
-      <div style="width:2px;height:100%;background:rgba(255,255,255,0.35);border-radius:1px;flex-shrink:0"></div>
-      <div style="display:flex;gap:2px;flex:1;height:100%">${rechtsHtml}</div>
+    <div style="display:flex;align-items:center;gap:3px;height:24px;padding:0 4px">
+      <div style="display:flex;gap:3px;flex:4;height:100%">${linksHtml}</div>
+      <div style="flex:2;height:100%;border-radius:4px;background:${nuKleur};display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:${nuTekstKleur};letter-spacing:0.05em;transition:background 0.2s">NU</div>
+      <div style="display:flex;gap:3px;flex:4;height:100%">${rechtsHtml}</div>
     </div>`;
 }
 
