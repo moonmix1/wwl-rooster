@@ -771,6 +771,7 @@
     </p>
     <div id="week-a-scan-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;background:#1a2744;border:1.5px solid #3d5a8a;font-size:0.8rem;color:#b0c4de"></div>
     <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
+    <div id="week-a-navigatie-indicator" style="margin-bottom:10px"></div>
     <div class="pr-nav" style="margin-bottom:14px">
       <button class="pr-nav-btn" id="week-a-vorige-btn" style="display:none" onclick="weekANavigeer(-1)">◀ Vorige week</button>
       <div class="pr-week-label" id="week-a-label"></div>
@@ -1310,7 +1311,38 @@ function weekAKorteTekstVoorOffset(offset) {
     : (offset < 0 ? `${Math.abs(offset)} wk geleden` : `Over ${offset} wk`)));
 }
 
+function renderWeekANavigatieIndicator() {
+  const plek = document.getElementById('week-a-navigatie-indicator');
+  if (!plek) return;
+  const MAX_STREEPJES = 12;
+  const AANTAL_ACTIEF = Math.min(Math.abs(weekAOffset), MAX_STREEPJES);
+  const verleden = weekAOffset < 0;
+  const toekomst = weekAOffset > 0;
+
+  const maakZijde = (richting) => {
+    const streepjes = [];
+    for (let i = 0; i < MAX_STREEPJES; i++) {
+      const actief = (richting === 'links' && verleden && i < AANTAL_ACTIEF)
+        || (richting === 'rechts' && toekomst && i < AANTAL_ACTIEF);
+      const kleur = richting === 'links' ? '#d2691e' : '#38bdf8';
+      streepjes.push(`<div style="flex:1;height:100%;border-radius:2px;background:${actief ? kleur : 'rgba(255,255,255,0.08)'};transition:background 0.2s"></div>`);
+    }
+    return richting === 'links' ? streepjes.reverse() : streepjes;
+  };
+
+  const linksHtml = maakZijde('links').join('');
+  const rechtsHtml = maakZijde('rechts').join('');
+
+  plek.innerHTML = `
+    <div style="display:flex;align-items:center;gap:2px;height:20px;padding:0 4px">
+      <div style="display:flex;gap:2px;flex:1;height:100%">${linksHtml}</div>
+      <div style="width:2px;height:100%;background:rgba(255,255,255,0.35);border-radius:1px;flex-shrink:0"></div>
+      <div style="display:flex;gap:2px;flex:1;height:100%">${rechtsHtml}</div>
+    </div>`;
+}
+
 function renderWeekALabel() {
+  renderWeekANavigatieIndicator();
   const labelEl = document.getElementById('week-a-label');
   if (!labelEl) return;
   const nietActueel = weekAOffset !== 0;
