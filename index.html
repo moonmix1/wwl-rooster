@@ -5182,7 +5182,13 @@ function initWeekSwipe(elementId, navigeerFn) {
 }
 setInterval(() => {
   initWeekSwipe('pr-layout-wrap', prWeekNavigeer);
+  initWeekSwipe('week-a-label', weekASwipeNavigeer);
 }, 800);
+
+function weekASwipeNavigeer(richting) {
+  if (richting === -1) weekAKnopKlik('vorige', -1);
+  else weekAKnopKlik('volgende', 1);
+}
 
 // ── DUBBELTIK-DETECTIE VOOR DIENST-VAKJES (voorkomt per ongeluk bewerken) ──
 (function initDubbeltikDetectie() {
