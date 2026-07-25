@@ -1359,7 +1359,7 @@ function renderWeekALabel() {
   const offsetTekst = weekAOffset === 0 ? 'Deze week'
     : (weekAOffset === -1 ? 'Vorige week'
     : (weekAOffset === 1 ? 'Volgende week'
-    : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `Over ${weekAOffset} weken`)));
+    : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `${weekAOffset} weken na nu`)));
   const toekomst = weekAOffset > 0;
   const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
 
@@ -1386,8 +1386,8 @@ function renderWeekALabel() {
         <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
       </div>`
     : `<div style="width:100%;text-align:center">
-        <div style="color:${kleur};font-weight:700;white-space:nowrap">🕓 ${offsetTekst}</div>
-        <div style="font-weight:500;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
+        <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
+        <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
       </div>`;
 
   const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%">
