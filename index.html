@@ -1330,7 +1330,9 @@ function renderWeekANavigatieIndicator() {
       const actief = (richting === 'links' && verleden && i === AFSTAND - 1)
         || (richting === 'rechts' && toekomst && i === AFSTAND - 1);
       const nummer = richting === 'links' ? -(i + 1) : (i + 1);
-      const achtergrond = actief ? '#22d3ee' : '#0c2733';
+      const achtergrond = richting === 'links'
+        ? (actief ? '#d2691e' : '#3a2414')
+        : (actief ? '#22d3ee' : '#0c2733');
       streepjes.push(`<div style="flex:1;height:100%;border-radius:3px;background:${achtergrond};display:flex;align-items:center;justify-content:center;font-size:0.62rem;font-weight:900;color:#fff;transition:background 0.2s">${nummer}</div>`);
     }
     return richting === 'links' ? streepjes.reverse() : streepjes;
@@ -1371,14 +1373,14 @@ function renderWeekALabel() {
   const MAX_SCROLL_WEKEN = 3;
   const magVorige = (weekAOffset - 1) >= weekAMinimaleOffset() && (weekAOffset - 1) >= -MAX_SCROLL_WEKEN;
   const magVolgende = (weekAOffset + 1) <= MAX_SCROLL_WEKEN;
-  const scrollZoneStijl = (disabled) => `display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;opacity:${disabled ? '0.3' : '1'};padding:4px 6px;flex-shrink:0;`;
+  const scrollZoneStijl = (disabled) => `display:flex;flex-direction:row;align-items:center;justify-content:center;gap:2px;opacity:${disabled ? '0.3' : '1'};flex-shrink:0;width:38px;`;
   const scrollLinksHtml = `<div style="${scrollZoneStijl(!magVorige)}">
-      <span style="font-size:1.6rem;line-height:1;color:#22d3ee">←</span>
-      <span style="font-size:0.5rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SWIPE</span>
+      <span style="font-size:1rem;line-height:1;color:#22d3ee">←</span>
+      <span style="font-size:0.42rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee">SWIPE</span>
     </div>`;
   const scrollRechtsHtml = `<div style="${scrollZoneStijl(!magVolgende)}">
-      <span style="font-size:0.5rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SWIPE</span>
-      <span style="font-size:1.6rem;line-height:1;color:#22d3ee">→</span>
+      <span style="font-size:0.42rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee">SWIPE</span>
+      <span style="font-size:1rem;line-height:1;color:#22d3ee">→</span>
     </div>`;
 
   const inhoudHtml = weekAOffset === 0
@@ -1391,7 +1393,7 @@ function renderWeekALabel() {
         <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}</div>
       </div>`;
 
-  const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%">
+  const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:2px;width:100%">
       ${scrollLinksHtml}
       <div style="flex:1;min-width:0">${inhoudHtml}</div>
       ${scrollRechtsHtml}
