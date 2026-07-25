@@ -1209,14 +1209,14 @@ function weekAWaarschuwingHtml() {
 }
 
 function weekAWisKnopHtml(gedempt) {
-  const randKleur = gedempt ? '#8a3030' : '#b91c1c';
-  const tekstKleur = gedempt ? '#7a4a4a' : '#fff';
-  const achtergrondKleur = gedempt ? '#2a1414' : '#b91c1c';
+  const randKleur = gedempt ? '#3a1010' : '#5a0f0f';
+  const tekstKleur = gedempt ? '#8a6060' : '#fff';
+  const achtergrondKleur = gedempt ? '#2a1414' : '#8a1c1c';
   const disabledAttr = gedempt ? 'disabled' : '';
   const cursor = gedempt ? 'not-allowed' : 'pointer';
   return `<button type="button" onclick="weekAToonWisBevestiging()" ${disabledAttr}
     style="width:100%;height:100%;border:2px solid ${randKleur};border-radius:8px;
-    color:${tekstKleur};background:${achtergrondKleur};font-weight:900;font-size:0.8rem;line-height:1.15;cursor:${cursor}">
+    color:${tekstKleur};background:${achtergrondKleur};font-weight:900;font-size:0.72rem;line-height:1.15;cursor:${cursor}">
     🗑 Wis alle<br>namen</button>`;
 }
 
@@ -1331,8 +1331,8 @@ function renderWeekANavigatieIndicator() {
         || (richting === 'rechts' && toekomst && i === AFSTAND - 1);
       const nummer = richting === 'links' ? -(i + 1) : (i + 1);
       const achtergrond = richting === 'links'
-        ? (actief ? '#d2691e' : '#1a0f08')
-        : (actief ? '#22d3ee' : '#0c2733');
+        ? (actief ? '#d2691e' : '#0f0805')
+        : (actief ? '#22d3ee' : '#134152');
       streepjes.push(`<div onclick="weekASpringNaarOffset(${nummer})" style="flex:1;height:100%;border-radius:3px;background:${achtergrond};display:flex;align-items:center;justify-content:center;font-size:0.62rem;font-weight:900;color:#fff;transition:background 0.2s;cursor:pointer">${nummer}</div>`);
     }
     return richting === 'links' ? streepjes.reverse() : streepjes;
