@@ -1318,7 +1318,7 @@ function weekAKorteTekstVoorOffset(offset) {
 function renderWeekANavigatieIndicator() {
   const plek = document.getElementById('week-a-navigatie-indicator');
   if (!plek) return;
-  const MAX_STREEPJES = 4;
+  const MAX_STREEPJES = 3;
   const AFSTAND = Math.min(Math.abs(weekAOffset), MAX_STREEPJES);
   const verleden = weekAOffset < 0;
   const toekomst = weekAOffset > 0;
@@ -1341,10 +1341,10 @@ function renderWeekANavigatieIndicator() {
   const nuTekstKleur = isActueel ? '#1a1a1a' : 'rgba(255,255,255,0.3)';
 
   plek.innerHTML = `
-    <div style="display:flex;align-items:center;gap:3px;height:24px;padding:0 4px">
-      <div style="display:flex;gap:3px;flex:4;height:100%">${linksHtml}</div>
-      <div style="flex:2;height:100%;border-radius:4px;background:${nuKleur};display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:${nuTekstKleur};letter-spacing:0.05em;transition:background 0.2s">NU</div>
-      <div style="display:flex;gap:3px;flex:4;height:100%">${rechtsHtml}</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:24px;padding:0 4px">
+      <div style="display:flex;gap:3px;flex:0 0 auto;width:96px;height:100%">${linksHtml}</div>
+      <div style="flex:0 0 auto;width:48px;height:100%;border-radius:4px;background:${nuKleur};display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:${nuTekstKleur};letter-spacing:0.05em;transition:background 0.2s">NU</div>
+      <div style="display:flex;gap:3px;flex:0 0 auto;width:96px;height:100%">${rechtsHtml}</div>
     </div>`;
 }
 
@@ -1367,13 +1367,15 @@ function renderWeekALabel() {
   const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
   if (wisKnopPlek) wisKnopPlek.innerHTML = wisKnopHtml ? `<div style="width:84px">${wisKnopHtml}</div>` : '';
 
-  const magVorige = (weekAOffset - 1) >= weekAMinimaleOffset();
+  const MAX_SCROLL_WEKEN = 3;
+  const magVorige = (weekAOffset - 1) >= weekAMinimaleOffset() && (weekAOffset - 1) >= -MAX_SCROLL_WEKEN;
+  const magVolgende = (weekAOffset + 1) <= MAX_SCROLL_WEKEN;
   const scrollZoneStijl = (disabled) => `display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.3' : '1'};padding:6px 10px;flex-shrink:0;border:2px solid #22d3ee;border-radius:8px;`;
   const scrollLinksHtml = `<div ${magVorige ? `onclick="weekAKnopKlik('vorige',-1)"` : ''} style="${scrollZoneStijl(!magVorige)}">
       <span style="font-size:1.6rem;line-height:1;color:#22d3ee">←</span>
       <span style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SCROLL</span>
     </div>`;
-  const scrollRechtsHtml = `<div onclick="weekAKnopKlik('volgende',1)" style="${scrollZoneStijl(false)}">
+  const scrollRechtsHtml = `<div ${magVolgende ? `onclick="weekAKnopKlik('volgende',1)"` : ''} style="${scrollZoneStijl(!magVolgende)}">
       <span style="font-size:1.6rem;line-height:1;color:#22d3ee">→</span>
       <span style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SCROLL</span>
     </div>`;
