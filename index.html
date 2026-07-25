@@ -1370,14 +1370,14 @@ function renderWeekALabel() {
   const MAX_SCROLL_WEKEN = 3;
   const magVorige = (weekAOffset - 1) >= weekAMinimaleOffset() && (weekAOffset - 1) >= -MAX_SCROLL_WEKEN;
   const magVolgende = (weekAOffset + 1) <= MAX_SCROLL_WEKEN;
-  const scrollZoneStijl = (disabled) => `display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.3' : '1'};padding:6px 10px;flex-shrink:0;border:2px solid #22d3ee;border-radius:8px;`;
+  const scrollZoneStijl = (disabled) => `display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;cursor:${disabled ? 'not-allowed' : 'pointer'};opacity:${disabled ? '0.3' : '1'};padding:4px 6px;flex-shrink:0;`;
   const scrollLinksHtml = `<div ${magVorige ? `onclick="weekAKnopKlik('vorige',-1)"` : ''} style="${scrollZoneStijl(!magVorige)}">
       <span style="font-size:1.6rem;line-height:1;color:#22d3ee">←</span>
-      <span style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SCROLL</span>
+      <span style="font-size:0.5rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SCROLL</span>
     </div>`;
   const scrollRechtsHtml = `<div ${magVolgende ? `onclick="weekAKnopKlik('volgende',1)"` : ''} style="${scrollZoneStijl(!magVolgende)}">
+      <span style="font-size:0.5rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SCROLL</span>
       <span style="font-size:1.6rem;line-height:1;color:#22d3ee">→</span>
-      <span style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;color:#22d3ee">SCROLL</span>
     </div>`;
 
   const inhoudHtml = weekAOffset === 0
