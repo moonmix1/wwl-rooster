@@ -1394,21 +1394,21 @@ function renderWeekALabel() {
       </div>`;
 
   const letterSpans = (letters) => letters.split('').map(l =>
-    `<span style="display:block;transform:rotate(90deg);font-size:0.5rem;font-weight:800;color:#22d3ee;line-height:1;margin:1px 0">${l}</span>`
+    `<span style="display:inline-block;transform:rotate(90deg);font-size:0.62rem;font-weight:800;color:#22d3ee;line-height:1;width:11px;height:11px;text-align:center">${l}</span>`
   ).join('');
 
-  const swipeLinksHtml = `<div style="position:relative;width:20px;height:48px;flex-shrink:0">
-      <div style="position:absolute;inset:0;border:2px solid #22d3ee;border-right:none;border-radius:20px 0 0 20px;"></div>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">${letterSpans('SWIPE')}</div>
-      <span style="position:absolute;left:-9px;top:50%;transform:translateY(-50%);font-size:0.85rem;font-weight:900;line-height:1;color:#22d3ee">←</span>
+  const swipeLinksHtml = `<div style="position:relative;width:26px;height:64px;flex-shrink:0">
+      <div style="position:absolute;inset:0;border:2px solid #22d3ee;border-right:none;border-radius:26px 0 0 26px;"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">${letterSpans('SWIPE')}</div>
+      <span style="position:absolute;left:-30px;top:50%;transform:translateY(-50%);font-size:3.4rem;font-weight:900;line-height:1;color:#22d3ee">←</span>
     </div>`;
-  const swipeRechtsHtml = `<div style="position:relative;width:20px;height:48px;flex-shrink:0">
-      <div style="position:absolute;inset:0;border:2px solid #22d3ee;border-left:none;border-radius:0 20px 20px 0;"></div>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">${letterSpans('SWIPE')}</div>
-      <span style="position:absolute;right:-9px;top:50%;transform:translateY(-50%);font-size:0.85rem;font-weight:900;line-height:1;color:#22d3ee">→</span>
+  const swipeRechtsHtml = `<div style="position:relative;width:26px;height:64px;flex-shrink:0">
+      <div style="position:absolute;inset:0;border:2px solid #22d3ee;border-left:none;border-radius:0 26px 26px 0;"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">${letterSpans('SWIPE')}</div>
+      <span style="position:absolute;right:-30px;top:50%;transform:translateY(-50%);font-size:3.4rem;font-weight:900;line-height:1;color:#22d3ee">→</span>
     </div>`;
 
-  const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%">
+  const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:24px;width:100%">
       ${swipeLinksHtml}
       <div style="flex:1;min-width:0">${inhoudHtml}</div>
       ${swipeRechtsHtml}
