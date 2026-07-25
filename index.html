@@ -1393,9 +1393,17 @@ function renderWeekALabel() {
         <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}</div>
       </div>`;
 
-  const swipeRechtsHtml = `<span style="font-size:1.5rem;font-weight:900;line-height:1;color:#22d3ee;flex-shrink:0">→</span>`;
+  const letterSpans = (letters) => letters.split('').map(l =>
+    `<span style="display:inline-block;transform:rotate(90deg);font-size:0.62rem;font-weight:800;color:#22d3ee;line-height:1;width:11px;height:11px;text-align:center">${l}</span>`
+  ).join('');
 
-  const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%">
+  const swipeRechtsHtml = `<div style="position:relative;width:26px;height:64px;flex-shrink:0">
+      <div style="position:absolute;inset:0;border:2px solid #22d3ee;border-left:none;border-radius:0 26px 26px 0;"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">${letterSpans('SWIPE')}</div>
+      <span style="position:absolute;right:-30px;top:50%;transform:translateY(-50%);font-size:3.4rem;font-weight:900;line-height:1;color:#22d3ee">→</span>
+    </div>`;
+
+  const middenHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:24px;width:100%">
       <div style="flex:1;min-width:0">${inhoudHtml}</div>
       ${swipeRechtsHtml}
     </div>`;
