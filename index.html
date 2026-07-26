@@ -1393,8 +1393,8 @@ function renderWeekALabel() {
         <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}</div>
       </div>`;
 
-  const swipeLinksHtml = `<div style="position:absolute;left:40px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-right:10.67px solid #22d3ee;"></div>`;
-  const swipeRechtsHtml = `<div style="position:absolute;right:40px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-left:10.67px solid #22d3ee;"></div>`;
+  const swipeLinksHtml = `<div style="position:absolute;left:40px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-right:10.67px solid #d1d5db;"></div>`;
+  const swipeRechtsHtml = `<div style="position:absolute;right:40px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-left:10.67px solid #d1d5db;"></div>`;
   const swipeTekstLinksHtml = `<div style="position:absolute;left:56px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;white-space:nowrap">SWIPE</div>`;
   const swipeTekstRechtsHtml = `<div style="position:absolute;right:56px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;white-space:nowrap">SWIPE</div>`;
 
@@ -4219,7 +4219,7 @@ function prDatumKey(datum) {
 }
 
 function prFormatDatum(datum) {
-  return datum.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+  return datum.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 }
 
 async function laadActiefRoosterType() {
@@ -4457,29 +4457,23 @@ async function renderPapierRooster(voorafGeladenData) {
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
-    const waarschuwingHtml = nietActueel ? prWaarschuwingHtml() : '';
     const wisKnopHtml = (isCoordinator() && prWeekOffset >= 0) ? prWisKnopHtml(weekKey, dinsdag) : '';
-    const linkerSlot = waarschuwingHtml;
-    const rechterSlot = wisKnopHtml;
-    const SLOT_STIJL = 'flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:center;';
     const middenHtml = prWeekOffset === 0
-      ? `<div style="padding:4px;border-radius:9px;background:repeating-linear-gradient(45deg, #ff8c00 0 7px, #fff 7px 14px);display:inline-block">
-          <div style="border-radius:6px;padding:8px 20px;display:inline-block;background:#ff8c00">
-            <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-            <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
-          </div>
+      ? `<div style="width:100%;box-sizing:border-box;text-align:center">
+          <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`
-      : `<div>
-          <div style="color:${kleur};white-space:nowrap">🕓 ${offsetTekst}</div>
-          <div style="font-weight:600;font-size:0.76rem;line-height:1.2em;height:2.4em;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:${kleur}">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
+      : `<div style="width:100%;text-align:center">
+          <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
+          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`;
     labelEl.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px">
-        <div style="${SLOT_STIJL}">${linkerSlot}</div>
-        <div style="flex:1;display:flex;justify-content:center;min-width:0">${middenHtml}</div>
-        <div style="${SLOT_STIJL}">${rechterSlot}</div>
+        <div style="flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:flex-start">${wisKnopHtml}</div>
+        <div style="width:fit-content;max-width:100%;margin:0 auto">${middenHtml}</div>
+        <div style="flex:0 0 84px;width:84px"></div>
       </div>`;
-    labelEl.parentElement.style.opacity = nietActueel ? '0.85' : '1';
+    labelEl.parentElement.style.opacity = '1';
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
   const volgendeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(1)"]');
