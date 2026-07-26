@@ -1402,10 +1402,12 @@ function renderWeekALabel() {
   const swipeTekstLinksHtml = `<div style="position:absolute;left:23px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:${kleur};white-space:nowrap">SWIPE</div>`;
   const swipeTekstRechtsHtml = `<div style="position:absolute;right:23px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:${kleur};white-space:nowrap">SWIPE</div>`;
 
+  const achtergrondBlok = weekAOffset === 0 ? '#7B3F00' : 'transparent';
+
   labelEl.innerHTML = `
     <div style="position:relative;width:100%;height:44px">
       <div style="width:240px;max-width:100%;margin:0 auto;height:100%;display:flex;align-items:center">
-        <div style="position:relative;width:100%;height:100%;border:2px solid ${kleur};border-radius:8px;display:flex;align-items:center;justify-content:center">
+        <div style="position:relative;width:100%;height:100%;border:2px solid ${kleur};border-radius:8px;background:${achtergrondBlok};display:flex;align-items:center;justify-content:center">
           ${inhoudHtml}
           ${swipeLinksHtml}
           ${swipeTekstLinksHtml}
