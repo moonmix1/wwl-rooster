@@ -1377,7 +1377,7 @@ function renderWeekALabel() {
     : (weekAOffset === 1 ? 'Volgende week'
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken terug` : `${weekAOffset} weken na nu`)));
   const toekomst = weekAOffset > 0;
-  const kleur = weekAOffset === 0 ? '#fff' : (toekomst ? '#3d8a99' : '#8a5330');
+  const kleur = weekAOffset === 0 ? '#e8e2e5' : (toekomst ? '#3d8a99' : '#8a5330');
 
   const wisKnopHtml = isCoordinator() ? weekAWisKnopHtml(weekAOffset < 0) : '';
   const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
