@@ -4313,8 +4313,10 @@ function prMinimaleWeekOffset() {
 }
 
 function prWeekNavigeer(richting) {
+  const MAX_SCROLL_WEKEN = 3;
   const nieuweOffset = prWeekOffset + richting;
   if (nieuweOffset < prMinimaleWeekOffset()) return;
+  if (nieuweOffset < -MAX_SCROLL_WEKEN || nieuweOffset > MAX_SCROLL_WEKEN) return;
   prWeekOffset = nieuweOffset;
   renderPapierRooster();
 }
@@ -4457,9 +4459,9 @@ async function renderPapierRooster(voorafGeladenData) {
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
-    const wisKnopHtml = (isCoordinator() && prWeekOffset >= 0) ? prWisKnopHtml(weekKey, dinsdag) : '';
+    const wisKnopHtml = isCoordinator() ? prWisKnopHtml(weekKey, dinsdag, prWeekOffset < 0) : '';
     const middenHtml = prWeekOffset === 0
-      ? `<div style="width:100%;box-sizing:border-box;text-align:center">
+      ? `<div style="width:100%;box-sizing:border-box;text-align:center;border:2px solid #fff;border-radius:8px;padding:6px 10px">
           <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`
@@ -4477,13 +4479,19 @@ async function renderPapierRooster(voorafGeladenData) {
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
   const volgendeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(1)"]');
+  const MAX_SCROLL_WEKEN_UI = 3;
   if (vorigeBtn) {
-    const magTerug = (prWeekOffset - 1) >= prMinimaleWeekOffset();
+    const magTerug = (prWeekOffset - 1) >= prMinimaleWeekOffset() && (prWeekOffset - 1) >= -MAX_SCROLL_WEKEN_UI;
     vorigeBtn.disabled = !magTerug;
     vorigeBtn.style.opacity = magTerug ? '1' : '0.35';
     vorigeBtn.style.cursor = magTerug ? 'pointer' : 'not-allowed';
   }
-  if (volgendeBtn) { volgendeBtn.disabled = false; volgendeBtn.style.opacity = '1'; }
+  if (volgendeBtn) {
+    const magVerder = (prWeekOffset + 1) <= MAX_SCROLL_WEKEN_UI;
+    volgendeBtn.disabled = !magVerder;
+    volgendeBtn.style.opacity = magVerder ? '1' : '0.35';
+    volgendeBtn.style.cursor = magVerder ? 'pointer' : 'not-allowed';
+  }
   const prLayout = document.querySelector('#s-papierrooster .pr-layout');
   if (prLayout) {
     prLayout.classList.remove('week-afzetlint-verleden', 'week-afzetlint-toekomst');
@@ -4991,10 +4999,15 @@ function prWaarschuwingHtml() {
     </div>`;
 }
 
-function prWisKnopHtml(weekKey, dinsdag) {
-  return `<button type="button" onclick="prToonWisBevestiging('${weekKey}')"
-    style="width:100%;height:48px;border:2px solid #ff3b3b;border-radius:8px;
-    color:#ff3b3b;background:transparent;font-weight:900;font-size:0.8rem;line-height:1.15;cursor:pointer">
+function prWisKnopHtml(weekKey, dinsdag, gedempt) {
+  const randKleur = gedempt ? '#3a1010' : '#5a0f0f';
+  const tekstKleur = gedempt ? '#8a6060' : '#fff';
+  const achtergrondKleur = gedempt ? '#2a1414' : '#8a1c1c';
+  const disabledAttr = gedempt ? 'disabled' : '';
+  const cursor = gedempt ? 'not-allowed' : 'pointer';
+  return `<button type="button" onclick="prToonWisBevestiging('${weekKey}')" ${disabledAttr}
+    style="width:100%;height:40px;border:2px solid ${randKleur};border-radius:8px;
+    color:${tekstKleur};background:${achtergrondKleur};font-weight:900;font-size:0.65rem;line-height:1.1;cursor:${cursor}">
     🗑 Wis alle<br>namen</button>`;
 }
 
