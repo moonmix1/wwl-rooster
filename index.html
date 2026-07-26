@@ -19,6 +19,7 @@
     --corvee: #fb923c; --corvee-bg: #431407; --corvee-border: #9a3412;
     --kook: #4ade80; --kook-bg: #052e16; --kook-border: #166534;
     --bankoch: #60a5fa; --bankoch-bg: #0c1d3d; --bankoch-border: #1d4ed8;
+    --concierge: #f87171; --concierge-bg: #3d0f0f; --concierge-border: #b91c1c;
     --warn: #f87171; --warn-bg: #3b0a0a; --oranje: #fb923c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,10 +98,12 @@
   .kaart-bankoch { background: var(--bankoch-bg); border-color: var(--bankoch-border); }
   .kaart-corvee  { background: var(--corvee-bg);  border-color: var(--corvee-border); }
   .kaart-kook    { background: var(--kook-bg);    border-color: var(--kook-border); }
+  .kaart-concierge { background: var(--concierge-bg); border-color: var(--concierge-border); }
   .kaart-bank .rol    { color: var(--bank); }
   .kaart-bankoch .rol { color: var(--bankoch); }
   .kaart-corvee .rol  { color: var(--corvee); }
   .kaart-kook .rol    { color: var(--kook); }
+  .kaart-concierge .rol { color: var(--concierge); }
   .week-tabel { width: 520px; border-collapse: collapse; table-layout: fixed; }
   .week-tabel th:first-child, .week-tabel td:first-child { width: 72px; min-width: 72px; }
   .week-tabel th:not(:first-child), .week-tabel td:not(:first-child) { width: 112px; min-width: 112px; }
@@ -225,6 +228,7 @@
   .pill-bankoch { background: var(--bankoch-bg); color: var(--bankoch); border: 1px solid var(--bankoch-border); }
   .pill-corvee  { background: var(--corvee-bg);  color: var(--corvee);  border: 1px solid var(--corvee-border); }
   .pill-kook    { background: var(--kook-bg);    color: var(--kook);    border: 1px solid var(--kook-border); }
+  .pill-concierge { background: var(--concierge-bg); color: var(--concierge); border: 1px solid var(--concierge-border); }
   .rot-wrap { overflow-x: auto; }
   .rot-tabel { border-collapse: collapse; min-width: 100%; font-size: 0.75rem; }
   .rot-tabel th { background: var(--surface2); color: var(--muted); padding: 8px 10px;
@@ -2178,13 +2182,22 @@ function renderVandaag() {
   laadMeldingen();
 }
 
+const SPECIALE_FUNCTIE_TREFWOORDEN = ['concier', 'beveil', 'bewaker', 'bewaking', 'nachtw', 'nachtbe', 'brandwa'];
+
+function heeftSpecialeFunctie(naam) {
+  const laag = naam.toLowerCase();
+  return SPECIALE_FUNCTIE_TREFWOORDEN.some(t => laag.includes(t));
+}
+
 function pill(naam, type, dag, rolKey, meervoudigSet, weekStartOverride) {
   const rawNaam = naam.replace('★','').trim();
   const isB = bewonersBeheerSet.has(rawNaam);
   const isExtra = meervoudigSet ? meervoudigSet.has(rawNaam) : naam.includes('★');
   const kleur = naamMatchKleuren[rawNaam];
   const bewerkbaar = gpBeheerActief() && dag && rolKey;
+  const isSpeciaal = heeftSpecialeFunctie(rawNaam);
   let stijl = 'position:relative;';
+  if (isSpeciaal) stijl += `background:var(--concierge-bg) !important;color:var(--concierge) !important;border-color:var(--concierge-border) !important;`;
   if (kleur) stijl += `box-shadow:0 0 0 3px ${kleur};`;
   if (bewerkbaar) stijl += 'cursor:pointer;border:1px dashed rgba(255,255,255,0.45);';
   const attrs = (stijl ? ` style="${stijl}"` : '') + (bewerkbaar ? ` data-dubbeltik="bewerkRoosterCel('${dag}','${rolKey}','${weekStartOverride||''}')"` : '');
