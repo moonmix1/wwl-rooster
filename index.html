@@ -1397,18 +1397,22 @@ function renderWeekALabel() {
         <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}</div>
       </div>`;
 
-  const swipeLinksHtml = `<div style="position:absolute;left:40px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-right:10.67px solid ${kleur};"></div>`;
-  const swipeRechtsHtml = `<div style="position:absolute;right:40px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-left:10.67px solid ${kleur};"></div>`;
-  const swipeTekstLinksHtml = `<div style="position:absolute;left:56px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:${kleur};white-space:nowrap">SWIPE</div>`;
-  const swipeTekstRechtsHtml = `<div style="position:absolute;right:56px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:${kleur};white-space:nowrap">SWIPE</div>`;
+  const swipeLinksHtml = `<div style="position:absolute;left:52px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-right:10.67px solid ${kleur};"></div>`;
+  const swipeRechtsHtml = `<div style="position:absolute;right:52px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7.33px solid transparent;border-bottom:7.33px solid transparent;border-left:10.67px solid ${kleur};"></div>`;
+  const swipeTekstLinksHtml = `<div style="position:absolute;left:68px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:${kleur};white-space:nowrap">SWIPE</div>`;
+  const swipeTekstRechtsHtml = `<div style="position:absolute;right:68px;top:50%;transform:translateY(-50%);font-size:0.6rem;font-weight:800;letter-spacing:0.05em;color:${kleur};white-space:nowrap">SWIPE</div>`;
 
   labelEl.innerHTML = `
     <div style="position:relative;width:100%;height:44px">
-      <div style="width:fit-content;max-width:100%;margin:0 auto">${inhoudHtml}</div>
-      ${swipeLinksHtml}
-      ${swipeTekstLinksHtml}
-      ${swipeRechtsHtml}
-      ${swipeTekstRechtsHtml}
+      <div style="width:fit-content;max-width:100%;margin:0 auto;height:100%;display:flex;align-items:center">
+        <div style="position:relative;border:2px solid ${kleur};border-radius:8px;padding:6px 84px">
+          ${inhoudHtml}
+          ${swipeLinksHtml}
+          ${swipeTekstLinksHtml}
+          ${swipeRechtsHtml}
+          ${swipeTekstRechtsHtml}
+        </div>
+      </div>
     </div>`;
 
   const vorigeBtn = document.getElementById('week-a-vorige-btn');
