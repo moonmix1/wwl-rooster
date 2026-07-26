@@ -1344,7 +1344,7 @@ function renderWeekANavigatieIndicator() {
 
   const linksHtml = maakZijde('links').join('');
   const rechtsHtml = maakZijde('rechts').join('');
-  const nuKleur = isActueel ? '#f5d800' : 'rgba(255,255,255,0.08)';
+  const nuKleur = isActueel ? '#fff' : 'rgba(255,255,255,0.08)';
   const nuTekstKleur = isActueel ? '#1a1a1a' : 'rgba(255,255,255,0.3)';
 
   plek.innerHTML = `
@@ -1377,7 +1377,7 @@ function renderWeekALabel() {
     : (weekAOffset === 1 ? 'Volgende week'
     : (weekAOffset < 0 ? `${Math.abs(weekAOffset)} weken geleden` : `${weekAOffset} weken na nu`)));
   const toekomst = weekAOffset > 0;
-  const kleur = weekAOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
+  const kleur = weekAOffset === 0 ? '#fff' : (toekomst ? '#7dd3fc' : '#d2691e');
 
   const wisKnopHtml = isCoordinator() ? weekAWisKnopHtml(weekAOffset < 0) : '';
   const wisKnopPlek = document.getElementById('week-a-wis-knop-plek');
