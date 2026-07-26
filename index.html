@@ -1348,10 +1348,10 @@ function renderWeekANavigatieIndicator() {
   const nuTekstKleur = isActueel ? '#1a1a1a' : 'rgba(255,255,255,0.3)';
 
   plek.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:24px;padding:0 4px">
-      <div style="display:flex;gap:3px;flex:0 0 auto;width:96px;height:100%">${linksHtml}</div>
-      <div onclick="weekASpringNaarOffset(0)" style="flex:0 0 auto;width:48px;height:100%;border-radius:4px;background:${nuKleur};display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:${nuTekstKleur};letter-spacing:0.05em;transition:background 0.2s;cursor:pointer">NU</div>
-      <div style="display:flex;gap:3px;flex:0 0 auto;width:96px;height:100%">${rechtsHtml}</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:24px;padding:0">
+      <div style="display:flex;gap:3px;flex:1;height:100%">${linksHtml}</div>
+      <div onclick="weekASpringNaarOffset(0)" style="flex:0 0 auto;width:72px;height:100%;border-radius:4px;background:${nuKleur};display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:${nuTekstKleur};letter-spacing:0.05em;transition:background 0.2s;cursor:pointer">NU</div>
+      <div style="display:flex;gap:3px;flex:1;height:100%">${rechtsHtml}</div>
     </div>`;
 }
 
