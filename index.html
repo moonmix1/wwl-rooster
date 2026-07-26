@@ -1388,7 +1388,7 @@ function renderWeekALabel() {
   const magVolgende = (weekAOffset + 1) <= MAX_SCROLL_WEKEN;
 
   const achtergrondBlok = weekAOffset === 0 ? '#2e1500' : (toekomst ? '#082a33' : '#231207');
-  const tekstInBlok = kleur;
+  const tekstInBlok = weekAOffset === 0 ? '#fff' : kleur;
 
   const inhoudHtml = weekAOffset === 0
     ? `<div style="width:100%;box-sizing:border-box;text-align:center">
@@ -2231,8 +2231,8 @@ function renderWeek() {
   const beheer = gpBeheerActief();
   const meervoudig = berekenMeervoudigeDiensten(huidigRooster);
   const legePlek = (dagKey, rolKey, standaardTekst, weekStartVoorRij) => beheer
-    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px" onclick="bewerkRoosterCel('${dagKey}','${rolKey}','${weekStartVoorRij}')">+ toewijzen</button>`
-    : standaardTekst;
+    ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px;width:100%;min-height:42px;box-sizing:border-box" onclick="bewerkRoosterCel('${dagKey}','${rolKey}','${weekStartVoorRij}')">+ toewijzen</button>`
+    : `<div style="min-height:42px;display:flex;align-items:center;justify-content:center;width:100%;box-sizing:border-box">${standaardTekst}</div>`;
   const maakRij = (dagNaamLabel, i, basisTuesday, dataBron, weekStartVoorRij) => {
     const datum = new Date(basisTuesday.getTime() + i * 86400000);
     const dagKey = prDatumKey(datum);
