@@ -1073,9 +1073,9 @@ function weekAMinimaleOffset() {
 }
 
 function weekAWeekStartVoorOffset(offset) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset * 7);
-  return weekStartVan(d);
+  const dinsdag = prDinsdagVanWeek(offset);
+  const woensdag = new Date(dinsdag.getTime() + 86400000);
+  return prDatumKey(woensdag);
 }
 
 async function gaNaarActueleWeek() {
