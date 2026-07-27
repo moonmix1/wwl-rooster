@@ -827,17 +827,6 @@
               <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
               <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
             </tr></thead>
-            <tbody id="pr-dinsdag-body"></tbody>
-          </table>
-        </div>
-        <div style="overflow-x:auto;margin-top:14px">
-          <table class="pr-tabel">
-            <thead><tr>
-              <th>Dag</th>
-              <th>Dagdienst<br><span class="pr-tijd">10.00–18.00</span></th>
-              <th>Avonddienst<br><span class="pr-tijd">18.00–02.00</span></th>
-              <th>Nachtdienst<br><span class="pr-tijd">02.00–10.00</span></th>
-            </tr></thead>
             <tbody id="pr-body"></tbody>
           </table>
         </div>
@@ -4526,9 +4515,8 @@ async function renderPapierRooster(voorafGeladenData) {
     else if (prWeekOffset > 0) prLayout.classList.add('week-afzetlint-toekomst');
   }
 
-  const dinsdagBody = document.getElementById('pr-dinsdag-body');
   const restBody = document.getElementById('pr-body');
-  if (!dinsdagBody || !restBody) return;
+  if (!restBody) return;
   restBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px;height:540px;vertical-align:middle">⏳ Laden…</td></tr>';
 
   let weekData = {};
@@ -4635,7 +4623,6 @@ async function renderPapierRooster(voorafGeladenData) {
     </tr>`;
   };
 
-  dinsdagBody.innerHTML = '';
   const alleRijenB = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('') +
     maakRij(PR_DAGEN[0], 0, { basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende });
   restBody.innerHTML = alleRijenB;
@@ -4754,7 +4741,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
-           ${statusTekstZichtbaar} <span style="font-size:2em;line-height:1;vertical-align:middle;margin-left:8px;display:inline-block">▾</span>
+           ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:8px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
