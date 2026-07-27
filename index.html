@@ -775,6 +775,7 @@
     </p>
     <div id="week-a-scan-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;background:#1a2744;border:1.5px solid #3d5a8a;font-size:0.8rem;color:#b0c4de"></div>
     <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
+    <div id="week-a-debug-tijdelijk" style="display:none"></div>
     <div id="week-a-navigatie-indicator" style="margin-bottom:10px"></div>
     <div class="pr-nav" style="margin-bottom:14px">
       <button class="pr-nav-btn" id="week-a-vorige-btn" style="display:none" onclick="weekANavigeer(-1)">◀ Vorige week</button>
@@ -1109,7 +1110,21 @@ async function weekALaadVoorOffset() {
   if (!supabaseActief) return;
   const weekStart = weekAWeekStartVoorOffset(weekAOffset);
   const tuesday = prDinsdagVanWeek(weekAOffset);
-  const {data: rij} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
+  const {data: rij, error} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
+
+  // TIJDELIJKE DEBUG-WEERGAVE — verwijderen zodra probleem is opgelost
+  const debugPlek = document.getElementById('week-a-debug-tijdelijk');
+  if (debugPlek) {
+    debugPlek.style.display = 'block';
+    debugPlek.innerHTML = `
+      <div style="background:#3b0a0a;border:2px solid #f87171;border-radius:8px;padding:10px;margin-bottom:10px;font-size:0.7rem;color:#fff;white-space:pre-wrap;word-break:break-all">
+DEBUG — opgevraagde week_start: ${weekStart}
+Supabase error: ${error ? JSON.stringify(error) : 'geen'}
+Rij gevonden: ${rij ? 'JA' : 'NEE'}
+${rij ? 'dagen-inhoud (eerste 300 tekens): ' + JSON.stringify(rij.dagen).slice(0,300) : ''}
+      </div>`;
+  }
+
   if (rij) { huidigRooster = weekAMigreerNaarDatumKeys(rij.dagen, tuesday); }
   else if (weekAOffset === 0) { await zorgVoorHuidigeWeek(); }
   else { huidigRooster = weekALegeWeek(tuesday); }
