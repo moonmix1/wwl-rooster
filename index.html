@@ -191,14 +191,14 @@
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 20px; column-gap: 6px; row-gap: 2px;
-    padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; min-height: 34px; height: 34px; }
+    padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pr-uren-rij-top { display: contents; }
-  .pr-uren-naam { grid-column: 2; position: relative; overflow: hidden; min-width: 0; max-height: 26px; align-self: center; }
+  .pr-uren-naam { grid-column: 2; position: relative; overflow: hidden; min-width: 0; }
   .pr-uren-naam-tekst { display: block; font-size: 0.82rem; color: #e0e0e0; font-weight: 600;
-    overflow: hidden; text-overflow: clip; white-space: normal; word-break: break-word; text-align: center; line-height: 1.05; max-height: 26px; }
+    overflow: hidden; text-overflow: clip; white-space: normal; word-break: break-word; text-align: center; line-height: 1.15; }
   .pr-uren-huisje-badge { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.68rem; }
   .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
@@ -4635,12 +4635,10 @@ async function renderPapierRooster(voorafGeladenData) {
     </tr>`;
   };
 
-  dinsdagBody.innerHTML = maakRij(PR_DAGEN[0], 0);
-  const middenRijenB = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('');
-  const sluitingsRijB = maakRij(PR_DAGEN[0], 0, {
-    basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende
-  });
-  restBody.innerHTML = middenRijenB + sluitingsRijB;
+  dinsdagBody.innerHTML = '';
+  const alleRijenB = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('') +
+    maakRij(PR_DAGEN[0], 0, { basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende });
+  restBody.innerHTML = alleRijenB;
 }
 
 const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
