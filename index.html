@@ -191,7 +191,7 @@
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 20px; column-gap: 6px; row-gap: 2px;
-    padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+    padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; min-height: 34px; height: 34px; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -3145,6 +3145,15 @@ function renderGPNieuwKnop() {
 function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+// Elk woord na een spatie wordt 30% kleiner dan het vorige woord (helpt lange namen op 1 regel passen
+// zonder de container te vergroten). Bij doortypen/extra spaties kan de tekst alsnog naar een 2e regel gaan.
+function naamMetKrimpendeWoorden(naam, basisRem) {
+  const woorden = String(naam || '').split(' ');
+  return woorden.map((w, i) => {
+    const factor = Math.pow(0.7, i);
+    return `<span style="font-size:${(basisRem * factor).toFixed(3)}rem">${escHtml(w)}</span>`;
+  }).join(' ');
+}
 function berichtTekstHtml(s) {
   return escHtml(s).replace(/\n/g, '<br>');
 }
@@ -4746,7 +4755,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return `<div class="pr-uren-rij ${klasse}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
-        <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${escHtml(naam)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
+        <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
         <span class="pr-uren-uur">${uren[naam]}</span>
       </div>
       ${statusVeld}
