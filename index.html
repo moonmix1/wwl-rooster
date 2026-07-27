@@ -799,16 +799,6 @@
           <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
           <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
         </tr></thead>
-        <tbody id="week-a-dinsdag-body"></tbody>
-      </table>
-      <table class="week-tabel" style="margin-top:14px">
-        <thead><tr>
-          <th>Dag</th>
-          <th style="color:var(--bankoch)">Bank ochtend<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">10–16u</span></th>
-          <th style="color:var(--kook)">Kook<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">14–17u</span></th>
-          <th style="color:var(--bank)">Bank avond<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">16–22u</span></th>
-          <th style="color:var(--corvee)">Corvee<br><span style="font-weight:400;font-size:0.65rem;color:var(--subtle)">18–22u</span></th>
-        </tr></thead>
         <tbody id="week-body"></tbody>
       </table>
     </div>
@@ -1527,10 +1517,10 @@ function weekStartVan(datum) {
 }
 
 // ── ROOSTER A: DATUM-SLEUTELS I.P.V. WEEKDAG-NAMEN ──
-const WEEK_A_VOLGORDE = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
+const WEEK_A_VOLGORDE = ["Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag","Dinsdag"];
 
 function weekADatumKeys(tuesdayDate) {
-  return WEEK_A_VOLGORDE.map((_, i) => prDatumKey(new Date(tuesdayDate.getTime() + i * 86400000)));
+  return WEEK_A_VOLGORDE.map((_, i) => prDatumKey(new Date(tuesdayDate.getTime() + (i + 1) * 86400000)));
 }
 
 function weekALegeWeek(tuesdayDate) {
@@ -2249,8 +2239,8 @@ function renderWeek() {
   const legePlek = (dagKey, rolKey, standaardTekst, weekStartVoorRij) => beheer
     ? `<button class="cam-btn" style="font-size:0.68rem;padding:4px 10px;border-radius:6px;width:100%;min-height:42px;box-sizing:border-box" onclick="bewerkRoosterCel('${dagKey}','${rolKey}','${weekStartVoorRij}')">+ toewijzen</button>`
     : `<div style="min-height:42px;display:flex;align-items:center;justify-content:center;width:100%;box-sizing:border-box">${standaardTekst}</div>`;
-  const maakRij = (dagNaamLabel, i, basisTuesday, dataBron, weekStartVoorRij) => {
-    const datum = new Date(basisTuesday.getTime() + i * 86400000);
+  const maakRij = (dagNaamLabel, i, basisWoensdag, dataBron, weekStartVoorRij) => {
+    const datum = new Date(basisWoensdag.getTime() + i * 86400000);
     const dagKey = prDatumKey(datum);
     const isVandaag = dagKey === vandaagKey;
     const d = dataBron[dagKey] || {};
@@ -2262,10 +2252,9 @@ function renderWeek() {
       <td>${d.corvee?pill(d.corvee,'corvee',dagKey,'corvee',meervoudig,weekStartVoorRij):legePlek(dagKey,'corvee','—',weekStartVoorRij)}</td>
     </tr>`;
   };
-  document.getElementById('week-a-dinsdag-body').innerHTML = maakRij(WEEK_A_VOLGORDE[0], 0, tuesday, huidigRooster, weekStartHuidig);
-  const middenRijen = WEEK_A_VOLGORDE.slice(1).map((naam, idx) => maakRij(naam, idx + 1, tuesday, huidigRooster, weekStartHuidig)).join('');
-  const sluitingsRij = maakRij(WEEK_A_VOLGORDE[0], 0, tuesdayVolgende, weekAVolgendeData, weekStartVolgende);
-  document.getElementById('week-body').innerHTML = middenRijen + sluitingsRij;
+  const woensdagBasis = new Date(tuesday.getTime() + 86400000);
+  const alleRijen = WEEK_A_VOLGORDE.map((naam, idx) => maakRij(naam, idx, woensdagBasis, huidigRooster, weekStartHuidig)).join('');
+  document.getElementById('week-body').innerHTML = alleRijen;
 }
 
 const ROOSTER_ROL_NAMEN = { bankOch:'Bank ochtend', bank:'Bank avond', kook:'Kook', corvee:'Corvee' };
