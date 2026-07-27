@@ -1654,7 +1654,7 @@ function herRenderRoosterTabs() {
 
 async function zorgVoorHuidigeWeek() {
   if (!supabaseActief) return;
-  const weekStart = weekStartVan(new Date());
+  const weekStart = weekAWeekStartVoorOffset(0);
   const tuesday = prDinsdagVanWeek(0);
 
   const {data: huidigeRij} = await sb.from('rooster_weken').select('*').eq('week_start', weekStart).maybeSingle();
