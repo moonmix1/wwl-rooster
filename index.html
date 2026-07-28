@@ -3154,10 +3154,10 @@ function naamMetKrimpendeWoorden(naam, basisRem) {
 }
 function naamMetKrimpendeWoordenEm(naam) {
   const woorden = String(naam || '').split(' ');
-  return woorden.map((w, i) => {
+  return `<span style="display:inline-block;line-height:1.15">` + woorden.map((w, i) => {
     const factor = i === 0 ? 1 : 0.7;
-    return `<span style="font-size:${factor.toFixed(3)}em">${escHtml(w)}</span>`;
-  }).join(' ');
+    return `<span style="font-size:${factor.toFixed(3)}em;line-height:1.15;vertical-align:baseline">${escHtml(w)}</span>`;
+  }).join(' ') + `</span>`;
 }
 function berichtTekstHtml(s) {
   return escHtml(s).replace(/\n/g, '<br>');
