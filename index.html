@@ -4497,7 +4497,8 @@ async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
 async function renderPapierRooster(voorafGeladenData) {
   renderPrScanKnop();
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
-  const weekKey = prDatumKey(new Date(dinsdag.getTime() - 6 * 86400000));
+  const woensdagBasis = new Date(dinsdag.getTime() - 6 * 86400000); // FIX: vaste startdatum (woensdag) voor alle rijen — was voorheen dinsdag (+1 week te laat)
+  const weekKey = prDatumKey(woensdagBasis);
 
   const labelEl = document.getElementById('pr-week-label');
   if (labelEl) {
@@ -4606,7 +4607,7 @@ async function renderPapierRooster(voorafGeladenData) {
 
   const maakRij = (dagNaam, i, opties) => {
     opties = opties || {};
-    const basisDatum = opties.basisDatum || dinsdag;
+    const basisDatum = opties.basisDatum || woensdagBasis; // FIX: was 'dinsdag', gaf +1 week verschoven datums
     const dataVoorRij = opties.weekData || weekData;
     const keyVoorRij = opties.weekKey || weekKey;
     const statusVoorRij = opties.statusMap || statusMap;
@@ -4656,8 +4657,11 @@ async function renderPapierRooster(voorafGeladenData) {
     </tr>`;
   };
 
-  const alleRijenB = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx + 1)).join('') +
-    maakRij(PR_DAGEN[0], 0, { basisDatum: dinsdagVolgende, weekData: weekDataVolgende, weekKey: weekKeyVolgende, statusMap: statusMapVolgende });
+  // FIX: was idx+1 (i=1..6) met de sluitende dinsdag-rij op 'volgende week' (dinsdagVolgende) —
+  // daardoor toonde de hele tabel structureel de week ná de geselecteerde week.
+  // Nu: i=0..5 vanaf woensdagBasis (déze week), en de sluitende dinsdag is gewoon i=6 van dezelfde week.
+  const alleRijenB = PR_DAGEN.slice(1).map((dagNaam, idx) => maakRij(dagNaam, idx)).join('') +
+    maakRij(PR_DAGEN[0], 6);
   restBody.innerHTML = alleRijenB;
 }
 
