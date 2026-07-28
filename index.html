@@ -4432,7 +4432,7 @@ async function prVerwerkScanFoto(event) {
   prZetScanStatus('⏳ AI leest het rooster... dit kan 10-20 seconden duren.', '#7eb8f7');
 
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
-  const weekKey = prDatumKey(dinsdag);
+  const weekKey = prDatumKey(new Date(dinsdag.getTime() - 6 * 86400000));
 
   try {
     const { data, error } = await sb.functions.invoke('scan-rooster', {
@@ -4451,12 +4451,13 @@ async function prVerwerkScanFoto(event) {
 
 // Namen van herkende AI-JSON (dinsdag..maandag) omzetten naar de echte datum-sleutels van deze week
 async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
-  const dagVolgordeNamen = ['dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag','maandag'];
+  const dagVolgordeNamen = ['woensdag','donderdag','vrijdag','zaterdag','zondag','maandag','dinsdag'];
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const woensdagBasis = new Date(dinsdag.getTime() - 6 * 86400000);
   const weekData = papierRoosterCache[weekKey] || {};
 
   dagVolgordeNamen.forEach((dagNaam, i) => {
-    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
+    const datum = new Date(woensdagBasis); datum.setDate(woensdagBasis.getDate() + i);
     const dagKey = prDatumKey(datum);
     const herkendDag = herkendRooster[dagNaam];
     if (!herkendDag) return;
