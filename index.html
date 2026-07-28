@@ -1355,8 +1355,8 @@ function renderWeekALabel() {
   if (!labelEl) return;
   const nietActueel = weekAOffset !== 0;
   const dinsdagVoorLabel = prDinsdagVanWeek(weekAOffset);
-  const startDatum = new Date(dinsdagVoorLabel); startDatum.setDate(dinsdagVoorLabel.getDate() + 1);
-  const eindDatum = new Date(dinsdagVoorLabel); eindDatum.setDate(dinsdagVoorLabel.getDate() + 7);
+  const startDatum = new Date(dinsdagVoorLabel); startDatum.setDate(dinsdagVoorLabel.getDate() - 6);
+  const eindDatum = new Date(dinsdagVoorLabel);
 
   // TIJDELIJKE DEBUG — verwijderen zodra probleem is opgelost
   const debugEl = document.getElementById('week-a-debug-tijdelijk-v2');
@@ -4485,13 +4485,12 @@ async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
 async function renderPapierRooster(voorafGeladenData) {
   renderPrScanKnop();
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
-  const maandag = new Date(dinsdag); maandag.setDate(dinsdag.getDate() + 6);
-  const weekKey = prDatumKey(dinsdag);
+  const weekKey = prDatumKey(new Date(dinsdag.getTime() - 6 * 86400000));
 
   const labelEl = document.getElementById('pr-week-label');
   if (labelEl) {
-    const labelStart = new Date(dinsdag); labelStart.setDate(dinsdag.getDate() + 1);
-    const labelEind = new Date(dinsdag); labelEind.setDate(dinsdag.getDate() + 7);
+    const labelStart = new Date(dinsdag); labelStart.setDate(dinsdag.getDate() - 6);
+    const labelEind = new Date(dinsdag);
     const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
