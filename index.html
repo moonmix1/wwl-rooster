@@ -4804,7 +4804,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
     { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff' },
     { waarde: 'extern', tekst: 'ondersteuners', bg: '#3e275e', kleur: '#fff' },
   ];
-  const naamVeilig = naam.replace(/'/g, "\\'");
+  const naamVeilig = escHtml(naam).replace(/'/g, "&#39;");
 
   const statusRijenHtml = STATUSSEN.map(o => {
     const aan = o.waarde === huidigeStatus;
@@ -4879,7 +4879,7 @@ async function prVerwerkUrenKeuze(weekKey, naam, waarde) {
 }
 
 function prToonVerledenWaarschuwing(weekKey, naam, waarde) {
-  const naamVeilig = naam.replace(/'/g, "\\'");
+  const naamVeilig = escHtml(naam).replace(/'/g, "&#39;");
   document.getElementById('gp-modal-inhoud').innerHTML = `
     <h2>Weetje voor onderweg</h2>
     <div style="position:relative;margin:14px 0 4px;min-height:220px">
