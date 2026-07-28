@@ -775,7 +775,6 @@
     </p>
     <div id="week-a-scan-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;background:#1a2744;border:1.5px solid #3d5a8a;font-size:0.8rem;color:#b0c4de"></div>
     <div id="week-a-kopieer-knop-plek" style="margin-bottom:14px"></div>
-    <div id="week-a-debug-tijdelijk-v2" style="display:none"></div>
     <div id="week-a-navigatie-indicator" style="margin-bottom:10px"></div>
     <div class="pr-nav" style="margin-bottom:14px">
       <button class="pr-nav-btn" id="week-a-vorige-btn" style="display:none" onclick="weekANavigeer(-1)">◀ Vorige week</button>
@@ -1357,15 +1356,6 @@ function renderWeekALabel() {
   const dinsdagVoorLabel = prDinsdagVanWeek(weekAOffset);
   const startDatum = new Date(dinsdagVoorLabel); startDatum.setDate(dinsdagVoorLabel.getDate() - 6);
   const eindDatum = new Date(dinsdagVoorLabel);
-
-  // TIJDELIJKE DEBUG — verwijderen zodra probleem is opgelost
-  const debugEl = document.getElementById('week-a-debug-tijdelijk-v2');
-  if (debugEl) {
-    debugEl.style.display = 'block';
-    debugEl.innerHTML = `<div style="background:#3b0a0a;border:2px solid #f87171;border-radius:8px;padding:10px;margin-bottom:10px;font-size:0.7rem;color:#fff">
-      DEBUG label — weekAOffset: ${weekAOffset} | vandaag: ${new Date().toString()} | dinsdagVoorLabel: ${dinsdagVoorLabel.toString()} | startDatum: ${startDatum.toDateString()} | eindDatum: ${eindDatum.toDateString()}
-    </div>`;
-  }
   const offsetTekst = weekAOffset === 0 ? 'Deze week'
     : (weekAOffset === -1 ? 'Vorige week'
     : (weekAOffset === 1 ? 'Volgende week'
@@ -4756,7 +4746,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     : namen.map((naam, idx) => {
     const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status');
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.geen_status;
-    const naamVeilig = naam.replace(/'/g,"\\'");
+    const naamVeilig = escHtml(naam).replace(/'/g,"&#39;");
     const heeftHuisje = status !== 'geen_status' && bewonersBeheerSet.has(naam);
     const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
