@@ -4443,19 +4443,28 @@ async function prVerwerkScanFoto(event) {
     if (!data || !data.succes) { prZetScanStatus('⚠️ Fout: ' + (data?.error || 'onbekende fout'), '#f87171'); return; }
 
     const weekKey = data.datumHerkend && data.weekStart ? data.weekStart : geselecteerdeWeekKey;
-    await prVerwerkHerkendRooster(data.rooster, weekKey);
 
+    // FIX: eerst navigeren naar de juiste week, DAARNA pas vullen+renderen — anders rendert
+    // prVerwerkHerkendRooster() nog de oude/verkeerde week op het scherm.
     if (weekKey !== geselecteerdeWeekKey) {
       const verschilMs = new Date(weekKey + 'T00:00:00').getTime() - new Date(geselecteerdeWeekKey + 'T00:00:00').getTime();
       const verschilWeken = Math.round(verschilMs / (7 * 86400000));
-      prWeekOffset += verschilWeken;
-      renderPapierRooster();
+      const MAX_AUTO_NAVIGATIE_WEKEN = 10;
+      if (Math.abs(verschilWeken) <= MAX_AUTO_NAVIGATIE_WEKEN) {
+        prWeekOffset += verschilWeken;
+      }
     }
 
+    await prVerwerkHerkendRooster(data.rooster, weekKey);
+
+    // TIJDELIJK — debug-preview van wat de AI teruggaf, om te zien of "rooster" gevuld is.
+    // Mag weer weg zodra het vul-probleem is opgelost.
+    const prDebugPreview = ' [DEBUG rooster: ' + JSON.stringify(data.rooster).slice(0, 600) + ']';
+
     if (data.datumHerkend) {
-      prZetScanStatus('✅ Rooster automatisch ingevuld voor de week van ' + weekKey + ' (datum herkend van de foto zelf). Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+      prZetScanStatus('✅ Rooster automatisch ingevuld voor de week van ' + weekKey + ' (datum herkend van de foto zelf). Controleer de vakjes hieronder en corrigeer waar nodig.' + prDebugPreview, '#4ade80');
     } else {
-      prZetScanStatus('✅ Rooster automatisch ingevuld voor de geselecteerde week (' + weekKey + ') — kon geen datum op de foto zelf vinden. Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+      prZetScanStatus('✅ Rooster automatisch ingevuld voor de geselecteerde week (' + weekKey + ') — kon geen datum op de foto zelf vinden. Controleer de vakjes hieronder en corrigeer waar nodig.' + prDebugPreview, '#4ade80');
     }
   } catch (e) {
     prZetScanStatus('⚠️ Onverwachte fout: ' + e.message, '#f87171');
