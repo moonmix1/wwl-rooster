@@ -4431,23 +4431,32 @@ async function prVerwerkScanFoto(event) {
 
   prZetScanStatus('⏳ AI leest het rooster... dit kan 10-20 seconden duren.', '#7eb8f7');
 
-  const dinsdag = prDinsdagVanWeek(prWeekOffset);
-  const weekKey = prDatumKey(new Date(dinsdag.getTime() - 6 * 86400000));
+  const geselecteerdeDinsdag = prDinsdagVanWeek(prWeekOffset);
+  const geselecteerdeWeekKey = prDatumKey(new Date(geselecteerdeDinsdag.getTime() - 6 * 86400000));
 
   try {
     const { data, error } = await sb.functions.invoke('scan-rooster', {
-      body: { fotoBase64, weekStart: weekKey },
+      body: { fotoBase64 },
     });
 
     if (error) { prZetScanStatus('⚠️ Fout bij scannen: ' + error.message, '#f87171'); return; }
     if (!data || !data.succes) { prZetScanStatus('⚠️ Fout: ' + (data?.error || 'onbekende fout'), '#f87171'); return; }
 
-    // TIJDELIJKE DEBUG — verwijderen zodra probleem is opgelost
-    prZetScanStatus('DEBUG — weekKey: ' + weekKey + ' | herkend: ' + JSON.stringify(data.rooster).slice(0, 500), '#7eb8f7');
-    await new Promise(r => setTimeout(r, 100));
-
+    const weekKey = data.datumHerkend && data.weekStart ? data.weekStart : geselecteerdeWeekKey;
     await prVerwerkHerkendRooster(data.rooster, weekKey);
-    prZetScanStatus('✅ Rooster automatisch ingevuld! Controleer de vakjes hieronder en corrigeer waar nodig. | DEBUG weekKey: ' + weekKey + ' | herkend: ' + JSON.stringify(data.rooster).slice(0, 400), '#4ade80');
+
+    if (weekKey !== geselecteerdeWeekKey) {
+      const verschilMs = new Date(weekKey + 'T00:00:00').getTime() - new Date(geselecteerdeWeekKey + 'T00:00:00').getTime();
+      const verschilWeken = Math.round(verschilMs / (7 * 86400000));
+      prWeekOffset += verschilWeken;
+      renderPapierRooster();
+    }
+
+    if (data.datumHerkend) {
+      prZetScanStatus('✅ Rooster automatisch ingevuld voor de week van ' + weekKey + ' (datum herkend van de foto zelf). Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+    } else {
+      prZetScanStatus('✅ Rooster automatisch ingevuld voor de geselecteerde week (' + weekKey + ') — kon geen datum op de foto zelf vinden. Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+    }
   } catch (e) {
     prZetScanStatus('⚠️ Onverwachte fout: ' + e.message, '#f87171');
   }
@@ -4456,8 +4465,7 @@ async function prVerwerkScanFoto(event) {
 // Namen van herkende AI-JSON (dinsdag..maandag) omzetten naar de echte datum-sleutels van deze week
 async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
   const dagVolgordeNamen = ['woensdag','donderdag','vrijdag','zaterdag','zondag','maandag','dinsdag'];
-  const dinsdag = prDinsdagVanWeek(prWeekOffset);
-  const woensdagBasis = new Date(dinsdag.getTime() - 6 * 86400000);
+  const woensdagBasis = new Date(weekKey + 'T00:00:00');
   const weekData = papierRoosterCache[weekKey] || {};
 
   dagVolgordeNamen.forEach((dagNaam, i) => {
