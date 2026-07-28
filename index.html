@@ -4442,8 +4442,12 @@ async function prVerwerkScanFoto(event) {
     if (error) { prZetScanStatus('⚠️ Fout bij scannen: ' + error.message, '#f87171'); return; }
     if (!data || !data.succes) { prZetScanStatus('⚠️ Fout: ' + (data?.error || 'onbekende fout'), '#f87171'); return; }
 
+    // TIJDELIJKE DEBUG — verwijderen zodra probleem is opgelost
+    prZetScanStatus('DEBUG — weekKey: ' + weekKey + ' | herkend: ' + JSON.stringify(data.rooster).slice(0, 500), '#7eb8f7');
+    await new Promise(r => setTimeout(r, 100));
+
     await prVerwerkHerkendRooster(data.rooster, weekKey);
-    prZetScanStatus('✅ Rooster automatisch ingevuld! Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+    prZetScanStatus('✅ Rooster automatisch ingevuld! Controleer de vakjes hieronder en corrigeer waar nodig. | DEBUG weekKey: ' + weekKey + ' | herkend: ' + JSON.stringify(data.rooster).slice(0, 400), '#4ade80');
   } catch (e) {
     prZetScanStatus('⚠️ Onverwachte fout: ' + e.message, '#f87171');
   }
