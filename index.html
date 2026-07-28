@@ -1738,7 +1738,6 @@ async function starApp() {
   luisterGPVolgordeLive();
   laadBewoners();
   luisterBewonersLive();
-  zorgVoorHuidigeWeek();
   laadRegelsTekst();
   luisterRegelsTekstLive();
   laadGPAangepasteOnderwerpen();
@@ -4229,10 +4228,13 @@ const PR_DIENSTEN = ['dag', 'avond', 'nacht'];
 
 function prDinsdagVanWeek(offsetWeken) {
   const nu = new Date();
-  const dagNu = (nu.getDay() + 5) % 7; // 0 = dinsdag, 1 = woensdag, ... 6 = maandag
-  const dinsdagDezeWeek = new Date(nu);
-  dinsdagDezeWeek.setHours(0,0,0,0);
-  dinsdagDezeWeek.setDate(nu.getDate() - dagNu + offsetWeken * 7);
+  const jsDag = nu.getDay(); // 0=zondag,1=maandag,2=dinsdag,3=woensdag,4=donderdag,5=vrijdag,6=zaterdag
+  const dagenTerugNaarWoensdag = (jsDag - 3 + 7) % 7;
+  const woensdag = new Date(nu);
+  woensdag.setHours(0,0,0,0);
+  woensdag.setDate(nu.getDate() - dagenTerugNaarWoensdag + offsetWeken * 7);
+  const dinsdagDezeWeek = new Date(woensdag);
+  dinsdagDezeWeek.setDate(woensdag.getDate() + 6);
   return dinsdagDezeWeek;
 }
 
