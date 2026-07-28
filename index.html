@@ -1291,8 +1291,8 @@ function weekAToonKopieerNaarAndereWeek() {
 
 function weekALabelTekstVoorOffset(offset) {
   const dinsdag = prDinsdagVanWeek(offset);
-  const startDatum = new Date(dinsdag); startDatum.setDate(dinsdag.getDate() + 1);
-  const eindDatum = new Date(dinsdag); eindDatum.setDate(dinsdag.getDate() + 7);
+  const startDatum = new Date(dinsdag); startDatum.setDate(dinsdag.getDate() - 6);
+  const eindDatum = new Date(dinsdag);
   return `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
 }
 
@@ -4553,7 +4553,7 @@ async function renderPapierRooster(voorafGeladenData) {
   papierRoosterCache[weekKey] = weekData;
 
   const dinsdagVolgende = new Date(dinsdag); dinsdagVolgende.setDate(dinsdag.getDate() + 7);
-  const weekKeyVolgende = prDatumKey(dinsdagVolgende);
+  const weekKeyVolgende = prDatumKey(new Date(dinsdagVolgende.getTime() - 6 * 86400000));
   let weekDataVolgende = papierRoosterCache[weekKeyVolgende];
   if (!weekDataVolgende && supabaseActief) {
     const { data: dataVolgende } = await sb.from('papieren_rooster').select('dagen').eq('week_start', weekKeyVolgende).maybeSingle();
@@ -5064,10 +5064,11 @@ function prToonWisBevestiging(weekKey) {
 async function prWisNamen(weekKey) {
   sluitGPModal();
   const dinsdag = prDinsdagVanWeek(prWeekOffset);
+  const woensdagBasis = new Date(dinsdag.getTime() - 6 * 86400000);
   const weekData = papierRoosterCache[weekKey] || {};
   const nieuweData = { _status: weekData._status || {} };
   for (let i = 0; i < 7; i++) {
-    const datum = new Date(dinsdag); datum.setDate(dinsdag.getDate() + i);
+    const datum = new Date(woensdagBasis); datum.setDate(woensdagBasis.getDate() + i);
     nieuweData[prDatumKey(datum)] = {};
   }
   await prOpslaanWeek(weekKey, nieuweData);
@@ -5077,17 +5078,17 @@ async function prWisNamen(weekKey) {
 // ── ROOSTER B: HUIDIGE WEEK KOPIËREN NAAR EEN VOLGENDE WEEK ──
 function prLabelTekstVoorOffset(offset) {
   const dinsdag = prDinsdagVanWeek(offset);
-  const labelStart = new Date(dinsdag); labelStart.setDate(dinsdag.getDate() + 1);
-  const labelEind = new Date(dinsdag); labelEind.setDate(dinsdag.getDate() + 7);
+  const labelStart = new Date(dinsdag); labelStart.setDate(dinsdag.getDate() - 6);
+  const labelEind = new Date(dinsdag);
   return `${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}`;
 }
 
 async function prKopieerNaarOffset(doelOffset) {
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
   const bronDinsdag = prDinsdagVanWeek(prWeekOffset);
-  const bronWeekKey = prDatumKey(bronDinsdag);
+  const bronWeekKey = prDatumKey(new Date(bronDinsdag.getTime() - 6 * 86400000));
   const doelDinsdag = prDinsdagVanWeek(doelOffset);
-  const doelWeekKey = prDatumKey(doelDinsdag);
+  const doelWeekKey = prDatumKey(new Date(doelDinsdag.getTime() - 6 * 86400000));
   const dagVerschil = Math.round((doelDinsdag - bronDinsdag) / (24 * 60 * 60 * 1000));
 
   const { data: bronRij, error: leesError } = await sb
