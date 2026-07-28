@@ -1061,8 +1061,13 @@ function weekAMinimaleOffset() {
 }
 
 function weekAWeekStartVoorOffset(offset) {
-  const dinsdag = prDinsdagVanWeek(offset);
-  const woensdag = new Date(dinsdag.getTime() + 86400000);
+  const nu = new Date();
+  const jsDag = nu.getDay(); // 0=zondag,1=maandag,2=dinsdag,3=woensdag,4=donderdag,5=vrijdag,6=zaterdag
+  // Dagen terug naar de meest recente woensdag (inclusief vandaag als het woensdag is).
+  const dagenTerugNaarWoensdag = (jsDag - 3 + 7) % 7;
+  const woensdag = new Date(nu);
+  woensdag.setHours(0,0,0,0);
+  woensdag.setDate(nu.getDate() - dagenTerugNaarWoensdag + offset * 7);
   return prDatumKey(woensdag);
 }
 
