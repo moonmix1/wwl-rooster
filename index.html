@@ -2285,7 +2285,7 @@ async function voegNaamToeVanuitRooster() {
   const inp = document.getElementById('rooster-nieuwe-naam-input');
   const naam = inp.value.trim();
   if (!naam) { alert('Vul een naam in.'); return; }
-  if (!bewonersCache.some(n => n.toLowerCase() === naam.toLowerCase())) {
+  if (!bewonersCache.some(n => n === naam)) {
     if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
     const {error} = await sb.from('bewoners').insert([{ naam }]);
     if (error) { alert('Toevoegen mislukt: ' + error.message); return; }
@@ -3519,7 +3519,7 @@ async function bewonerToevoegen() {
   const inp = document.getElementById('bewoner-nieuwe-naam');
   const naam = inp.value.trim();
   if (!naam) { alert('Vul een naam in.'); return; }
-  if (bewonersCache.some(n => n.toLowerCase() === naam.toLowerCase())) { alert('Deze naam staat er al in.'); return; }
+  if (bewonersCache.some(n => n === naam)) { alert('Deze naam staat er al in.'); return; }
   if (!supabaseActief) { alert('Supabase is niet actief.'); return; }
   const {error} = await sb.from('bewoners').insert([{ naam }]);
   if (error) { alert('Fout bij toevoegen: ' + error.message); return; }
@@ -5154,7 +5154,7 @@ async function prHaalNaamOp(nummer) {
   if (select.value === '__nieuw__') {
     const inp = document.getElementById(`pr-nieuwe-naam${nummer}-input`);
     const naam = inp ? inp.value.trim() : '';
-    if (naam && !bewonersCache.some(n => n.toLowerCase() === naam.toLowerCase()) && supabaseActief) {
+    if (naam && !bewonersCache.some(n => n === naam) && supabaseActief) {
       await sb.from('bewoners').insert([{ naam }]);
       bewonersCache.push(naam);
     }
