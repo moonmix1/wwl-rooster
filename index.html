@@ -156,7 +156,7 @@
   .pr-cel-gast { background-color: #7a2530; }
   .pr-cel-gvdw { background-image: linear-gradient(to right, #7a2530 0%, #0a4a87 50%, #7a2530 100%);
     box-shadow: inset 0 0 4px 2px #7a2530; }
-  .pr-cel-oud  { background-color: #15503f; }
+  .pr-cel-oud  { background-color: #15503f; box-shadow: inset 0 0 5px 2px rgba(245,216,0,0.7); }
   .pr-cel-ext  { background-color: #4a2e6f; }
   .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
@@ -180,7 +180,7 @@
   .pr-uren-status-gast { background: #7a2530; }
   .pr-uren-status-gvdw { background-image: linear-gradient(to right, #7a2530 0%, #0a4a87 50%, #7a2530 100%);
     box-shadow: inset 0 0 4px 2px #7a2530; }
-  .pr-uren-status-oud  { background: #15503f; }
+  .pr-uren-status-oud  { background: #15503f; box-shadow: inset 0 0 5px 2px rgba(245,216,0,0.7); }
   .pr-uren-status-ext  { background: #3e275e; }
   .pr-uren-status-geen { background: #4a423c; }
 
@@ -4848,7 +4848,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
 
   const huisjeRijHtml = `<button type="button" ${statusBlokkeertHuisje ? 'disabled' : `onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','__huisje__')"`}
       style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border-radius:8px;
-      border:2px solid transparent;background:#0e7490;color:#fff;
+      border:2px solid transparent;background:#0d6a9e;color:#fff;
       font-weight:700;font-size:0.9rem;${statusBlokkeertHuisje ? 'cursor:not-allowed' : 'cursor:pointer'};opacity:${statusBlokkeertHuisje ? '0.6' : '1'}">
       ${toggle(heeftHuisje, statusBlokkeertHuisje)}
       <span style="white-space:nowrap">${huisjeTekst} 🏠</span>
