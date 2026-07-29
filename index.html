@@ -4693,10 +4693,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // in plaats van dat het blauwe blok vooraf in een vast aantal stukken wordt opgeknipt.
   const alleStatussen = {}; // status -> [namen]
   Object.keys(uren).forEach(naam => {
-    const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status');
-    if (!alleStatussen[status]) alleStatussen[status] = [];
-    alleStatussen[status].push(naam);
-  });
+    const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'vrijwilliger'); // FIX: was 'geen_status', nu gelijk aan de rooster-cellen
   Object.keys(alleStatussen).forEach(status => {
     alleStatussen[status].sort((a, b) => {
       if (uren[b] !== uren[a]) return uren[b] - uren[a];
@@ -4704,8 +4701,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     });
   });
 
-  const vrijwilligerNamen = alleStatussen['geen_status'] || [];
-  delete alleStatussen['geen_status'];
+  const vrijwilligerNamen = alleStatussen['vrijwilliger'] || []; // FIX: was 'geen_status'
+  delete alleStatussen['vrijwilliger'];
 
   // Elke niet-blauwe kleurgroep blijft altijd één ondeelbaar blok, met zijn hoogste urenaantal als sleutel.
   const kleurGroepen = Object.keys(alleStatussen).map(status => ({
