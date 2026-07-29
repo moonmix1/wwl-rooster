@@ -4340,10 +4340,11 @@ function prMinimaleWeekOffset() {
 }
 
 function prWeekNavigeer(richting) {
-  const MAX_SCROLL_WEKEN = 3;
+  const MAX_SCROLL_WEKEN_TERUG = 3;
+  const MAX_SCROLL_WEKEN_VOORUIT = 2; // was 3 — op verzoek verlaagd, los van de terug-grens
   const nieuweOffset = prWeekOffset + richting;
   if (nieuweOffset < prMinimaleWeekOffset()) return;
-  if (nieuweOffset < -MAX_SCROLL_WEKEN || nieuweOffset > MAX_SCROLL_WEKEN) return;
+  if (nieuweOffset < -MAX_SCROLL_WEKEN_TERUG || nieuweOffset > MAX_SCROLL_WEKEN_VOORUIT) return;
   prWeekOffset = nieuweOffset;
   renderPapierRooster();
 }
@@ -4524,15 +4525,16 @@ async function renderPapierRooster(voorafGeladenData) {
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
   const volgendeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(1)"]');
-  const MAX_SCROLL_WEKEN_UI = 3;
+  const MAX_SCROLL_WEKEN_TERUG = 3;
+  const MAX_SCROLL_WEKEN_VOORUIT = 2; // was 3 — op verzoek verlaagd, los van de terug-grens
   if (vorigeBtn) {
-    const magTerug = (prWeekOffset - 1) >= prMinimaleWeekOffset() && (prWeekOffset - 1) >= -MAX_SCROLL_WEKEN_UI;
+    const magTerug = (prWeekOffset - 1) >= prMinimaleWeekOffset() && (prWeekOffset - 1) >= -MAX_SCROLL_WEKEN_TERUG;
     vorigeBtn.disabled = !magTerug;
     vorigeBtn.style.opacity = magTerug ? '1' : '0.35';
     vorigeBtn.style.cursor = magTerug ? 'pointer' : 'not-allowed';
   }
   if (volgendeBtn) {
-    const magVerder = (prWeekOffset + 1) <= MAX_SCROLL_WEKEN_UI;
+    const magVerder = (prWeekOffset + 1) <= MAX_SCROLL_WEKEN_VOORUIT;
     volgendeBtn.disabled = !magVerder;
     volgendeBtn.style.opacity = magVerder ? '1' : '0.35';
     volgendeBtn.style.cursor = magVerder ? 'pointer' : 'not-allowed';
