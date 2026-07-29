@@ -4694,6 +4694,9 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const alleStatussen = {}; // status -> [namen]
   Object.keys(uren).forEach(naam => {
     const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'vrijwilliger'); // FIX: was 'geen_status', nu gelijk aan de rooster-cellen
+    if (!alleStatussen[status]) alleStatussen[status] = [];
+    alleStatussen[status].push(naam);
+  });
   Object.keys(alleStatussen).forEach(status => {
     alleStatussen[status].sort((a, b) => {
       if (uren[b] !== uren[a]) return uren[b] - uren[a];
