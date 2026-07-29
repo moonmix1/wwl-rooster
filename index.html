@@ -4636,12 +4636,11 @@ async function renderPapierRooster(voorafGeladenData) {
           // Twee namen met verschillende status: cel gesplitst in twee gekleurde helften, naadloos aan elkaar.
           // Het lijntje komt exact op de kleurgrens te staan (via de rand van het onderste blok).
           cellHtml = `
-            <div style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative">
-              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1">
+            <div style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative;gap:3px">
+              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
               </div>
-              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative">
-                <span class="pr-naam-scheiding" style="position:absolute;top:0;left:8px;right:8px;width:auto;margin:0"></span>
+              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
               </div>
             </div>`;
