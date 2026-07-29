@@ -4340,7 +4340,7 @@ function prMinimaleWeekOffset() {
 }
 
 function prWeekNavigeer(richting) {
-  const MAX_SCROLL_WEKEN_TERUG = 3;
+  const MAX_SCROLL_WEKEN_TERUG = 2; // was 3 — op verzoek verlaagd
   const MAX_SCROLL_WEKEN_VOORUIT = 2; // was 3 — op verzoek verlaagd, los van de terug-grens
   const nieuweOffset = prWeekOffset + richting;
   if (nieuweOffset < prMinimaleWeekOffset()) return;
@@ -4525,7 +4525,7 @@ async function renderPapierRooster(voorafGeladenData) {
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
   const volgendeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(1)"]');
-  const MAX_SCROLL_WEKEN_TERUG = 3;
+  const MAX_SCROLL_WEKEN_TERUG = 2; // was 3 — op verzoek verlaagd
   const MAX_SCROLL_WEKEN_VOORUIT = 2; // was 3 — op verzoek verlaagd, los van de terug-grens
   if (vorigeBtn) {
     const magTerug = (prWeekOffset - 1) >= prMinimaleWeekOffset() && (prWeekOffset - 1) >= -MAX_SCROLL_WEKEN_TERUG;
