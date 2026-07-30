@@ -4965,6 +4965,17 @@ function prNaamOpties(huidigeWaarde) {
   return opties.join('');
 }
 
+async function prVerwijderGeselecteerdeNaam() {
+  const sel = document.getElementById('pr-cel-naam1');
+  const naam = sel ? sel.value : '';
+  if (!naam) { alert('Selecteer eerst een naam om definitief te verwijderen.'); return; }
+  await bewonerVerwijderen(naam);
+  const sel1 = document.getElementById('pr-cel-naam1');
+  const sel2 = document.getElementById('pr-cel-naam2');
+  if (sel1) sel1.innerHTML = prNaamOpties('');
+  if (sel2) sel2.innerHTML = prNaamOpties('');
+}
+
 function prBewerkCel(weekKey, dagKey, dienstKey) {
   if (prWeekOffset < 0) {
     prToonVerledenRoosterWaarschuwing(weekKey, dagKey, dienstKey);
@@ -5013,6 +5024,9 @@ function prBewerkCelWerkelijk(weekKey, dagKey, dienstKey) {
       <select id="pr-cel-naam1" onchange="prCheckNieuweNaam(this,'1')">${prNaamOpties(info.naam1 || '')}</select>
       <div id="pr-nieuwe-naam1-veld" style="display:none">
         <input type="text" id="pr-nieuwe-naam1-input" placeholder="Nieuwe naam">
+      </div>
+      <div style="margin:-8px 0 16px">
+        <a href="#" onclick="prVerwijderGeselecteerdeNaam(); return false;" style="font-size:0.78rem;color:var(--warn);text-decoration:none">🗑 Geselecteerde naam definitief uit lijst verwijderen</a>
       </div>
       <label>Label bij naam 1 (optioneel)</label>
       <select id="pr-cel-label1">${labelOpties(info.label1 || '')}</select>
