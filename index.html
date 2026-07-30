@@ -163,7 +163,7 @@
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
   .pr-cel-gvdw .pr-cel-label { color: #d4b83f; opacity: 1; background: #332920; border-radius: 3px; padding: 1px 4px 3px; line-height: 1.3; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); }
-  .pr-kok-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 1px 4px 3px; line-height: 1.3; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); font-size: 0.44rem; font-weight: 700; text-transform: lowercase; }
+  .pr-kok-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 1px 4px 3px; line-height: 1.3; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); font-size: 0.44rem; font-weight: 700; text-transform: lowercase; margin-left: 4px; }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
   .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
   .pr-naam-regel-top { position: relative; display: block; text-align: center; }
@@ -4606,7 +4606,7 @@ async function renderPapierRooster(voorafGeladenData) {
         <span class="pr-naam-regel-naam">${naamMetKrimpendeWoordenEm(naam)}</span>
         ${huisje}
       </span>
-      <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${inwerkNa}</span>${kokExtra}
+      <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${inwerkNa}${kokExtra}</span>
     </span>`;
   };
 
