@@ -4601,15 +4601,12 @@ async function renderPapierRooster(voorafGeladenData) {
     const huisje = bewonersBeheerSet.has(naam) ? '<span class="pr-naam-regel-huisje">🏠</span>' : '';
     const inwerkVoor = status === 'inwerk' ? '<span class="pr-inwerk-tekst">Inwerk </span>' : '';
     const inwerkNa = status === 'inwerk' ? '<span class="pr-inwerk-tekst"> Periode</span>' : '';
-    const labelRijStijl = celLabel === 'kok' ? 'display:flex;justify-content:space-between;align-items:center;' : '';
     return `<span class="pr-naam-regel">
       <span class="pr-naam-regel-top">
         <span class="pr-naam-regel-naam">${naamMetKrimpendeWoordenEm(naam)}</span>
         ${huisje}
       </span>
-      <span class="pr-cel-label-rij" style="${labelRijStijl}">
-        <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${inwerkNa}</span>${kokExtra}
-      </span>
+      <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${inwerkNa}${kokExtra}</span>
     </span>`;
   };
 
