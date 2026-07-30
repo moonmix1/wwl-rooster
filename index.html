@@ -152,7 +152,7 @@
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pr-cel:focus, .pr-cel:active { outline: none !important; }
-  .pr-cel-vw   { background-color: #0a4a87; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.7); }
+  .pr-cel-vw   { background-color: #093f73; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.7); }
   .pr-cel-gast { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8); }
   .pr-cel-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
@@ -179,7 +179,7 @@
   .pr-inwerk-tekst { color: #f5d800; font-weight: 800; font-family: 'Comic Sans MS', cursive, sans-serif;
     text-transform: none; }
 
-  .pr-uren-status-vw   { background: #0a4a87; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.7); }
+  .pr-uren-status-vw   { background: #093f73; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.7); }
   .pr-uren-status-gast { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8); }
   .pr-uren-status-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
@@ -4763,7 +4763,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)', geen_status: '- nog geen status -' };
 
   const statusOpties = (huidigeStatus) => `
-    <option value="vrijwilliger" style="background:#0a4a87;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
+    <option value="vrijwilliger" style="background:#093f73;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
     <option value="gast" style="background:#7a2530;color:#fff" ${huidigeStatus==='gast'?'selected':''}>gast</option>
     <option value="inwerk" style="background:#7a2530;color:#f5d800" ${huidigeStatus==='inwerk'?'selected':''}>🔶 gast (inwerkperiode)</option>
     <option value="gast_week" style="background:#4a423c;color:#fff" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
@@ -4826,7 +4826,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       display:flex;align-items:center;justify-content:center">🗑</span>`;
 
   const STATUSSEN = [
-    { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff',
+    { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#093f73', kleur: '#fff',
       schaduw: 'inset 0 0 5px 2px rgba(93,173,226,0.7)' },
     { waarde: 'gast', tekst: 'gast', bg: 'linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%)', kleur: '#fff',
       schaduw: 'inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8)' },
