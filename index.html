@@ -162,7 +162,7 @@
   .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
-  .pr-cel-gvdw .pr-cel-label { color: #d4b83f; opacity: 1; border: 1px solid #d4b83f; border-radius: 3px; padding: 0 2px; display: inline-block; }
+  .pr-cel-gvdw .pr-cel-label { color: #d4b83f; opacity: 1; }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
   .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
   .pr-naam-regel-top { position: relative; display: block; text-align: center; }
@@ -175,7 +175,7 @@
   /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
   .pr-status-label { display: block; font-size: 0.44rem; opacity: 1; margin-top: 0; color: #fff;
     text-transform: lowercase; font-weight: 700; white-space: nowrap; text-align: center; }
-  .pr-uren-status-gvdw .pr-status-label { color: #d4b83f; border: 1px solid #d4b83f; border-radius: 3px; padding: 0 2px; display: inline-block; }
+  .pr-uren-status-gvdw .pr-status-label { color: #d4b83f; }
   .pr-inwerk-tekst { color: #f5d800; font-weight: 800; font-family: 'Comic Sans MS', cursive, sans-serif;
     text-transform: none; }
 
@@ -4832,7 +4832,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       schaduw: 'inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8)' },
     { waarde: 'gast_week', tekst: 'gast van de week', bg: 'linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%)', kleur: '#fff',
       schaduw: 'inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8)',
-      tekstStijl: 'color:#d4b83f;border:1px solid #d4b83f;border-radius:3px;padding:0 4px' },
+      tekstStijl: 'color:#d4b83f' },
     { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff',
       schaduw: 'inset 0 0 5px 2px rgba(245,216,0,0.7)' },
     { waarde: 'extern', tekst: 'ondersteuner', bg: '#3e275e', kleur: '#fff',
@@ -4858,7 +4858,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
 
   const huisjeRijHtml = `<button type="button" ${statusBlokkeertHuisje ? 'disabled' : `onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','__huisje__')"`}
       style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border-radius:8px;
-      border:2px solid transparent;background:#0d6a9e;color:#fff;
+      border:2px solid transparent;background:#0074a6;color:#fff;
       font-weight:700;font-size:0.9rem;${statusBlokkeertHuisje ? 'cursor:not-allowed' : 'cursor:pointer'};opacity:${statusBlokkeertHuisje ? '0.6' : '1'}">
       ${toggle(heeftHuisje, statusBlokkeertHuisje)}
       <span style="white-space:nowrap">${huisjeTekst} 🏠</span>
