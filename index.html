@@ -158,7 +158,7 @@
   .pr-cel-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8); }
   .pr-cel-oud  { background-color: #15503f; box-shadow: inset 0 0 5px 2px rgba(245,216,0,0.7); }
-  .pr-cel-ext  { background-color: #4a2e6f; box-shadow: inset 0 0 6px 0 rgba(165,143,209,0.8); }
+  .pr-cel-ext  { background-color: #4a2e6f; box-shadow: inset 0 0 6px 2px rgba(165,143,209,0.8); }
   .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
@@ -185,7 +185,7 @@
   .pr-uren-status-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8); }
   .pr-uren-status-oud  { background: #15503f; box-shadow: inset 0 0 5px 2px rgba(245,216,0,0.7); }
-  .pr-uren-status-ext  { background: #3e275e; box-shadow: inset 0 0 6px 0 rgba(165,143,209,0.8); }
+  .pr-uren-status-ext  { background: #3e275e; box-shadow: inset 0 0 6px 2px rgba(165,143,209,0.8); }
   .pr-uren-status-geen { background: #4a423c; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
@@ -4591,7 +4591,7 @@ async function renderPapierRooster(voorafGeladenData) {
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
   const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw', inwerk: 'pr-cel-gast' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuners', vrijwilliger: 'vrijwilliger', inwerk: 'gast' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast' };
   const statusKlasse = (status) => STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
   const statusLabelTekst = (status) => STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger;
 
@@ -4760,7 +4760,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   while (kgIndex < kleurGroepen.length) { namen.push(...kleurGroepen[kgIndex].namen); kgIndex++; }
 
   const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw', inwerk: 'pr-uren-status-gast', geen_status: 'pr-uren-status-geen' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuners', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)', geen_status: '- nog geen status -' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)', geen_status: '- nog geen status -' };
 
   const statusOpties = (huidigeStatus) => `
     <option value="vrijwilliger" style="background:#0a4a87;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
@@ -4768,7 +4768,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     <option value="inwerk" style="background:#7a2530;color:#f5d800" ${huidigeStatus==='inwerk'?'selected':''}>🔶 gast (inwerkperiode)</option>
     <option value="gast_week" style="background:#4a423c;color:#fff" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
     <option value="oud_bewoner" style="background:#15503f;color:#fff" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
-    <option value="extern" style="background:#3e275e;color:#fff" ${huidigeStatus==='extern'?'selected':''}>ondersteuners</option>`;
+    <option value="extern" style="background:#3e275e;color:#fff" ${huidigeStatus==='extern'?'selected':''}>ondersteuner</option>`;
 
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
@@ -4830,7 +4830,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
     { waarde: 'gast', tekst: 'gast', bg: '#7a2530', kleur: '#fff' },
     { waarde: 'gast_week', tekst: 'gast van de week', bg: 'linear-gradient(to right, #7a2530 0%, #0a4a87 50%, #7a2530 100%)', kleur: '#fff', rand: '#7a2530', randDikte: '1px' },
     { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff' },
-    { waarde: 'extern', tekst: 'ondersteuners', bg: '#3e275e', kleur: '#fff' },
+    { waarde: 'extern', tekst: 'ondersteuner', bg: '#3e275e', kleur: '#fff' },
   ];
   const naamVeilig = escHtml(naam).replace(/'/g, "&#39;");
 
