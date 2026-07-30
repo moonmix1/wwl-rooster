@@ -4826,11 +4826,17 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       display:flex;align-items:center;justify-content:center">🗑</span>`;
 
   const STATUSSEN = [
-    { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff' },
-    { waarde: 'gast', tekst: 'gast', bg: '#7a2530', kleur: '#fff' },
-    { waarde: 'gast_week', tekst: 'gast van de week', bg: 'linear-gradient(to right, #7a2530 0%, #0a4a87 50%, #7a2530 100%)', kleur: '#fff', rand: '#7a2530', randDikte: '1px' },
-    { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff' },
-    { waarde: 'extern', tekst: 'ondersteuner', bg: '#3e275e', kleur: '#fff' },
+    { waarde: 'vrijwilliger', tekst: 'vrijwilliger', bg: '#0a4a87', kleur: '#fff',
+      schaduw: 'inset 0 0 5px 2px rgba(93,173,226,0.7)' },
+    { waarde: 'gast', tekst: 'gast', bg: 'linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%)', kleur: '#fff',
+      schaduw: 'inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8)' },
+    { waarde: 'gast_week', tekst: 'gast van de week', bg: 'linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%)', kleur: '#fff',
+      schaduw: 'inset 0 0 5px 1px rgba(235,130,130,0.9), inset 0 0 3px 5px rgba(122,37,48,0.8)',
+      tekstStijl: 'color:#d4b83f;border:1px solid #d4b83f;border-radius:3px;padding:0 4px' },
+    { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff',
+      schaduw: 'inset 0 0 5px 2px rgba(245,216,0,0.7)' },
+    { waarde: 'extern', tekst: 'ondersteuner', bg: '#3e275e', kleur: '#fff',
+      schaduw: 'inset 0 0 6px 2px rgba(165,143,209,0.8)' },
   ];
   const naamVeilig = escHtml(naam).replace(/'/g, "&#39;");
 
@@ -4843,9 +4849,10 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
     return `<button type="button" onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','${o.waarde}')"
       style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border-radius:8px;
       border:${o.randDikte || '2px'} solid ${o.rand || 'transparent'};background:${o.bg};color:${o.kleur};
+      box-shadow:${o.schaduw || 'none'};
       font-weight:700;font-size:0.9rem;cursor:pointer">
       ${toggle(aan, false)}
-      <span style="white-space:nowrap">${o.tekst}</span>${strepenHtml}
+      <span style="white-space:nowrap${o.tekstStijl ? ';' + o.tekstStijl : ''}">${o.tekst}</span>${strepenHtml}
       </button>`;
   }).join('');
 
