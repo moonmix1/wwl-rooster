@@ -158,7 +158,7 @@
   .pr-cel-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.8); }
   .pr-cel-oud  { background-color: #15503f; box-shadow: inset 0 0 5px 2px rgba(102,255,102,0.7); }
-  .pr-cel-ext  { background-color: #4a2e6f; box-shadow: inset 0 0 6px 2px rgba(165,143,209,0.8); }
+  .pr-cel-ext  { background-color: #402860; box-shadow: inset 0 0 6px 2px rgba(165,143,209,0.8); }
   .pr-naam { display: block; color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
   .pr-cel-label { display: block; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
@@ -185,7 +185,7 @@
   .pr-uren-status-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.8); }
   .pr-uren-status-oud  { background: #15503f; box-shadow: inset 0 0 5px 2px rgba(102,255,102,0.7); }
-  .pr-uren-status-ext  { background: #3e275e; box-shadow: inset 0 0 6px 2px rgba(165,143,209,0.8); }
+  .pr-uren-status-ext  { background: #351f4e; box-shadow: inset 0 0 6px 2px rgba(165,143,209,0.8); }
   .pr-uren-status-geen { background: #4a423c; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
@@ -4768,7 +4768,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     <option value="inwerk" style="background:#7a2530;color:#f5d800" ${huidigeStatus==='inwerk'?'selected':''}>🔶 gast (inwerkperiode)</option>
     <option value="gast_week" style="background:#4a423c;color:#fff" ${huidigeStatus==='gast_week'?'selected':''}>gast van de week</option>
     <option value="oud_bewoner" style="background:#15503f;color:#fff" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
-    <option value="extern" style="background:#3e275e;color:#fff" ${huidigeStatus==='extern'?'selected':''}>ondersteuner</option>`;
+    <option value="extern" style="background:#351f4e;color:#fff" ${huidigeStatus==='extern'?'selected':''}>ondersteuner</option>`;
 
   const lijstHtml = !namen.length
     ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
@@ -4835,7 +4835,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
       tekstStijl: 'color:#d4b83f;background:#332920;border-radius:3px;padding:1px 4px 3px;line-height:1.3;box-shadow:inset 0 0 3px 1px rgba(93,173,226,0.7)' },
     { waarde: 'oud_bewoner', tekst: 'oud bewoner', bg: '#15503f', kleur: '#fff',
       schaduw: 'inset 0 0 5px 2px rgba(102,255,102,0.7)' },
-    { waarde: 'extern', tekst: 'ondersteuner', bg: '#3e275e', kleur: '#fff',
+    { waarde: 'extern', tekst: 'ondersteuner', bg: '#351f4e', kleur: '#fff',
       schaduw: 'inset 0 0 6px 2px rgba(165,143,209,0.8)' },
   ];
   const naamVeilig = escHtml(naam).replace(/'/g, "&#39;");
