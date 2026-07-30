@@ -4625,8 +4625,8 @@ async function renderPapierRooster(voorafGeladenData) {
       if (!info.naam1) {
         cellHtml = `<span class="pr-leeg">—</span>`;
       } else {
-        const status1 = statusVoorRij[info.naam1] || bewonersLaatsteStatus[info.naam1] || 'vrijwilliger';
-        const status2 = info.naam2 ? (statusVoorRij[info.naam2] || bewonersLaatsteStatus[info.naam2] || 'vrijwilliger') : null;
+        const status1 = heeftSpecialeFunctie(info.naam1) ? 'extern' : (statusVoorRij[info.naam1] || bewonersLaatsteStatus[info.naam1] || 'vrijwilliger');
+        const status2 = info.naam2 ? (heeftSpecialeFunctie(info.naam2) ? 'extern' : (statusVoorRij[info.naam2] || bewonersLaatsteStatus[info.naam2] || 'vrijwilliger')) : null;
         if (!status2 || status1 === status2) {
           // Eén naam, of twee namen met dezelfde status: hele cel in die kleur.
           cellClasses = statusKlasse(status1);
