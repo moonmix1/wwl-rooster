@@ -177,7 +177,7 @@
   /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
   .pr-status-label { display: block; font-size: 0.44rem; opacity: 1; margin-top: 0; color: #fff;
     text-transform: lowercase; font-weight: 700; white-space: nowrap; text-align: center; }
-  .pr-uren-status-gvdw .pr-status-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 1px 4px 3px; line-height: 1.3; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); }
+  .pr-uren-status-gvdw .pr-status-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 1px 3px; line-height: 1.1; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); }
   .pr-inwerk-tekst { color: #f5d800; font-weight: 800; font-family: 'Comic Sans MS', cursive, sans-serif;
     text-transform: none; }
 
@@ -4862,7 +4862,7 @@ function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
 
   const huisjeRijHtml = `<button type="button" ${statusBlokkeertHuisje ? 'disabled' : `onclick="prVerwerkUrenKeuze('${weekKey}','${naamVeilig}','__huisje__')"`}
       style="display:flex;align-items:center;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border-radius:8px;
-      border:2px solid transparent;background:#0074a6;color:#fff;
+      border:2px solid transparent;background:#005fb4;color:#fff;
       font-weight:700;font-size:0.9rem;${statusBlokkeertHuisje ? 'cursor:not-allowed' : 'cursor:pointer'};opacity:${statusBlokkeertHuisje ? '0.6' : '1'}">
       ${toggle(heeftHuisje, statusBlokkeertHuisje)}
       <span style="white-space:nowrap">${huisjeTekst} 🏠</span>
