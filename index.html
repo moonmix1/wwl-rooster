@@ -163,7 +163,7 @@
   .pr-cel-label-rij { position: relative; display: flex; justify-content: center; align-items: center; padding-right: 2px; }
   .pr-cel-label { display: inline-block; text-align: center; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
-  .pr-cel-gvdw .pr-cel-label { color: #d4b83f; opacity: 1; background: #332920; border-radius: 3px; padding: 1px 4px 3px; line-height: 1.3; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); width: 100%; box-sizing: border-box; position: relative; top: 3px; }
+  .pr-cel-gvdw .pr-cel-label { color: #d4b83f; opacity: 1; background: #332920; border-radius: 3px; padding: 0px 4px; line-height: 1; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); width: 100%; box-sizing: border-box; position: relative; top: 3px; }
   .pr-kok-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 1px 3px; line-height: 1.1; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(93,173,226,0.7); font-size: 0.44rem; font-weight: 700; text-transform: lowercase; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
   .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
@@ -4644,10 +4644,10 @@ async function renderPapierRooster(voorafGeladenData) {
           // naadloos aan elkaar. Het lijntje komt exact op de kleurgrens te staan.
           cellHtml = `
             <div style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative;gap:3px">
-              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px">
+              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px;overflow:hidden">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
               </div>
-              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px">
+              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px;overflow:hidden">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
               </div>
             </div>`;
