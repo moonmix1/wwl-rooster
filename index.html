@@ -4484,6 +4484,7 @@ async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
   const dagVolgordeNamen = ['woensdag','donderdag','vrijdag','zaterdag','zondag','maandag','dinsdag'];
   const woensdagBasis = new Date(weekKey + 'T00:00:00');
   const weekData = papierRoosterCache[weekKey] || {};
+  const gevondenNamen = new Set();
 
   dagVolgordeNamen.forEach((dagNaam, i) => {
     const datum = new Date(woensdagBasis); datum.setDate(woensdagBasis.getDate() + i);
@@ -4494,9 +4495,26 @@ async function prVerwerkHerkendRooster(herkendRooster, weekKey) {
     ['dag','avond','nacht'].forEach(dienstKey => {
       if (herkendDag[dienstKey] && herkendDag[dienstKey].naam1) {
         weekData[dagKey][dienstKey] = herkendDag[dienstKey];
+        gevondenNamen.add(herkendDag[dienstKey].naam1);
+        if (herkendDag[dienstKey].naam2) gevondenNamen.add(herkendDag[dienstKey].naam2);
       }
     });
   });
+
+  // Namen die de scan tegenkomt maar die nog nergens bekend zijn, meteen aanmaken met
+  // status 'gast' — zodat ze direct correct in "Uren deze week" verschijnen, in plaats
+  // van pas na een handmatige toevoeging.
+  if (supabaseActief) {
+    const nieuweNamen = [...gevondenNamen].filter(n => n && !bewonersCache.includes(n));
+    if (nieuweNamen.length) {
+      const { error: insertFout } = await sb.from('bewoners').insert(nieuweNamen.map(naam => ({ naam, laatste_status: 'gast' })));
+      if (insertFout) {
+        // Kolom 'laatste_status' bestaat mogelijk nog niet — val terug op alleen de naam.
+        await sb.from('bewoners').insert(nieuweNamen.map(naam => ({ naam })));
+      }
+      await laadBewoners();
+    }
+  }
 
   await prOpslaanWeek(weekKey, weekData);
   renderPapierRooster();
