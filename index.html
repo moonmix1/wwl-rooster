@@ -3165,7 +3165,19 @@ function naamMetKrimpendeWoorden(naam, basisRem) {
 function naamMetKrimpendeWoordenEm(naam) {
   const woorden = String(naam || '').split(' ');
   return woorden.map((w, i) => {
-    const factor = i === 0 ? 1 : 0.7;
+    const basisFactor = i === 0 ? 1 : 0.7;
+    const lengte = w.length;
+    if (lengte >= 10) {
+      // 10+ letters: naar 2 regels. Regel 1 krijgt maximaal 4 letters (minstens 2),
+      // de rest (het grootste deel) gaat naar regel 2 — daar is ruimte genoeg.
+      const regel1Lengte = Math.min(4, lengte - 2);
+      const regel1 = w.slice(0, regel1Lengte);
+      const regel2 = w.slice(regel1Lengte);
+      return `<span style="font-size:${basisFactor.toFixed(3)}em;vertical-align:baseline;display:block;line-height:1.05">${escHtml(regel1)}<br>${escHtml(regel2)}</span>`;
+    }
+    // 8-9 letters: klein slagje kleiner, als respijt vóór een 2e regel nodig is.
+    const lengteFactor = lengte >= 8 ? 0.85 : 1;
+    const factor = basisFactor * lengteFactor;
     return `<span style="font-size:${factor.toFixed(3)}em;vertical-align:baseline">${escHtml(w)}</span>`;
   }).join(' ');
 }
