@@ -4637,9 +4637,10 @@ async function renderPapierRooster(voorafGeladenData) {
       } else {
         const status1 = heeftSpecialeFunctie(info.naam1) ? 'extern' : (statusVoorRij[info.naam1] || bewonersLaatsteStatus[info.naam1] || 'vrijwilliger');
         const status2 = info.naam2 ? (heeftSpecialeFunctie(info.naam2) ? 'extern' : (statusVoorRij[info.naam2] || bewonersLaatsteStatus[info.naam2] || 'vrijwilliger')) : null;
+        const kleurKlasse = (status, label) => label === 'kok' ? statusKlasse('extern') : statusKlasse(status);
         if (!info.naam2) {
           // Eén naam: hele cel in die kleur.
-          cellClasses = statusKlasse(status1);
+          cellClasses = kleurKlasse(status1, info.label1);
           const heeftExtra = info.label1;
           const naamTekst = naamRegelHtml(info.naam1, status1, info.label1);
           const centreerStijl = 'display:flex;flex-direction:column;justify-content:center;flex:1;';
@@ -4649,10 +4650,10 @@ async function renderPapierRooster(voorafGeladenData) {
           // naadloos aan elkaar. Het lijntje komt exact op de kleurgrens te staan.
           cellHtml = `
             <div style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative;gap:3px">
-              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px;overflow:hidden;position:relative">
+              <div class="${kleurKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px;overflow:hidden;position:relative">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
               </div>
-              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px;overflow:hidden">
+              <div class="${kleurKlasse(status2, info.label2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px;overflow:hidden">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
               </div>
             </div>`;
