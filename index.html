@@ -4637,7 +4637,7 @@ async function renderPapierRooster(voorafGeladenData) {
       } else {
         const status1 = heeftSpecialeFunctie(info.naam1) ? 'extern' : (statusVoorRij[info.naam1] || bewonersLaatsteStatus[info.naam1] || 'vrijwilliger');
         const status2 = info.naam2 ? (heeftSpecialeFunctie(info.naam2) ? 'extern' : (statusVoorRij[info.naam2] || bewonersLaatsteStatus[info.naam2] || 'vrijwilliger')) : null;
-        const kleurKlasse = (status, label) => label === 'kok' ? statusKlasse('extern') : statusKlasse(status);
+        const kleurKlasse = (status, label) => (label === 'kok' && status === 'vrijwilliger') ? statusKlasse('extern') : statusKlasse(status);
         if (!info.naam2) {
           // Eén naam: hele cel in die kleur.
           cellClasses = kleurKlasse(status1, info.label1);
