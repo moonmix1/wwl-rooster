@@ -178,7 +178,7 @@
   /* ── STATUS-KLEUREN: vrijwilliger (blauw) / gast (rood) / gast van de week (groen) ── */
   .pr-status-label { display: block; font-size: 0.44rem; opacity: 1; margin-top: 0; color: #fff;
     text-transform: lowercase; font-weight: 700; white-space: nowrap; text-align: center; }
-  .pr-uren-status-gvdw .pr-status-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 6px 5px; line-height: 1.1; font-size: 0.77rem; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(180,150,90,0.7); margin-top: -5px; }
+  .pr-uren-status-gvdw .pr-status-label { color: #d4b83f; background: #332920; border-radius: 3px; padding: 3px 3px; line-height: 1.1; font-size: 0.41rem; width: 31px; box-sizing: border-box; text-align: center; display: inline-block; box-shadow: inset 0 0 3px 1px rgba(180,150,90,0.7); margin-top: -5px; }
   .pr-inwerk-tekst { color: #f5d800; font-weight: 800; font-family: 'Comic Sans MS', cursive, sans-serif;
     text-transform: none; }
 
@@ -199,7 +199,7 @@
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
-  .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 24px; column-gap: 6px; row-gap: 2px;
+  .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 26px; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
@@ -212,8 +212,8 @@
   .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  .pr-uren-uur { grid-column: 3; align-self: center; width: 24px; height: 24px; background: #111; color: #f5d800;
-    border-radius: 3px; font-size: 0.74rem; font-weight: 800; display: flex; align-items: center;
+  .pr-uren-uur { grid-column: 3; align-self: center; width: 26px; height: 26px; background: #111; color: #f5d800;
+    border-radius: 3px; font-size: 0.81rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
   .pr-uren-status-plek { grid-column: 2; text-align: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
@@ -4818,7 +4818,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
-           ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:8px;display:inline-block">▾</span>
+           ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     return `<div class="pr-uren-rij ${klasse}">
