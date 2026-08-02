@@ -4829,7 +4829,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     // Grootte en kleur schalen beide stuksgewijs-lineair, elk met hun eigen controlepunten.
     const urenVoorGrootte = Math.max(0, Math.min(32, uren[naam]));
-    const groottePunten = [[0,20],[8,25],[16,32],[24,40],[32,50]];
+    const groottePunten = [[0,20],[8,23],[16,32],[24,43],[32,50]];
     let badgeGrootte = 50;
     for (let p = 0; p < groottePunten.length - 1; p++) {
       const [u1, g1] = groottePunten[p], [u2, g2] = groottePunten[p+1];
