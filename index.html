@@ -4827,16 +4827,16 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
            ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
-    // Grootte schaalt exponentieel (0 uur eigen vaste waarde, 8->22px, 32->50px).
-    // Kleur/grijswaarde schaalt apart en LINEAIR: 0 uur=160, 8 uur=120, 16 uur=80, 24 uur=40, 32 uur=0 (zwart).
-    const minUren = 8, maxUren = 32, minBadge = 22, maxBadge = 50, exponent = 2.5;
-    let badgeGrootte;
-    if (uren[naam] === 0) {
-      badgeGrootte = 16;
-    } else {
-      const badgeUren = Math.max(minUren, Math.min(maxUren, uren[naam]));
-      const t = Math.pow((badgeUren - minUren) / (maxUren - minUren), exponent);
-      badgeGrootte = Math.round(minBadge + (maxBadge - minBadge) * t);
+    // Grootte en kleur schalen beide stuksgewijs-lineair, elk met hun eigen controlepunten.
+    const urenVoorGrootte = Math.max(0, Math.min(32, uren[naam]));
+    const groottePunten = [[0,20],[8,25],[16,32],[24,40],[32,50]];
+    let badgeGrootte = 50;
+    for (let p = 0; p < groottePunten.length - 1; p++) {
+      const [u1, g1] = groottePunten[p], [u2, g2] = groottePunten[p+1];
+      if (urenVoorGrootte >= u1 && urenVoorGrootte <= u2) {
+        badgeGrootte = Math.round(g1 + (g2 - g1) * (urenVoorGrootte - u1) / (u2 - u1));
+        break;
+      }
     }
     const urenVoorKleur = Math.max(0, Math.min(32, uren[naam]));
     // Stuksgewijs-lineair tussen de opgegeven controlepunten, zodat elk exact wordt geraakt.
