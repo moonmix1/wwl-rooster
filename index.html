@@ -4835,7 +4835,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const badgeUren = Math.max(minUren, Math.min(maxUren, uren[naam]));
     const t = Math.pow((badgeUren - minUren) / (maxUren - minUren), exponent);
     const badgeGrootte = Math.round(minBadge + (maxBadge - minBadge) * t);
-    const grijswaarde = Math.round(255 * (1 - t));
+    const minGrijs = 150; // was 255 (wit) - nu een lichtgrijs beginpunt bij 0 uur, iets lichter dan wat 24 uur voorheen toonde
+    const grijswaarde = Math.round(minGrijs * (1 - t));
     const badgeAchtergrond = `rgb(${grijswaarde},${grijswaarde},${grijswaarde})`;
     const badgeKleur = '#f5d800';
     const badgeFontSize = (badgeGrootte * 0.026).toFixed(2);
