@@ -4852,13 +4852,14 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const isNulUur = uren[naam] === 0;
     const badgeAchtergrond = isNulUur ? '#fff' : `rgb(${grijswaarde},${grijswaarde},${grijswaarde})`;
     const badgeKleur = isNulUur ? '#e30000' : '#f5d800';
-    const badgeFontSize = (badgeGrootte * 0.026).toFixed(2);
+    const badgeFontSize = (isNulUur ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
+    const badgeGewicht = isNulUur ? 900 : 800;
     const paddingRechts = 50 + 16; // altijd gebaseerd op de grootste mogelijke badge (50px), voor genoeg ruimte
     return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
-        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem;color:${badgeKleur};background:${badgeAchtergrond}">${uren[naam]}</span>
+        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem;font-weight:${badgeGewicht};color:${badgeKleur};background:${badgeAchtergrond}">${uren[naam]}</span>
       </div>
       ${statusVeld}
     </div>`;
