@@ -4740,6 +4740,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   Object.keys(alleStatussen).forEach(status => {
     alleStatussen[status].sort((a, b) => {
       if (uren[b] !== uren[a]) return uren[b] - uren[a];
+      if (status === 'gast') {
+        const werkelijkeStatus = (naam) => heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'vrijwilliger');
+        const aIsGvdw = werkelijkeStatus(a) === 'gast_week';
+        const bIsGvdw = werkelijkeStatus(b) === 'gast_week';
+        if (aIsGvdw !== bIsGvdw) return aIsGvdw ? -1 : 1;
+      }
       return a.localeCompare(b, 'nl');
     });
   });
