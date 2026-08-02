@@ -197,8 +197,8 @@
   .pr-uren-lijst-wrap { display: flex; gap: 14px; }
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
-  .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
-    letter-spacing: 0.05em; margin-bottom: 8px; }
+  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #fff; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 10px; }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
@@ -209,6 +209,7 @@
   .pr-uren-naam-tekst { display: block; font-size: 0.82rem; color: #e0e0e0; font-weight: 600;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; line-height: 1.15; }
   .pr-uren-huisje-badge { position: absolute; left: 0; top: 50%; transform: translateY(-50%); font-size: 0.68rem; }
+  .pr-uren-huisje-badge-status { font-size: 0.68rem; margin-right: 3px; display: inline-block; vertical-align: middle; }
   .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
@@ -4822,11 +4823,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const heeftHuisje = status !== 'geen_status' && bewonersBeheerSet.has(naam);
     const huisjeOptieTekst = heeftHuisje ? '✓ 🏠 heeft beheerderswoning (tik om te wijzigen)' : '🏠 beheerderswoning toevoegen';
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
+    const huisjeIcoon = heeftHuisje ? '<span class="pr-uren-huisje-badge-status">🏠</span>' : '';
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
-           ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
+           ${huisjeIcoon}${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
-      : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
+      : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${huisjeIcoon}${statusTekstZichtbaar}</span>`;
     // Grootte en kleur schalen beide stuksgewijs-lineair, elk met hun eigen controlepunten.
     const urenVoorGrootte = Math.max(0, Math.min(40, uren[naam]));
     const groottePunten = [[0,20],[8,20],[16,23],[24,32],[32,40],[40,52]];
@@ -4851,7 +4853,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     }
     const isNulUur = uren[naam] === 0;
     const extraGroot = isNulUur || uren[naam] === 8;
-    const badgeAchtergrond = isNulUur ? '#fff' : '#f5d800';
+    const badgeAchtergrond = isNulUur ? '#fff' : '#d9bc00';
     const badgeKleur = '#402860';
     const badgeFontSize = (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
     const badgeGewicht = extraGroot ? 900 : 800;
@@ -4859,7 +4861,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
-        <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
+        <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span></span>
         <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem;font-weight:${badgeGewicht};color:${badgeKleur};background:${badgeAchtergrond}">${uren[naam]}</span>
       </div>
       ${statusVeld}
