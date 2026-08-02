@@ -200,7 +200,7 @@
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
-    padding: 6px 58px 6px 8px; min-height: 62px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+    padding: 6px 8px; min-height: 62px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -4803,7 +4803,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   while (kgIndex < kleurGroepen.length) { namen.push(...kleurGroepen[kgIndex].namen); kgIndex++; }
 
   const STATUS_KLASSEN = { gast: 'pr-uren-status-gast', gast_week: 'pr-uren-status-gvdw', oud_bewoner: 'pr-uren-status-oud', extern: 'pr-uren-status-ext', vrijwilliger: 'pr-uren-status-vw', inwerk: 'pr-uren-status-gast', geen_status: 'pr-uren-status-geen' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)', geen_status: '- nog geen status -' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast vd week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast (inwerkperiode)', geen_status: '- nog geen status -' };
 
   const statusOpties = (huidigeStatus) => `
     <option value="vrijwilliger" style="background:#093f73;color:#fff" ${huidigeStatus==='vrijwilliger'?'selected':''}>vrijwilliger</option>
@@ -4827,11 +4827,17 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
            ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
-    return `<div class="pr-uren-rij ${klasse}">
+    // Badge-grootte schaalt lineair mee met de uren: 8 uur -> 22px, 48 uur -> 50px (daarbuiten geclamped).
+    const minUren = 8, maxUren = 48, minBadge = 22, maxBadge = 50;
+    const badgeUren = Math.max(minUren, Math.min(maxUren, uren[naam]));
+    const badgeGrootte = Math.round(minBadge + (badgeUren - minUren) / (maxUren - minUren) * (maxBadge - minBadge));
+    const badgeFontSize = (badgeGrootte * 0.026).toFixed(2);
+    const paddingRechts = badgeGrootte + 16; // 8px marge + 8px basis-padding
+    return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
-        <span class="pr-uren-uur">${uren[naam]}</span>
+        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem">${uren[naam]}</span>
       </div>
       ${statusVeld}
     </div>`;
