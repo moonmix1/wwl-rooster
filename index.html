@@ -212,7 +212,7 @@
   .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  .pr-uren-uur { position: absolute; top: 6px; right: 8px; width: 50px; height: 50px; min-width: 50px; min-height: 50px; overflow: hidden; background: #111; color: #f5d800;
+  .pr-uren-uur { position: absolute; top: 31px; right: 33px; transform: translate(50%, -50%); width: 50px; height: 50px; min-width: 16px; min-height: 16px; overflow: hidden; background: #111; color: #f5d800;
     border-radius: 3px; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
   .pr-uren-status-plek { grid-column: 2; text-align: center; }
@@ -4827,17 +4827,29 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
            ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
-    // Badge-grootte schaalt lineair mee met de uren: 8 uur -> 22px, 48 uur -> 50px (daarbuiten geclamped).
-    const minUren = 8, maxUren = 48, minBadge = 22, maxBadge = 50;
-    const badgeUren = Math.max(minUren, Math.min(maxUren, uren[naam]));
-    const badgeGrootte = Math.round(minBadge + (badgeUren - minUren) / (maxUren - minUren) * (maxBadge - minBadge));
+    // Badge-grootte schaalt EXPONENTIEEL mee met de uren: 8 uur -> 19px, 40 uur -> 50px.
+    // Door de exponent groeien de hoge waarden (24/32/40 uur) uit tot 'reuzen', terwijl
+    // alles daaronder snel richting het minimum verdwijnt (geen harde knik, wel een duidelijke bocht).
+    // Uitzondering: 0 uur krijgt een eigen kleinere maat (16px) met witte cijfers i.p.v. geel.
+    const minUren = 8, maxUren = 40, minBadge = 19, maxBadge = 50, exponent = 2.5;
+    const isNulUur = uren[naam] === 0;
+    let badgeGrootte, badgeKleur;
+    if (isNulUur) {
+      badgeGrootte = 16;
+      badgeKleur = '#fff';
+    } else {
+      const badgeUren = Math.max(minUren, Math.min(maxUren, uren[naam]));
+      const t = (badgeUren - minUren) / (maxUren - minUren);
+      badgeGrootte = Math.round(minBadge + (maxBadge - minBadge) * Math.pow(t, exponent));
+      badgeKleur = '#f5d800';
+    }
     const badgeFontSize = (badgeGrootte * 0.026).toFixed(2);
-    const paddingRechts = badgeGrootte + 16; // 8px marge + 8px basis-padding
+    const paddingRechts = maxBadge + 16; // altijd gebaseerd op de grootste badge, voor genoeg ruimte
     return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span>${heeftHuisje ? '<span class="pr-uren-huisje-badge">🏠</span>' : ''}</span>
-        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem">${uren[naam]}</span>
+        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem;color:${badgeKleur}">${uren[naam]}</span>
       </div>
       ${statusVeld}
     </div>`;
