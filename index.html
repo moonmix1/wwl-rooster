@@ -4634,15 +4634,12 @@ async function renderPapierRooster(voorafGeladenData) {
   const naamRegelHtml = (naam, status, celLabel) => {
     const heeftKok = celLabel === 'kok';
     const kokExtra = heeftKok ? `<img src="${KOK_ICOON_IMG}" class="pr-kok-label" alt="kok">` : '';
-    const heeftHuisje = bewonersBeheerSet.has(naam);
-    const huisje = heeftHuisje ? '<span class="pr-naam-regel-huisje">🏠</span>' : '';
     const inwerkVoor = status === 'inwerk' ? '<span class="pr-inwerk-tekst">Inwerk </span>' : '';
     const inwerkNa = status === 'inwerk' ? '<span class="pr-inwerk-tekst"> Periode</span>' : '';
     return `<span class="pr-naam-regel">
       ${kokExtra}
       <span class="pr-naam-regel-top">
         <span class="pr-naam-regel-naam">${naamMetKrimpendeWoordenEm(naam)}</span>
-        ${huisje}
       </span>
       <span class="pr-cel-label-rij">
         <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${inwerkNa}</span>
