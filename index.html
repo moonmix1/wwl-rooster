@@ -4856,7 +4856,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       }
     }
     const isNulUur = uren[naam] === 0;
-    const extraGroot = isNulUur || uren[naam] === 8;
+    const extraGroot = isNulUur || uren[naam] === 8 || uren[naam] === 16;
     const badgeAchtergrond = isNulUur ? '#ebebeb' : geelKleur;
     const badgeKleur = '#402860';
     const badgeFontSize = (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
