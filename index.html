@@ -4827,21 +4827,19 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
            ${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
-    // Badge-grootte EN achtergrondkleur schalen samen exponentieel mee met de uren.
-    // 0 uur staat los, met een eigen vaste waarde. Voor 8 t/m 32 uur geldt de schaal:
-    // 8 uur -> 22px (was de oude 16-uurs-maat), 32 uur -> 50px, zo zwart als kan.
+    // Grootte schaalt exponentieel (0 uur eigen vaste waarde, 8->22px, 32->50px).
+    // Kleur/grijswaarde schaalt apart en LINEAIR: 0 uur=160, 8 uur=120, 16 uur=80, 24 uur=40, 32 uur=0 (zwart).
     const minUren = 8, maxUren = 32, minBadge = 22, maxBadge = 50, exponent = 2.5;
-    const minGrijs = 150; // grijswaarde bij het beginpunt van de schaal (geen wit meer)
-    let badgeGrootte, grijswaarde;
+    let badgeGrootte;
     if (uren[naam] === 0) {
       badgeGrootte = 16;
-      grijswaarde = minGrijs;
     } else {
       const badgeUren = Math.max(minUren, Math.min(maxUren, uren[naam]));
       const t = Math.pow((badgeUren - minUren) / (maxUren - minUren), exponent);
       badgeGrootte = Math.round(minBadge + (maxBadge - minBadge) * t);
-      grijswaarde = Math.round(minGrijs * (1 - t));
     }
+    const urenVoorKleur = Math.max(0, Math.min(32, uren[naam]));
+    const grijswaarde = Math.round(160 * (1 - urenVoorKleur / 32));
     const badgeAchtergrond = `rgb(${grijswaarde},${grijswaarde},${grijswaarde})`;
     const badgeKleur = '#f5d800';
     const badgeFontSize = (badgeGrootte * 0.026).toFixed(2);
