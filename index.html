@@ -199,8 +199,8 @@
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
-  .pr-uren-rij { display: grid; grid-template-columns: 15px 1fr 50px; column-gap: 6px; row-gap: 2px;
-    padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+  .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
+    padding: 6px 58px 6px 8px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -212,7 +212,7 @@
   .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  .pr-uren-uur { grid-column: 3; align-self: center; width: 50px; height: 50px; background: #111; color: #f5d800;
+  .pr-uren-uur { position: absolute; top: 6px; right: 8px; width: 50px; height: 50px; min-width: 50px; min-height: 50px; overflow: hidden; background: #111; color: #f5d800;
     border-radius: 3px; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
   .pr-uren-status-plek { grid-column: 2; text-align: center; }
