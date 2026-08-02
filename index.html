@@ -200,7 +200,7 @@
   .pr-uren-titel { font-size: 0.68rem; font-weight: 700; color: #999; text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 8px; }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
-    padding: 6px 8px; min-height: 62px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+    padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -212,7 +212,7 @@
   .pr-uren-nr { grid-column: 1; align-self: center; width: 15px; height: 15px; background: #fff; color: #111;
     border-radius: 2px; font-size: 0.5rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  .pr-uren-uur { position: absolute; top: 31px; right: 33px; transform: translate(50%, -50%); width: 50px; height: 50px; min-width: 16px; min-height: 16px; overflow: hidden; background: #111; color: #f5d800;
+  .pr-uren-uur { position: absolute; top: 32px; right: 34px; transform: translate(50%, -50%); width: 52px; height: 52px; min-width: 16px; min-height: 16px; overflow: hidden; background: #111; color: #f5d800;
     border-radius: 3px; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
   .pr-uren-status-plek { grid-column: 2; text-align: center; }
@@ -4829,7 +4829,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${statusTekstZichtbaar}</span>`;
     // Grootte en kleur schalen beide stuksgewijs-lineair, elk met hun eigen controlepunten.
     const urenVoorGrootte = Math.max(0, Math.min(32, uren[naam]));
-    const groottePunten = [[0,20],[8,23],[16,32],[24,43],[32,50]];
+    const groottePunten = [[0,20],[8,23],[16,32],[24,42],[32,52]];
     let badgeGrootte = 50;
     for (let p = 0; p < groottePunten.length - 1; p++) {
       const [u1, g1] = groottePunten[p], [u2, g2] = groottePunten[p+1];
@@ -4855,7 +4855,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const badgeKleur = isNulUur ? '#e30000' : '#f5d800';
     const badgeFontSize = (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
     const badgeGewicht = extraGroot ? 900 : 800;
-    const paddingRechts = 50 + 16; // altijd gebaseerd op de grootste mogelijke badge (50px), voor genoeg ruimte
+    const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
     return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
