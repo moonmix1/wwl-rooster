@@ -4851,8 +4851,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     }
     const isNulUur = uren[naam] === 0;
     const extraGroot = isNulUur || uren[naam] === 8;
-    const badgeAchtergrond = isNulUur ? '#fff' : `rgb(${grijswaarde},${grijswaarde},${grijswaarde})`;
-    const badgeKleur = isNulUur ? '#e30000' : '#f5d800';
+    const badgeAchtergrond = isNulUur ? '#fff' : '#f5d800';
+    const badgeKleur = isNulUur ? '#e30000' : '#000';
     const badgeFontSize = (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
     const badgeGewicht = extraGroot ? 900 : 800;
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
