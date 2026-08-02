@@ -4839,7 +4839,16 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       badgeGrootte = Math.round(minBadge + (maxBadge - minBadge) * t);
     }
     const urenVoorKleur = Math.max(0, Math.min(32, uren[naam]));
-    const grijswaarde = Math.round(160 * (1 - urenVoorKleur / 32));
+    // Stuksgewijs-lineair tussen de opgegeven controlepunten, zodat elk exact wordt geraakt.
+    const kleurPunten = [[0,140],[8,100],[16,60],[24,30],[32,0]];
+    let grijswaarde = 0;
+    for (let p = 0; p < kleurPunten.length - 1; p++) {
+      const [u1, g1] = kleurPunten[p], [u2, g2] = kleurPunten[p+1];
+      if (urenVoorKleur >= u1 && urenVoorKleur <= u2) {
+        grijswaarde = Math.round(g1 + (g2 - g1) * (urenVoorKleur - u1) / (u2 - u1));
+        break;
+      }
+    }
     const badgeAchtergrond = `rgb(${grijswaarde},${grijswaarde},${grijswaarde})`;
     const badgeKleur = '#f5d800';
     const badgeFontSize = (badgeGrootte * 0.026).toFixed(2);
