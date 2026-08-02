@@ -197,8 +197,8 @@
   .pr-uren-lijst-wrap { display: flex; gap: 14px; }
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
-  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #fff; text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 10px; }
+  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #402860; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
@@ -4853,7 +4853,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     }
     const isNulUur = uren[naam] === 0;
     const extraGroot = isNulUur || uren[naam] === 8;
-    const badgeAchtergrond = isNulUur ? '#fff' : '#d9bc00';
+    const badgeAchtergrond = isNulUur ? '#ebebeb' : '#d9bc00';
     const badgeKleur = '#402860';
     const badgeFontSize = (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
     const badgeGewicht = extraGroot ? 900 : 800;
