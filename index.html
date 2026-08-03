@@ -4717,7 +4717,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   if (titelEl) {
     const startDatum = new Date(weekKey + 'T00:00:00');
     const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
-    const weekLabel = `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
+    const weekLabel = `wo ${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – di ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
     titelEl.innerHTML = `Uren deze week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span>`;
   }
 
