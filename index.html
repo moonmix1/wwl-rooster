@@ -4713,6 +4713,14 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const el = document.getElementById('pr-uren-lijst');
   if (!el) return;
 
+  const titelEl = document.querySelector('.pr-uren-titel');
+  if (titelEl) {
+    const startDatum = new Date(weekKey + 'T00:00:00');
+    const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
+    const weekLabel = `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
+    titelEl.innerHTML = `Uren deze week<br><span style="font-size:0.7rem;font-weight:600;text-transform:none;opacity:0.85">${weekLabel}</span>`;
+  }
+
   const uren = {}; // naam -> totaal uren deze week
   Object.keys(weekData).forEach(dagKey => {
     if (dagKey.startsWith('_')) return;
