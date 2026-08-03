@@ -4870,7 +4870,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const badgeAchtergrond = isNulUur ? '#ebebeb' : geelKleur;
     const badgeKleur = isNulUur ? '#402860' : '#ff0000';
     const badgeFontSize = (isAchtUur ? badgeGrootte * 0.044 : (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026)).toFixed(2);
-    const badgeGewicht = isAchtUur ? 900 : (extraGroot ? 900 : 800);
+    const badgeGewicht = 900;
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
     return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
