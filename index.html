@@ -199,7 +199,7 @@
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; background: #402860; text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 6px 12px; border-radius: 6px; display: block; border: 2px solid #d9bc00; }
+    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 4px 12px; border-radius: 6px; display: block; border: 2px solid #d9bc00; line-height: 1.25; }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
@@ -4718,7 +4718,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const startDatum = new Date(weekKey + 'T00:00:00');
     const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
     const weekLabel = `${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
-    titelEl.innerHTML = `Uren deze week<br><span style="font-size:0.7rem;font-weight:600;text-transform:none;opacity:0.85">${weekLabel}</span>`;
+    titelEl.innerHTML = `Uren deze week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span>`;
   }
 
   const uren = {}; // naam -> totaal uren deze week
@@ -4866,10 +4866,11 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     }
     const isNulUur = uren[naam] === 0;
     const extraGroot = isNulUur || uren[naam] === 8 || uren[naam] === 16;
+    const isAchtUur = uren[naam] === 8;
     const badgeAchtergrond = isNulUur ? '#ebebeb' : geelKleur;
     const badgeKleur = isNulUur ? '#402860' : '#ff0000';
-    const badgeFontSize = (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026).toFixed(2);
-    const badgeGewicht = extraGroot ? 900 : 800;
+    const badgeFontSize = (isAchtUur ? badgeGrootte * 0.044 : (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026)).toFixed(2);
+    const badgeGewicht = isAchtUur ? 900 : (extraGroot ? 900 : 800);
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
     return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
