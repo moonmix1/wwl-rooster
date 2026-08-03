@@ -4551,9 +4551,9 @@ async function renderPapierRooster(voorafGeladenData) {
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
     const wisKnopHtml = isCoordinator() ? prWisKnopHtml(weekKey, dinsdag, prWeekOffset < 0) : '';
     const middenHtml = prWeekOffset === 0
-      ? `<div style="width:100%;box-sizing:border-box;text-align:center;border:2px solid #fff;border-radius:8px;padding:6px 10px">
-          <div style="color:#fff;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#fff;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
+      ? `<div style="width:100%;box-sizing:border-box;text-align:center;background:#402860;border-radius:8px;padding:6px 10px;box-shadow:inset 0 0 6px 2px rgba(147,51,204,0.8)">
+          <div style="color:#d9bc00;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#d9bc00;margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`
       : `<div style="width:100%;text-align:center">
           <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
