@@ -169,7 +169,7 @@
   .pr-cel > .pr-naam .pr-kok-label { top: 31px; }
   .pr-naam-regel { display: block; overflow-wrap: break-word; }
   .pr-naam-scheiding { display: block; height: 1px; width: 100%; background: rgba(255,255,255,0.28); margin: 5px 0; }
-  .pr-naam-regel-top { position: relative; display: block; text-align: center; }
+  .pr-naam-regel-top { position: absolute; left: 0; right: 0; top: 4px; display: block; text-align: center; }
   .pr-naam-regel-naam { min-width: 0; overflow-wrap: break-word; white-space: normal; }
   .pr-naam-regel-huisje { position: absolute; right: -3px; top: 50%; transform: translateY(calc(-50% + 1px)); font-size: 0.72rem; }
   .pr-leeg { color: #666; font-size: 0.78rem; font-style: italic; }
@@ -4672,7 +4672,7 @@ async function renderPapierRooster(voorafGeladenData) {
           cellClasses = statusKlasse(status1);
           const heeftExtra = info.label1;
           const naamTekst = naamRegelHtml(info.naam1, status1, info.label1);
-          const centreerStijl = 'display:flex;flex-direction:column;justify-content:center;flex:1;';
+          const centreerStijl = 'display:block;';
           cellHtml = `<span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}${centreerStijl}">${naamTekst}</span>`;
         } else {
           // Twee namen: cel altijd gesplitst in twee gekleurde helften (ook bij gelijke status),
