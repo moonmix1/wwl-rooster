@@ -4628,7 +4628,7 @@ async function renderPapierRooster(voorafGeladenData) {
   renderPrUrenKolom(weekKey, weekData, statusMap, beheer);
 
   const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw', inwerk: 'pr-cel-gast' };
-  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast van<br>de week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast' };
+  const STATUS_TEKST = { gast: 'gast', gast_week: 'gast vd week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast' };
   const statusKlasse = (status) => STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
   const statusLabelTekst = (status) => STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger;
 
