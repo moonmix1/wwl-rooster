@@ -4880,7 +4880,11 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const badgeFontSize = (isAchtUur ? badgeGrootte * 0.044 : (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026)).toFixed(2);
     const badgeGewicht = 900;
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
-    return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
+    const vorigeNaam = idx > 0 ? namen[idx - 1] : null;
+    const urenGrensStijl = (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam])
+      ? 'border-top:2px solid #2a1240;'
+      : '';
+    return `<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px;${urenGrensStijl}">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span></span>
