@@ -153,6 +153,7 @@
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
   .pr-cel:focus, .pr-cel:active { outline: none !important; }
   .pr-cel-vw   { background-color: #093f73; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.7); }
+  .pr-tweemans-wrap .pr-cel-vw { background-color: #275684; }
   .pr-cel-gast { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.8); }
   .pr-cel-gvdw { background-image: linear-gradient(to right, #7c2a36 0%, #5c1a28 35%, #7c2a36 100%);
@@ -4678,7 +4679,7 @@ async function renderPapierRooster(voorafGeladenData) {
           // Twee namen: cel altijd gesplitst in twee gekleurde helften (ook bij gelijke status),
           // naadloos aan elkaar. Het lijntje komt exact op de kleurgrens te staan.
           cellHtml = `
-            <div style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative;gap:3px">
+            <div class="pr-tweemans-wrap" style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative;gap:3px">
               <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px;overflow:hidden;position:relative">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
               </div>
