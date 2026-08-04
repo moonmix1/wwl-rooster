@@ -203,7 +203,7 @@
   .pr-uren-lijst-wrap { display: flex; gap: 14px; }
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
-  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; background: #402860; text-transform: uppercase;
+  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #8fd97a; background: #402860; text-transform: uppercase;
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 4px 12px; border-radius: 6px; display: block; border: none; line-height: 1.25; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.8); }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
@@ -4557,8 +4557,8 @@ async function renderPapierRooster(voorafGeladenData) {
     const wisKnopHtml = isCoordinator() ? prWisKnopHtml(weekKey, dinsdag, prWeekOffset < 0) : '';
     const middenHtml = prWeekOffset === 0
       ? `<div style="width:100%;box-sizing:border-box;text-align:center;background:#402860;border-radius:8px;padding:6px 10px;box-shadow:inset 0 0 6px 2px rgba(147,51,204,0.8)">
-          <div style="color:#d9bc00;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#d9bc00;margin-top:3px">wo ${prFormatDatum(labelStart)} – di ${prFormatDatum(labelEind)}</div>
+          <div style="color:#8fd97a;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
+          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#8fd97a;margin-top:3px">wo ${prFormatDatum(labelStart)} – di ${prFormatDatum(labelEind)}</div>
         </div>`
       : `<div style="width:100%;text-align:center">
           <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
