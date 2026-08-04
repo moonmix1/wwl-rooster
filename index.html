@@ -5314,11 +5314,17 @@ async function prHaalNaamOp(nummer) {
 }
 
 async function prBevestigCel(weekKey, dagKey, dienstKey) {
-  const naam1 = await prHaalNaamOp('1');
-  const naam2 = await prHaalNaamOp('2');
-  const label1 = document.getElementById('pr-cel-label1').value;
-  const label2 = document.getElementById('pr-cel-label2').value;
+  let naam1 = await prHaalNaamOp('1');
+  let naam2 = await prHaalNaamOp('2');
+  let label1 = document.getElementById('pr-cel-label1').value;
+  let label2 = document.getElementById('pr-cel-label2').value;
   const opmerking = document.getElementById('pr-cel-opmerking').value.trim();
+
+  // Kok moet altijd bovenaan (positie 1) staan bij een 2-mans dienst.
+  if (label2 === 'kok' && label1 !== 'kok' && naam2) {
+    [naam1, naam2] = [naam2, naam1];
+    [label1, label2] = [label2, label1];
+  }
 
   const huisje1El = document.getElementById('pr-cel-huisje1');
   const huisje2El = document.getElementById('pr-cel-huisje2');
