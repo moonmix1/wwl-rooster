@@ -4899,7 +4899,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
     const vorigeNaam = idx > 0 ? namen[idx - 1] : null;
     const urenGrensHtml = (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam])
-      ? '<div style="height:10px;margin:2px 4px 6px 4px;background-image:radial-gradient(circle at 6px 0px, transparent 5px, #ff6fb0 6px), radial-gradient(circle at 18px 10px, transparent 5px, #ff6fb0 6px);background-size:24px 10px;background-color:#ffffff"></div>'
+      ? '<div style="height:10px;margin:2px 4px 6px 4px;background-color:#ffffff;background-repeat:repeat-x;background-size:20px 10px;background-image:url(\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2210%22%3E%3Cpath d=%22M0,5 Q5,0 10,5 T20,5%22 stroke=%22%23ff6fb0%22 stroke-width=%224%22 fill=%22none%22/%3E%3C/svg%3E\')"></div>'
       : '';
     return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
