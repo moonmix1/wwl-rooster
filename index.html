@@ -200,10 +200,17 @@
   .pr-uren-status-ext  { background: #351f4e; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.8); }
   .pr-uren-status-geen { background: #4a423c; }
 
-  /* Bij 0 uur: dezelfde statuskleur blijft herkenbaar, maar flauwer en donkerder
-     (minder verzadigd, lagere helderheid), zodat het duidelijk "rustender" oogt dan
-     wie wél uren heeft gemaakt. Tekst blijft leesbaar dankzij de behouden helderheid. */
-  .pr-uren-rij-nuluur { filter: saturate(0.45) brightness(0.62); }
+  /* Bij 0 uur: dezelfde statuskleur blijft herkenbaar, maar nog een gradatie lichter dan de
+     al-lichtere 2-mans-tint hierboven, zodat het duidelijk "rustender" oogt dan wie wél uren
+     heeft gemaakt. */
+  .pr-uren-rij-nuluur.pr-uren-status-vw   { background: #7896b2; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.5); }
+  .pr-uren-rij-nuluur.pr-uren-status-gast { background-image: linear-gradient(to right, #b88b91 0%, #a68289 35%, #b88b91 100%);
+    box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.55); }
+  .pr-uren-rij-nuluur.pr-uren-status-gvdw { background-image: linear-gradient(to right, #b88b91 0%, #a68289 35%, #b88b91 100%);
+    box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.55); }
+  .pr-uren-rij-nuluur.pr-uren-status-oud  { background: #7f9f96; box-shadow: inset 0 0 5px 2px rgba(102,255,102,0.5); }
+  .pr-uren-rij-nuluur.pr-uren-status-ext  { background: #9789a8; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.55); }
+  .pr-uren-rij-nuluur.pr-uren-status-geen { background: #8a827c; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
