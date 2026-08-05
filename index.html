@@ -4440,29 +4440,45 @@ async function prVerwerkScanFoto(event) {
 
   prZetScanStatus('⏳ Foto wordt gecomprimeerd...', '#7eb8f7');
 
-  const dataUrl = await new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
+  let fotoBase64;
+  try {
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
 
-  const fotoBase64 = await new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const MAX_BREEDTE = 1400;
-      let breedte = img.width, hoogte = img.height;
-      if (breedte > MAX_BREEDTE) {
-        hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
-        breedte = MAX_BREEDTE;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = breedte; canvas.height = hoogte;
-      canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
-      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      resolve(jpegDataUrl.split(',')[1]); // alleen de base64-data, zonder 'data:image/jpeg;base64,' prefix
-    };
-    img.src = dataUrl;
-  });
+    fotoBase64 = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('De foto kon niet worden geladen (mogelijk een ongeldig of niet-ondersteund bestandsformaat).'));
+      img.onload = () => {
+        if (!img.width || !img.height) {
+          reject(new Error('De foto lijkt leeg of beschadigd te zijn (geen geldige afmetingen).'));
+          return;
+        }
+        const MAX_BREEDTE = 1400;
+        let breedte = img.width, hoogte = img.height;
+        if (breedte > MAX_BREEDTE) {
+          hoogte = Math.round(hoogte * (MAX_BREEDTE / breedte));
+          breedte = MAX_BREEDTE;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = breedte; canvas.height = hoogte;
+        canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
+        const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const b64Data = jpegDataUrl.split(',')[1];
+        if (!b64Data || b64Data.length < 5000) {
+          reject(new Error('De gecomprimeerde foto is verdacht klein — waarschijnlijk is er iets misgegaan bij het verwerken. Probeer het opnieuw of kies een andere foto.'));
+          return;
+        }
+        resolve(b64Data); // alleen de base64-data, zonder 'data:image/jpeg;base64,' prefix
+      };
+      img.src = dataUrl;
+    });
+  } catch (compressieFout) {
+    prZetScanStatus('⚠️ ' + compressieFout.message, '#f87171');
+    return;
+  }
 
   prZetScanStatus('⏳ AI leest het rooster... dit kan 10-20 seconden duren.', '#7eb8f7');
 
