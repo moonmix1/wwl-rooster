@@ -203,9 +203,8 @@
   /* Bij 0 uur: dezelfde statuskleur blijft nog net herkenbaar, maar aanzienlijk donkerder
      en richting kleurloos/grijs-zwart getrokken, zodat het duidelijk "op de achtergrond"
      oogt vergeleken met wie wél uren heeft gemaakt. */
-  .pr-uren-rij-nuluur.pr-uren-status-vw   { background: #4d6f90 !important; box-shadow: none !important; }
+  .pr-uren-rij-nuluur.pr-uren-status-vw   { background: #4d6f90; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.3); }
   /* TIJDELIJKE TESTKLEUR (bewijs dat updates doorkomen): naam-tekst bij blauwe 0-uur-rijen groen */
-  .pr-uren-rij-nuluur.pr-uren-status-vw .pr-uren-naam-tekst { color: #00ff00 !important; }
   .pr-uren-rij-nuluur.pr-uren-status-gast { background-image: linear-gradient(to right, #5b4b4e 0%, #524749 35%, #5b4b4e 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.35); }
   .pr-uren-rij-nuluur.pr-uren-status-gvdw { background-image: linear-gradient(to right, #5b4b4e 0%, #524749 35%, #5b4b4e 100%);
@@ -220,7 +219,7 @@
   .pr-uren-lijst-wrap { display: flex; gap: 14px; }
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
-  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #00ff00 !important; background: #402860; text-transform: uppercase;
+  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; background: #402860; text-transform: uppercase;
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 4px 12px; border-radius: 6px; display: block; border: none; line-height: 1.25; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.8); }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
