@@ -4800,62 +4800,17 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const vrijwilligerNamen = alleStatussen['vrijwilliger'] || []; // FIX: was 'geen_status'
   delete alleStatussen['vrijwilliger'];
 
-  // MEERDERHEIDS-SPLITSING per kleurgroep (drempel 80%):
-  // Een kleurgroep blijft als geheel bij elkaar staan op het urenaantal dat de meerderheid (≥80%)
-  // van die kleur deelt. Wie binnen die kleur een ANDER urenaantal heeft (de minderheid, ongeacht
-  // hoe klein), wordt losgekoppeld van het blok en loopt gewoon individueel mee tussen de
-  // vrijwilligers, op zijn/haar eigen, uren-correcte plek — met behoud van de eigen kleur/status.
-  // Zo voorkomen we dat een enkeling (bijv. 1 op de 5) een hele kleurgroep naar een verkeerd
-  // urenaantal "meesleept", én dat diezelfde enkeling de gele/rode uren-badges visueel onderbreekt
-  // doordat de rest van zijn kleurgroep (bijv. allemaal 0 uur) met hem meegetrokken zou worden.
-  // Is er geen enkel urenaantal met een 80%-meerderheid (bijv. de groep is vrij gelijk verdeeld),
-  // dan blijft de hele kleurgroep als vanouds samen, op het hoogste urenaantal binnen de groep.
-  const MEERDERHEIDS_DREMPEL = 0.8;
-  const kleurGroepen = [];
-  const individueleKleurNamen = []; // namen die uit hun kleurgroep zijn losgekoppeld (minderheid)
-
-  Object.keys(alleStatussen).forEach(status => {
-    const ledenNamen = alleStatussen[status];
-    const perUren = {}; // uren -> [namen]
-    ledenNamen.forEach(naam => {
-      const u = uren[naam];
-      if (!perUren[u]) perUren[u] = [];
-      perUren[u].push(naam);
-    });
-    const urenAantallen = Object.keys(perUren).map(Number);
-    // Vind het grootste blok (bij gelijkspel: hoogste urenaantal, zodat de kleur zo hoog
-    // mogelijk in de lijst blijft staan als er geen duidelijke winnaar is).
-    let dominantUren = urenAantallen[0];
-    urenAantallen.forEach(u => {
-      if (perUren[u].length > perUren[dominantUren].length ||
-          (perUren[u].length === perUren[dominantUren].length && u > dominantUren)) {
-        dominantUren = u;
-      }
-    });
-    const dominantAantal = perUren[dominantUren].length;
-    const heeftMeerderheid = ledenNamen.length > 1 && (dominantAantal / ledenNamen.length) >= MEERDERHEIDS_DREMPEL;
-
-    if (!heeftMeerderheid) {
-      // Geen duidelijke meerderheid: kleurgroep blijft ongesplitst, zoals voorheen.
-      kleurGroepen.push({ status, namen: ledenNamen, max: Math.max(...ledenNamen.map(n => uren[n])) });
-      return;
-    }
-
-    // Meerderheidsblok blijft samen (gesorteerd zoals hierboven al gebeurd is).
-    const meerderheidNamen = ledenNamen.filter(n => uren[n] === dominantUren);
-    kleurGroepen.push({ status, namen: meerderheidNamen, max: dominantUren });
-
-    // Minderheid: elk lid gaat individueel meelopen, met zijn eigen status/kleur intact.
-    ledenNamen.filter(n => uren[n] !== dominantUren).forEach(naam => {
-      individueleKleurNamen.push({ naam, status });
-    });
-  });
+  // Elke niet-blauwe kleurgroep blijft altijd één ondeelbaar blok, met zijn hoogste urenaantal als
+  // sleutel. (Een eerdere "meerderheids-splitsing per kleurgroep" is hier bewust weer verwijderd:
+  // sinds 0-uur-mensen sowieso in hun eigen, aparte rechterkolom staan — zie verderop — loste de
+  // links/rechts-splitsing hetzelfde probleem al op langs een simpeler pad, en twee regels die
+  // beide de volgorde bepalen gaf onnodig risico op onderlinge tegenstrijdigheden.)
+  const kleurGroepen = Object.keys(alleStatussen).map(status => ({
+    status, namen: alleStatussen[status], max: Math.max(...alleStatussen[status].map(n => uren[n]))
+  }));
   kleurGroepen.sort((a, b) => b.max - a.max);
 
-  // De losgekoppelde kleur-minderheid wordt behandeld als "extra vrijwilligers" qua positionering
-  // (ze lopen mee op basis van uren); hun eigen status/kleur wordt verderop bij het renderen
-  // gewoon uit statusMap/bewonersLaatsteStatus gehaald, dus die hoeft hier niet apart bewaard te worden.
-  const vrijwilligerNamenMetMinderheid = [...vrijwilligerNamen, ...individueleKleurNamen.map(x => x.naam)]
+  const vrijwilligerNamenGesorteerd = vrijwilligerNamen
     .sort((a, b) => {
       if (uren[b] !== uren[a]) return uren[b] - uren[a];
       return a.localeCompare(b, 'nl');
@@ -4869,8 +4824,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const namen = [];
   let kgIndex = 0;
   let i = 0;
-  while (i <= vrijwilligerNamenMetMinderheid.length) {
-    const huidigUren = i < vrijwilligerNamenMetMinderheid.length ? uren[vrijwilligerNamenMetMinderheid[i]] : -Infinity;
+  while (i <= vrijwilligerNamenGesorteerd.length) {
+    const huidigUren = i < vrijwilligerNamenGesorteerd.length ? uren[vrijwilligerNamenGesorteerd[i]] : -Infinity;
 
     while (kgIndex < kleurGroepen.length && kleurGroepen[kgIndex].max > huidigUren) {
       namen.push(...kleurGroepen[kgIndex].namen);
@@ -4879,7 +4834,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
     if (kgIndex < kleurGroepen.length && kleurGroepen[kgIndex].max === huidigUren && huidigUren !== -Infinity) {
       let blokStart = i, blokEind = i;
-      while (blokEind < vrijwilligerNamenMetMinderheid.length && uren[vrijwilligerNamenMetMinderheid[blokEind]] === huidigUren) blokEind++;
+      while (blokEind < vrijwilligerNamenGesorteerd.length && uren[vrijwilligerNamenGesorteerd[blokEind]] === huidigUren) blokEind++;
       const blokLengte = blokEind - blokStart;
 
       const gelijkeKleurGroepen = [];
@@ -4890,15 +4845,15 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
       if (blokLengte === 1) {
         gelijkeKleurGroepen.forEach(g => namen.push(...g.namen));
-        namen.push(vrijwilligerNamenMetMinderheid[i]);
+        namen.push(vrijwilligerNamenGesorteerd[i]);
         i++;
       } else {
-        for (let j = blokStart; j < blokEind; j++) namen.push(vrijwilligerNamenMetMinderheid[j]);
+        for (let j = blokStart; j < blokEind; j++) namen.push(vrijwilligerNamenGesorteerd[j]);
         gelijkeKleurGroepen.forEach(g => namen.push(...g.namen));
         i = blokEind;
       }
     } else {
-      if (i < vrijwilligerNamenMetMinderheid.length) { namen.push(vrijwilligerNamenMetMinderheid[i]); i++; }
+      if (i < vrijwilligerNamenGesorteerd.length) { namen.push(vrijwilligerNamenGesorteerd[i]); i++; }
       else i++;
     }
   }
@@ -4915,9 +4870,29 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     <option value="oud_bewoner" style="background:#15503f;color:#fff" ${huidigeStatus==='oud_bewoner'?'selected':''}>oud bewoner</option>
     <option value="extern" style="background:#351f4e;color:#fff" ${huidigeStatus==='extern'?'selected':''}>ondersteuner</option>`;
 
-  const lijstHtml = !namen.length
-    ? '<div style="font-size:0.76rem;color:#777">Nog geen bewoners toegevoegd.</div>'
-    : namen.map((naam, idx) => {
+  // Splits de volledige, uren-gesorteerde lijst in twee GESCHEIDEN groepen voor de twee kolommen:
+  // - linkerkolom: iedereen met MEER dan 0 uur (huidige uren-sortering, kleurgroepen intact)
+  // - rechterkolom: iedereen met PRECIES 0 uur, gegroepeerd op kleur/status (niet op naam), met
+  //   een EIGEN nummering die weer bij 1 begint. Dit voorkomt dat een lange rij 0-uur-mensen de
+  //   gele/rode uren-badges in de linkerkolom visueel zou onderbreken.
+  const namenMetUren = namen.filter(n => uren[n] > 0);
+  const namenNulUur = namen.filter(n => uren[n] === 0);
+
+  // 0-uur-groep: sorteer op status/kleur, zodat gelijke kleuren bij elkaar staan. Volgorde van de
+  // kleurgroepen: dezelfde volgorde als waarin ze in de linkerkolom voorkwamen (hoogste max eerst),
+  // blauw (vrijwilliger) als laatste blok. Binnen elke kleurgroep: alfabetisch op naam.
+  const statusVolgordeVoorNulUur = [...kleurGroepen.map(g => g.status), 'vrijwilliger'];
+  const statusVanNaam = (naam) => heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'vrijwilliger');
+  namenNulUur.sort((a, b) => {
+    const statusA = statusVanNaam(a) === 'gast_week' ? 'gast' : statusVanNaam(a);
+    const statusB = statusVanNaam(b) === 'gast_week' ? 'gast' : statusVanNaam(b);
+    const volgA = statusVolgordeVoorNulUur.indexOf(statusA);
+    const volgB = statusVolgordeVoorNulUur.indexOf(statusB);
+    if (volgA !== volgB) return (volgA === -1 ? 999 : volgA) - (volgB === -1 ? 999 : volgB);
+    return a.localeCompare(b, 'nl');
+  });
+
+  const renderUrenRij = (naam, idx, lijst) => {
     const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status');
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.geen_status;
     const naamVeilig = escHtml(naam).replace(/'/g,"&#39;");
@@ -4964,7 +4939,9 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const badgeFontSize = (isAchtUur ? badgeGrootte * 0.044 : (extraGroot ? badgeGrootte * 0.034 : badgeGrootte * 0.026)).toFixed(2);
     const badgeGewicht = 900;
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
-    const vorigeNaam = idx > 0 ? namen[idx - 1] : null;
+    // Scheidingsstreepje: alleen tonen binnen de MET-uren-lijst (waar het urenaantal daalt tussen
+    // opeenvolgende rijen); de 0-uur-lijst heeft altijd hetzelfde urenaantal (0) dus daar nooit tonen.
+    const vorigeNaam = idx > 0 ? lijst[idx - 1] : null;
     const urenGrensHtml = (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam])
       ? '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35)"></div>'
       : '';
@@ -4976,20 +4953,18 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       </div>
       ${statusVeld}
     </div>`;
-  });
+  };
 
-  const gebruikt2Kolommen = Array.isArray(lijstHtml) && lijstHtml.length > 6;
-  let eindHtml;
-  if (!Array.isArray(lijstHtml)) {
-    eindHtml = `<div class="pr-uren-lijst-wrap"><div class="pr-uren-lijst-kolom">${lijstHtml}</div></div>`;
-  } else if (gebruikt2Kolommen) {
-    const helft = Math.ceil(lijstHtml.length / 2);
-    const kol1 = lijstHtml.slice(0, helft).join('');
-    const kol2 = lijstHtml.slice(helft).join('');
-    eindHtml = `<div class="pr-uren-lijst-wrap pr-2kol"><div class="pr-uren-lijst-kolom">${kol1}</div><div class="pr-uren-lijst-kolom">${kol2}</div></div>`;
-  } else {
-    eindHtml = `<div class="pr-uren-lijst-wrap"><div class="pr-uren-lijst-kolom">${lijstHtml.join('')}</div></div>`;
-  }
+  const kol1Html = namenMetUren.length
+    ? namenMetUren.map((naam, idx) => renderUrenRij(naam, idx, namenMetUren)).join('')
+    : '<div style="font-size:0.76rem;color:#777">Niemand met uren deze week.</div>';
+  const kol2Html = namenNulUur.length
+    ? namenNulUur.map((naam, idx) => renderUrenRij(naam, idx, namenNulUur)).join('')
+    : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
+
+  // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
+  // ongeacht hoeveel mensen er in elke groep zitten (geen 50/50 aantal-verdeling meer).
+  const eindHtml = `<div class="pr-uren-lijst-wrap pr-2kol"><div class="pr-uren-lijst-kolom">${kol1Html}</div><div class="pr-uren-lijst-kolom">${kol2Html}</div></div>`;
   el.innerHTML = eindHtml;
 }
 
