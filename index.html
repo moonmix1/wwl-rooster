@@ -200,6 +200,11 @@
   .pr-uren-status-ext  { background: #351f4e; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.8); }
   .pr-uren-status-geen { background: #4a423c; }
 
+  /* Bij 0 uur: dezelfde statuskleur blijft herkenbaar, maar flauwer en donkerder
+     (minder verzadigd, lagere helderheid), zodat het duidelijk "rustender" oogt dan
+     wie wél uren heeft gemaakt. Tekst blijft leesbaar dankzij de behouden helderheid. */
+  .pr-uren-rij-nuluur { filter: saturate(0.45) brightness(0.62); }
+
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
   .pr-uren-kolom { flex: 1 1 100%; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px 12px; }
@@ -4956,7 +4961,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const urenGrensHtml = (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam])
       ? '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35)"></div>'
       : '';
-    return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}" style="padding-right:${paddingRechts}px">
+    return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span></span>
