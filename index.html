@@ -205,6 +205,11 @@
      oogt vergeleken met wie wél uren heeft gemaakt. */
   .pr-uren-rij-nuluur.pr-uren-status-vw   { background: #265684; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.3);
     filter: brightness(0.55); }
+  /* De cijfer-badge (het "0"-vakje) staat BINNEN de blauwe 0-uur-rij en wordt dus normaal ook door
+     de brightness(0.55) hierboven gedimd. Om de badge zelf even wit/licht te houden als bij de
+     andere kleuren, compenseren we die dimming hier specifiek voor de badge met de omgekeerde
+     factor (1 / 0.55), zodat het eindresultaat weer op de originele helderheid uitkomt. */
+  .pr-uren-rij-nuluur.pr-uren-status-vw .pr-uren-uur { filter: brightness(1.818); }
   .pr-uren-rij-nuluur.pr-uren-status-gast { background-image: linear-gradient(to right, #654146 0%, #4a2c32 35%, #654146 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.35); }
   .pr-uren-rij-nuluur.pr-uren-status-gvdw { background-image: linear-gradient(to right, #654146 0%, #4a2c32 35%, #654146 100%);
