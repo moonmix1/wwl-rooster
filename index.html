@@ -140,7 +140,8 @@
   .pr-tabel td { padding: 8px 12px; border: 1px solid #3a3a3a; vertical-align: top; }
   .pr-tabel td:first-child { padding: 8px 8px 8px 4px; background: #0f0613; border-bottom: 1px solid rgba(255,255,255,0.25);
     vertical-align: middle; }
-  .pr-dag-cel { min-height: 66px; margin: -4px -8px; padding: 4px 8px; }
+  .pr-dag-cel { min-height: 66px; height: 100%; display: flex; flex-direction: column; justify-content: center;
+    margin: -4px -8px; padding: 4px 8px; box-sizing: border-box; }
   .pr-dag-label { font-weight: 700; color: #ddd; font-size: 0.68rem; display: block; width: 100%;
     white-space: nowrap; }
   .pr-pin { font-size: 1.1rem; }
@@ -225,8 +226,9 @@
   .pr-uren-lijst-wrap { display: flex; gap: 14px; }
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
-  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; background: #402860; text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 4px 12px; border-radius: 6px; display: block; border: none; line-height: 1.25; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.8); }
+  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; text-transform: uppercase;
+    background: repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);
+    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 4px 12px; border-radius: 6px; display: block; border: none; line-height: 1.25; box-shadow: inset 0 0 3px rgba(0,0,0,0.35); }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
