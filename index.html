@@ -228,10 +228,21 @@
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #ffffff; text-transform: uppercase;
-    background: #E85E00; border: 6px solid; border-image: repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px) 6;
+    background: #E85E00; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     filter: brightness(0.75);
-    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; padding: 4px 12px; border-radius: 4px; display: block; line-height: 1.25; }
+    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25; }
+  /* Gestreepte "VLC-rand" als een losse laag erachter i.p.v. border-image: border-image werkt
+     niet samen met afgeronde hoeken (border-radius), een gewone background-image achter de
+     content wel — zo blijven de hoeken netjes rond. */
+  .pr-uren-titel::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);
+    z-index: 0;
+  }
+  .pr-uren-titel::after {
+    content: ''; position: absolute; inset: 6px; border-radius: 2px; background: #E85E00; z-index: 0;
+  }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
   .pr-uren-rij, .pr-uren-rij * {
@@ -876,7 +887,7 @@
         </div>
       </div>
       <div class="pr-uren-kolom">
-        <div class="pr-uren-titel">Uren deze week</div>
+        <div class="pr-uren-titel"><span style="position:relative;z-index:1;display:block">Uren deze week</span></div>
         <div id="pr-uren-lijst"></div>
         <div class="pr-gasten-hint">🏠 = beheerderswoning</div>
       </div>
@@ -4767,7 +4778,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const startDatum = new Date(weekKey + 'T00:00:00');
     const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
     const weekLabel = `wo ${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – di ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
-    titelEl.innerHTML = `Uren deze week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span>`;
+    titelEl.innerHTML = `<span style="position:relative;z-index:1;display:block">Uren deze week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span></span>`;
   }
 
   const uren = {}; // naam -> totaal uren deze week
@@ -4955,7 +4966,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // opeenvolgende rijen); de 0-uur-lijst heeft altijd hetzelfde urenaantal (0) dus daar nooit tonen.
     const vorigeNaam = idx > 0 ? lijst[idx - 1] : null;
     const urenGrensHtml = (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam])
-      ? '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35)"></div>'
+      ? '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
       : '';
     return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
