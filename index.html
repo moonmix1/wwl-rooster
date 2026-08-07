@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 01:15 — volledig herbouwd volgens 7 expliciete regels: harmonica-kaartjes altijd eigen hoek behouden ook uitgeklapt, balkje-kaartje altijd waterpas, 2x vaste 6px duik-marges, balkje-positie na render GEMETEN en gecorrigeerd (geen schatting meer) -->
+<!-- upload-poging: 6 aug 2026, 01:35 — correctie nu ALLEEN actief in uitgeklapte staat (niet meer ingeklapt); meting nu via transitionend-event i.p.v. gegokte timer, zodat gecorrigeerd wordt precies na afloop van de animatie -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5189,36 +5189,45 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 // wordt niet vooraf berekend/geschat, maar na het renderen GEMETEN: de werkelijke hoogte van het
 // linker balkje en van het balkje-kaartje rechts worden vergeleken, en het verschil wordt als
 // extra, verticale correctie op het balkje-kaartje (dus NIET op de harmonica-kaartjes erboven)
-// gezet. Wordt aangeroepen bij elke render, en na elke kolom-toggle (met een vertraging gelijk
-// aan de animatieduur, zodat er gemeten wordt na de beweging, niet er middenin).
+// gezet. BELANGRIJK: dit gebeurt UITSLUITEND als de kolom daadwerkelijk uitgeklapt is — in
+// ingeklapte staat hoort het balkje-kaartje gewoon onderaan de harmonica-stapel te zitten, niet
+// op zijn latere, gecorrigeerde eindpositie.
 function prCorrigeerBalkjePositie(kolomIdRechts) {
-  requestAnimationFrame(() => {
+  const kolomEl = document.getElementById(kolomIdRechts);
+  if (!kolomEl || !kolomEl.classList.contains('pr-kaarten-kolom-uitgeklapt')) return;
+
+  const balkjeKaartEl = kolomEl.querySelector('.pr-balkje-kaart');
+  if (!balkjeKaartEl) return;
+
+  const meet = () => {
     const linksBalkje = document.querySelector('.pr-eindbalkje-links');
-    const kolomEl = document.getElementById(kolomIdRechts);
-    if (!linksBalkje || !kolomEl) return;
-    const balkjeKaartEl = kolomEl.querySelector('.pr-balkje-kaart');
-    if (!balkjeKaartEl) return;
+    const rechtsBalkjeEl = balkjeKaartEl.querySelector('.pr-eindbalkje-rechts');
+    if (!linksBalkje || !rechtsBalkjeEl) return;
+    const linksTop = linksBalkje.getBoundingClientRect().top;
+    const rechtsTop = rechtsBalkjeEl.getBoundingClientRect().top;
+    const verschil = rechtsTop - linksTop; // positief = rechts staat lager dan links
+    const huidigeCorrectie = parseFloat(balkjeKaartEl.dataset.prCorrectie || '0');
+    const nieuweCorrectie = huidigeCorrectie - verschil;
+    balkjeKaartEl.style.marginTop = `calc(var(--pr-kaart-overlap-uit, 4px) + ${nieuweCorrectie}px)`;
+    balkjeKaartEl.dataset.prCorrectie = nieuweCorrectie;
+  };
 
-    const meet = () => {
-      const linksTop = linksBalkje.getBoundingClientRect().top;
-      const rechtsBalkjeEl = balkjeKaartEl.querySelector('.pr-eindbalkje-rechts');
-      if (!rechtsBalkjeEl) return;
-      const rechtsTop = rechtsBalkjeEl.getBoundingClientRect().top;
-      const verschil = rechtsTop - linksTop; // positief = rechts staat lager dan links
-      // Alleen corrigeren als rechts lager staat dan links (regel 2: nooit lager). Staat rechts
-      // al hoger of gelijk, dan is er niets te doen — dat mag namelijk gewoon (regel 2 verbiedt
-      // alleen lager, niet hoger).
-      const huidigeCorrectie = parseFloat(balkjeKaartEl.dataset.prCorrectie || '0');
-      const nieuweCorrectie = huidigeCorrectie - verschil;
-      balkjeKaartEl.style.marginTop = `calc(var(--pr-kaart-overlap-uit, 4px) + ${nieuweCorrectie}px)`;
-      balkjeKaartEl.dataset.prCorrectie = nieuweCorrectie;
-    };
-
-    // Direct meten (voor de ingeklapte staat, of als er geen animatie loopt), en nogmaals na de
-    // animatieduur (1.5s + 150ms delay) voor het geval de kolom net is uitgeklapt.
+  // Wacht tot de CSS-transitie van dit kaartje echt is afgerond (transitionend), in plaats van
+  // te gokken met een vaste timer — zo wordt er gegarandeerd pas gemeten en gecorrigeerd NADAT
+  // de harmonica-animatie volledig tot stilstand is gekomen, nooit erdoorheen of ervoor.
+  const eenmaligeMeting = (evt) => {
+    if (evt.target !== balkjeKaartEl) return; // alleen reageren op de transitie van dit kaartje zelf
+    balkjeKaartEl.removeEventListener('transitionend', eenmaligeMeting);
     meet();
-    setTimeout(meet, 1700);
-  });
+  };
+  balkjeKaartEl.addEventListener('transitionend', eenmaligeMeting);
+  // Vangnet: als er om wat voor reden dan ook geen transitionend-event komt (bijv. de browser
+  // ondersteunt het niet goed, of er was al geen echte beweging nodig), meet dan alsnog na de
+  // bekende animatieduur.
+  setTimeout(() => {
+    balkjeKaartEl.removeEventListener('transitionend', eenmaligeMeting);
+    meet();
+  }, 1700);
 }
 
 function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
