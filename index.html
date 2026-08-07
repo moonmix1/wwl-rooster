@@ -4804,7 +4804,7 @@ function prToggleKaartenKolom(kolomId) {
 // gebruikelijke tijd waarin een browser een dubbelklik nog als zodanig herkent). Komt er binnen
 // die tijd een tweede klik, dan wordt de wachtende actie geannuleerd en telt het als dubbelklik.
 const prKlikTimers = {};
-const PR_KLIK_VERTRAGING_MS = 300;
+const PR_KLIK_VERTRAGING_MS = 200;
 
 // Klik ERGENS in de rechterkolom, NIET op de status-tekst (die heeft zijn eigen handler
 // hieronder). Krijgt dezelfde 300ms vertraging als de status-klik, puur voor een consistent,
