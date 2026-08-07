@@ -247,13 +247,6 @@
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
-  /* Compactere rijen specifiek rechts (0-uur-kolom): naam en status gedeeltelijk over elkaar heen,
-     zodat de rij zo'n derde korter wordt. De rij zelf krijgt een lagere min-hoogte, en de
-     status-tekst wordt met een negatieve marge omhoog getrokken zodat die over de onderkant van
-     naam/nummer heen komt te liggen. Dat overlappende stukje mag best onduidelijk ogen (bijv. een
-     pijltje dat half bedekt raakt), dat is de bedoeling van deze compactere weergave. */
-  .pr-uren-rij-nuluur { min-height: 42px; padding: 4px 8px; }
-  .pr-uren-rij-nuluur .pr-status-label { margin-top: -14px; position: relative; z-index: 1; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -4995,8 +4988,28 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const kol1Html = namenMetUren.length
     ? namenMetUren.map((naam, idx) => renderUrenRij(naam, idx, namenMetUren)).join('') + eindBalkjeHtml
     : '<div style="font-size:0.76rem;color:#777">Niemand met uren deze week.</div>';
+
+  // Simpele, deterministische "hash" op basis van de naam: dezelfde naam geeft altijd hetzelfde
+  // getal, dus de scheve/gestapelde look blijft stabiel tussen herladingen (geen echte willekeur,
+  // want dat zou bij elke render weer anders ogen).
+  const naamHash = (naam) => {
+    let h = 0;
+    for (let i = 0; i < naam.length; i++) h = (h * 31 + naam.charCodeAt(i)) % 10000;
+    return h;
+  };
+
+  // Rechterkolom (0-uur): "kaartenspel"-look — elke rij een beetje scheef en over de vorige
+  // geschoven, met per naam een eigen (maar stabiele) hoek en overlap. Status-tekst, cijfer-badge
+  // en zelfs een stukje van de naam mogen daarbij bedekt raken; dat is precies de bedoeling.
   const kol2Html = namenNulUur.length
-    ? namenNulUur.map((naam, idx) => renderUrenRij(naam, idx, namenNulUur, false)).join('')
+    ? namenNulUur.map((naam, idx) => {
+        const h = naamHash(naam);
+        const hoek = ((h % 13) - 6); // -6 tot +6 graden
+        const overlapMarge = idx === 0 ? 0 : -(8 + (h % 13)); // 0, of -8 tot -20px t.o.v. de vorige kaart
+        const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
+        const rijHtml = renderUrenRij(naam, idx, namenNulUur, false);
+        return `<div style="transform:rotate(${hoek}deg) translateX(${zijdelingseSchuif}px);margin-top:${overlapMarge}px;position:relative;z-index:${idx + 1}">${rijHtml}</div>`;
+      }).join('')
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
