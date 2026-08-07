@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 23:05 — max 0.3 kaartje langer (was 0.6); rechter eindbalkje nu EXACT op hoogte linker balkje vastgezet (gemeten + absolute positie), kaartjes klappen daaronder -->
+<!-- upload-poging: 5 aug 2026, 23:20 — eindbalkje rechts zit nu FYSIEK vast aan het laatste kaartje (zelfde transform), kan er dus nooit los van komen of erdoorheen komen; bij rechts ≤ links staat alles altijd recht -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5070,8 +5070,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     </div>`;
   };
 
-  const eindBalkjeIdLinks = `pr-eindbalkje-links-${weekKey}`;
-  const eindBalkjeHtml = `<div id="${eindBalkjeIdLinks}" style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>`;
+  const eindBalkjeHtml = '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>';
   const kol1Html = namenMetUren.length
     ? namenMetUren.map((naam, idx) => renderUrenRij(naam, idx, namenMetUren)).join('') + eindBalkjeHtml
     : '<div style="font-size:0.76rem;color:#777">Niemand met uren deze week.</div>';
@@ -5152,11 +5151,16 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // (volledig recht/uitgeklapt) — geen enkele reden om samen te drukken.
   }
 
+  // Als rechts NIET meer namen heeft dan links, is er geen enkele reden voor compressie: alles
+  // staat dan gewoon recht (net als vroeger), en het eindbalkje krijgt geen eigen rotatie.
+  const rechtsHeeftMeerDanLinks = aantalRechts > aantalLinks;
+
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
     const h = naamHash(naam);
-    const hoek = ((h % 13) - 6); // -6 tot +6 graden
-    const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
-    const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
+    const isLaatsteKaartje = idx === namenNulUur.length - 1;
+    const hoek = rechtsHeeftMeerDanLinks ? ((h % 13) - 6) : 0; // -6 tot +6 graden, of altijd 0 als rechts niet langer is
+    const overlapMarge = idx === 0 ? 0 : (rechtsHeeftMeerDanLinks ? -(21 + (h % 17)) : 0); // idem
+    const zijdelingseSchuif = rechtsHeeftMeerDanLinks ? ((h % 9) - 4) : 0; // idem
     const rijHtmlVolledig = renderUrenRij(naam, idx, namenNulUur, false, true);
     // Het bovenste scheidingsbalkje (alleen bij idx===0) zit aan het BEGIN van rijHtmlVolledig
     // (zie urenGrensHtml in renderUrenRij). Dat balkje moet altijd recht/horizontaal blijven
@@ -5178,44 +5182,25 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const hoekUitgeklapt = (hoek * (1 - uitklapFactor)).toFixed(2);
     const overlapUitgeklapt = idx === 0 ? 0 : (overlapMarge * (1 - uitklapFactor) + 4 * uitklapFactor).toFixed(2);
     const schuifUitgeklapt = (zijdelingseSchuif * (1 - uitklapFactor)).toFixed(2);
-    return `${balkjeBoven}<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}</div>`;
+    // Het EINDBALKJE zit, alleen bij het allerlaatste kaartje, FYSIEK VAST binnen dezelfde
+    // .pr-kaart-wrapper — het deelt dus exact dezelfde rotatie/schuif/overlap-variabelen als dat
+    // kaartje en kan er daarom nooit los van raken of "erdoorheen" komen te staan, ongeacht hoe
+    // de bandbreedte-berekening hierboven uitpakt. Simpele, vaste marge (6px) ertussen; geen
+    // enkele wiskundige afstemming op de linkerkolom nodig.
+    const balkjeOnder = isLaatsteKaartje
+      ? '<div style="height:8px;border-radius:4px;margin:6px 4px 0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
+      : '';
+    return `${balkjeBoven}<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}${balkjeOnder}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
-  const eindBalkjeIdRechts = `pr-eindbalkje-rechts-${weekKey}`;
   const kol2Html = namenNulUur.length
-    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" onclick="prKolomKlikRechts('${kol2KolomId}')" style="position:relative">${kol2KaartjesHtml}<div id="${eindBalkjeIdRechts}" style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75);transition:top 1.5s ease-out 150ms"></div></div>`
+    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" onclick="prKolomKlikRechts('${kol2KolomId}')">${kol2KaartjesHtml}</div>`
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
   // ongeacht hoeveel mensen er in elke groep zitten (geen 50/50 aantal-verdeling meer).
   const eindHtml = `<div class="pr-uren-lijst-wrap pr-2kol"><div class="pr-uren-lijst-kolom">${kol1Html}</div><div class="pr-uren-lijst-kolom">${kol2Html}</div></div>`;
   el.innerHTML = eindHtml;
-  prZetEindbalkjeRechts(eindBalkjeIdLinks, eindBalkjeIdRechts, kol2KolomId);
-}
-
-// Zet het onderste scheidingsbalkje van de rechterkolom EXACT op dezelfde verticale hoogte als
-// het onderste balkje van de linkerkolom, ongeacht hoeveel kaartjes/hoeveel overlap er rechts
-// nodig was. De bandbreedte-berekening hierboven (uitklapFactor) zorgt er al voor dat de
-// kaartjes zelf ongeveer in de buurt komen; deze functie maakt het daarna exact, door de
-// gemeten hoogte van het linker balkje te kopiëren naar de top-positie van het rechter balkje
-// (via position:absolute — de container heeft daarvoor position:relative gekregen). Wordt
-// aangeroepen na elke render, en ook na elke in/uitklap-toggle, zodat het balkje netjes meebeweegt
-// met de animatie (dankzij de eigen "transition:top" die op het balkje staat).
-function prZetEindbalkjeRechts(idLinks, idRechts, kolomIdRechts) {
-  requestAnimationFrame(() => {
-    const linksEl = document.getElementById(idLinks);
-    const rechtsEl = document.getElementById(idRechts);
-    const kolomEl = document.getElementById(kolomIdRechts);
-    if (!linksEl || !rechtsEl || !kolomEl) return;
-    const linksTop = linksEl.getBoundingClientRect().top;
-    const kolomTop = kolomEl.getBoundingClientRect().top;
-    const gewenstOffsetInKolom = linksTop - kolomTop;
-    rechtsEl.style.position = 'absolute';
-    rechtsEl.style.left = '0';
-    rechtsEl.style.right = '0';
-    rechtsEl.style.top = `${gewenstOffsetInKolom}px`;
-    rechtsEl.style.zIndex = '999';
-  });
 }
 
 function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
