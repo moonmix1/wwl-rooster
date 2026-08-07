@@ -247,12 +247,10 @@
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
-  /* Rechterkolom (0-uur): geen ruime min-hoogte nodig — naam past altijd op 1 regel, dus de
-     status/pijltje mag direct daaronder aansluiten in plaats van verticaal gecentreerd te staan
-     binnen een te hoge rij. */
-  /* Geen aparte compacte min-hoogte meer voor rechts: de rij gebruikt nu dezelfde hoogte en
-     centrering als links (.pr-uren-rij), zowel in- als uitgeklapt. */
-  /* Dubbeltik-toggle voor de "kaartenspel"-look rechts: ingeklapt gebruikt de per-kaart
+  /* Ingeklapt (rechts): compactere rij-hoogte, status/pijltje direct onder de naam.
+     Uitgeklapt (rechts): dezelfde volle hoogte/centrering als links. */
+  .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { min-height: 0; align-content: start; }
+  /* Toggle-animatie voor de "kaartenspel"-look rechts: ingeklapt gebruikt de per-kaart
      CSS-variabelen (hoek/schuif/overlap) die inline zijn meegegeven; uitgeklapt zet alles terug
      naar de normale, rechte weergave (transform:none, geen overlap). De transitie (zie inline
      style bij het kaartje zelf) zorgt voor een vloeiende animatie tussen beide standen. */
