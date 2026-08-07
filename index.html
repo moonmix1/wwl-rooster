@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 00:15 — herbouwd: alle kaartjes klappen weer natuurlijk/gelijk uit (geen geforceerde 0/0/0 op alleen het laatste kaartje meer, dat brak de illusie); compensatie nu verdeeld over de laatste 3 marges i.p.v. 1 -->
+<!-- upload-poging: 6 aug 2026, 00:32 — random hoek/schuif hersteld bij uitgeklapte staat (was per ongeluk naar 0/0/0 gezet, waardoor alles kaarsrecht en kunstmatig oogde); alleen marge-compensatie blijft actief, niet de rotatie -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5173,16 +5173,16 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
         rijHtml = rijHtmlVolledig.slice(scheidingIndex);
       }
     }
-    // Bij uitklappen gaat elk kaartje gewoon naar zijn normale, volledig rechte eindstand
-    // (0/0/0) — geen enkele uitzondering meer nodig, dat organische gevoel blijft nu voor de
-    // hele stapel gelijk. Alleen de marges van de LAATSTE PAAR kaartjes wijken af van de
-    // standaard 4px: die gebruiken margesCompensatieUitgeklapt (hierboven berekend), verdeeld
-    // over meerdere kleine "duiken" i.p.v. één grote.
-    const hoekUitgeklapt = '0.00';
+    // Bij uitklappen krijgt elk kaartje zijn EIGEN, unieke random hoek/schuif terug (net als
+    // vroeger — dat willekeurige, "los papiertje"-gevoel hoort te blijven, ook bij uitklappen).
+    // Alleen bij een groot verhoudingsverschil rechts/links wijken de marges van de LAATSTE PAAR
+    // kaartjes af van de standaard 4px (margesCompensatieUitgeklapt, hierboven berekend) — de
+    // rotatie/schuif blijft voor ALLE kaartjes altijd hun eigen, natuurlijke waarde behouden.
+    const hoekUitgeklapt = hoek.toFixed(2);
     const afstandTotEinde = namenNulUur.length - 1 - idx; // 0 voor het allerlaatste kaartje, 1 voor het kaartje daarvoor, enz.
     const overlapUitgeklapt = idx === 0 ? 0
       : (afstandTotEinde < margesCompensatieUitgeklapt.length ? margesCompensatieUitgeklapt[afstandTotEinde].toFixed(2) : '4.00');
-    const schuifUitgeklapt = '0.00';
+    const schuifUitgeklapt = zijdelingseSchuif.toFixed(2);
     // Het EINDBALKJE zit, alleen bij het allerlaatste kaartje, FYSIEK VAST binnen dezelfde
     // .pr-kaart-wrapper — het deelt dus exact dezelfde rotatie/schuif/overlap-variabelen als dat
     // kaartje en kan er daarom nooit los van raken. Simpele, vaste marge (6px) ertussen.
