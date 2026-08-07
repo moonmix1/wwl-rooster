@@ -242,6 +242,7 @@
   }
   .pr-uren-titel::after {
     content: ''; position: absolute; inset: 6px; border-radius: 2px; background: #E85E00; z-index: 0;
+    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
@@ -4964,9 +4965,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const paddingRechts = 52 + 16; // altijd gebaseerd op de grootste mogelijke badge (52px), voor genoeg ruimte
     // Scheidingsstreepje: alleen tonen binnen de MET-uren-lijst (waar het urenaantal daalt tussen
     // opeenvolgende rijen); de 0-uur-lijst heeft altijd hetzelfde urenaantal (0) dus daar nooit tonen.
+    // Ook een streepje vóór de allereerste rij van de lijst (boven de hoogste-uren-persoon), zodat
+    // de kolom niet zomaar "in het niets" begint.
     const vorigeNaam = idx > 0 ? lijst[idx - 1] : null;
-    const urenGrensHtml = (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam])
-      ? '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
+    const balkjeHtml = '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>';
+    const urenGrensHtml = (idx === 0) ? balkjeHtml
+      : (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam]) ? balkjeHtml
       : '';
     return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px">
       <div class="pr-uren-rij-top">
@@ -4978,11 +4982,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     </div>`;
   };
 
+  const eindBalkjeHtml = '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>';
   const kol1Html = namenMetUren.length
-    ? namenMetUren.map((naam, idx) => renderUrenRij(naam, idx, namenMetUren)).join('')
+    ? namenMetUren.map((naam, idx) => renderUrenRij(naam, idx, namenMetUren)).join('') + eindBalkjeHtml
     : '<div style="font-size:0.76rem;color:#777">Niemand met uren deze week.</div>';
   const kol2Html = namenNulUur.length
-    ? namenNulUur.map((naam, idx) => renderUrenRij(naam, idx, namenNulUur)).join('')
+    ? namenNulUur.map((naam, idx) => renderUrenRij(naam, idx, namenNulUur)).join('') + eindBalkjeHtml
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
