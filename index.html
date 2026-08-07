@@ -250,7 +250,8 @@
   /* Rechterkolom (0-uur): geen ruime min-hoogte nodig — naam past altijd op 1 regel, dus de
      status/pijltje mag direct daaronder aansluiten in plaats van verticaal gecentreerd te staan
      binnen een te hoge rij. */
-  .pr-uren-rij-nuluur { min-height: 0; align-content: start; }
+  /* Geen aparte compacte min-hoogte meer voor rechts: de rij gebruikt nu dezelfde hoogte en
+     centrering als links (.pr-uren-rij), zowel in- als uitgeklapt. */
   /* Dubbeltik-toggle voor de "kaartenspel"-look rechts: ingeklapt gebruikt de per-kaart
      CSS-variabelen (hoek/schuif/overlap) die inline zijn meegegeven; uitgeklapt zet alles terug
      naar de normale, rechte weergave (transform:none, geen overlap). De transitie (zie inline
@@ -5045,7 +5046,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
-    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" ondblclick="prToggleKaartenKolom('${kol2KolomId}')">${kol2KaartjesHtml}</div><div class="pr-uren-rij-nuluur-eindbalkje">${eindBalkjeHtml}</div>`
+    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" onclick="prToggleKaartenKolom('${kol2KolomId}')">${kol2KaartjesHtml}</div><div class="pr-uren-rij-nuluur-eindbalkje">${eindBalkjeHtml}</div>`
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
