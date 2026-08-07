@@ -4797,45 +4797,37 @@ function prToggleKaartenKolom(kolomId) {
   }
 }
 
-// Enkele klik specifiek op de status-tekst BINNEN de rechterkolom: gedraagt zich in beide
-// staten hetzelfde als een klik ernaast — de kolom klapt om (uit als ingeklapt, in als
-// uitgeklapt). Het statusmenu opent hierbij NOOIT via een enkele klik; daarvoor is een dubbele
-// klik nodig (zie prStatusDblKlikRechts hieronder). stopPropagation voorkomt dat de klik ook
-// nog eens doorbubbelt naar de kolom-container (die zou anders de toggle een tweede keer
-// uitvoeren en het effect weer tenietdoen).
-// Vóórdat de kolom wordt omgewisseld, leggen we de staat van dít moment vast in een
-// data-attribuut — dat is nodig omdat bij een dubbelklik deze functie altijd als eerste draait,
-// en de latere dubbelklik-handler moet weten wat de staat was vóór deze (eerste) klik, niet pas
-// na de toggle die hieronder gebeurt.
+// Onthoudt per kolom een lopende timer, zodat een tweede klik die op tijd binnenkomt de eerste
+// (nog wachtende) enkele-klik-actie kan annuleren. Dit is het gangbare "click delay"-patroon
+// voor elementen waar zowel een enkele als een dubbele klik een ANDER effect moeten hebben: de
+// enkele klik wordt niet meteen uitgevoerd, maar pas na een korte wachttijd (300ms — de
+// gebruikelijke tijd waarin een browser een dubbelklik nog als zodanig herkent). Komt er binnen
+// die tijd een tweede klik, dan wordt de wachtende actie geannuleerd en telt het als dubbelklik.
+const prKlikTimers = {};
+const PR_KLIK_VERTRAGING_MS = 300;
+
+// Enkele klik specifiek op de status-tekst BINNEN de rechterkolom: wordt NIET meteen uitgevoerd,
+// maar pas na PR_KLIK_VERTRAGING_MS — zo krijgt de gebruiker daadwerkelijk de kans om een tweede
+// klik te geven voordat het enkele-klik-gevolg (de kolom omwisselen) al heeft plaatsgevonden.
+// stopPropagation voorkomt dat de klik ook nog eens doorbubbelt naar de kolom-container.
 function prStatusKlikRechts(event, kolomId, weekKey, naam, status) {
   event.stopPropagation();
-  const kolomEl = document.getElementById(kolomId);
-  if (kolomEl) {
-    kolomEl.dataset.prStaatVoorKlik = kolomEl.classList.contains('pr-kaarten-kolom-ingeklapt') ? 'ingeklapt' : 'uitgeklapt';
-  }
-  prToggleKaartenKolom(kolomId);
+  if (prKlikTimers[kolomId]) clearTimeout(prKlikTimers[kolomId]);
+  prKlikTimers[kolomId] = setTimeout(() => {
+    prToggleKaartenKolom(kolomId);
+    prKlikTimers[kolomId] = null;
+  }, PR_KLIK_VERTRAGING_MS);
 }
 
-// Dubbele klik specifiek op de status-tekst BINNEN de rechterkolom: gedrag hangt af van de staat
-// van de kolom VOORDAT deze klik-sequentie begon. Let op: een browser vuurt bij een dubbelklik
-// eerst de losse "klik"-handler (prStatusKlikRechts) en daarna pas deze dubbelklik-handler af —
-// die eerste klik heeft de kolom dan al omgewisseld. Om dat "voor de klik"-onderscheid toch te
-// kunnen maken, wordt de staat hier aan het BEGIN van prStatusKlikRechts al opgeslagen in een
-// data-attribuut op de kolom, en die eerder-opgeslagen waarde wordt hier gebruikt in plaats van
-// de (inmiddels alweer gewijzigde) live class.
+// Dubbele klik specifiek op de status-tekst BINNEN de rechterkolom: annuleert eerst de wachtende
+// enkele-klik-actie (die anders alsnog na de vertraging zou afgaan), en voert dan het eigen
+// dubbelklik-gedrag uit: de kolom blijft in zijn HUIDIGE staat (die is door de klik-vertraging
+// hierboven dus niet meer gewijzigd) en het statusmenu opent, ongeacht of de kolom in- of
+// uitgeklapt was — bij ingeklapt opent het menu dus gewoon "over" de scheve kaartenstapel heen.
 function prStatusDblKlikRechts(kolomId, weekKey, naam, status) {
-  const kolomEl = document.getElementById(kolomId);
-  const waarVoorDeKlik = kolomEl ? kolomEl.dataset.prStaatVoorKlik : null;
-  if (waarVoorDeKlik === 'ingeklapt') {
-    // Was al ingeklapt: de eerste klik van de dubbelklik heeft 'm laten uitklappen — dat mag zo
-    // blijven staan, geen verdere actie nodig (geen menu openen, want dat was niet de bedoeling
-    // bij ingeklapte staat).
-    return;
-  }
-  // Was uitgeklapt: de eerste klik heeft 'm laten inklappen; zet dat expliciet terug naar
-  // uitgeklapt (zodat de status weer normaal zichtbaar/leesbaar is) en open het statusmenu.
-  if (kolomEl && kolomEl.classList.contains('pr-kaarten-kolom-ingeklapt')) {
-    prToggleKaartenKolom(kolomId);
+  if (prKlikTimers[kolomId]) {
+    clearTimeout(prKlikTimers[kolomId]);
+    prKlikTimers[kolomId] = null;
   }
   prOpenUrenStatusKeuze(weekKey, naam, status);
 }
@@ -5096,7 +5088,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
     const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
     const rijHtml = renderUrenRij(naam, idx, namenNulUur, false, true);
-    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 0.25s ease, margin-top 0.25s ease">${rijHtml}</div>`;
+    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 1s ease, margin-top 1s ease">${rijHtml}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
