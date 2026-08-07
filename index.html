@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 22:20 — uitklap-factor formule verscherpt (machtsverheffing i.p.v. lineair) na test met 12/15 namen, rechts kwam nog te laag uit -->
+<!-- upload-poging: 5 aug 2026, 22:35 — bovenste balkje rechts blijft nu altijd recht (staat los van kaartje-rotatie); uitklap-formule verder verfijnd op basis van 12/15 én 15/25 testpunten -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5109,13 +5109,15 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   let uitklapFactor = 1;
   if (aantalRechts > aantalLinks && aantalLinks > 0) {
     const verhouding = aantalRechts / aantalLinks;
-    // Steile daling (machtsverheffing i.p.v. lineair): al bij een kleine overmaat rechts (bijv.
-    // 12 links / 15 rechts, verhouding 1.25) moet de factor flink lager dan de simpele "1 /
-    // verhouding" zou geven, anders blijft er bij zulke veelvoorkomende, niet-extreme verschillen
-    // nog te weinig overlap over om het hoogteverschil echt te compenseren (in de praktijk bleek
-    // 1/verhouding bij 1.25 nog altijd ~30% te hoog uit te komen). Vloer op 0.35, zodat het bij
-    // een zeer scheve verhouding nooit volledig plat/onleesbaar wordt.
-    uitklapFactor = Math.max(0.35, 1 / Math.pow(verhouding, 3.5));
+    // Steile daling (machtsverheffing i.p.v. lineair): getest en afgestemd op twee situaties —
+    // 12 links/15 rechts (verhouding 1.25, klein verschil) en 15 links/25 rechts (verhouding
+    // 1.67, groter verschil). Bij grote ABSOLUTE verschillen (10+ rijen) kan overlap alleen het
+    // hoogteverschil nooit helemaal wegwerken zonder de kaartjes onleesbaar plat te maken — bij
+    // 15/25 komt de rechterkolom met deze instelling nog een fractie lager uit dan links, maar
+    // wel aanzienlijk dichterbij dan met de vorige formule. Bij normale, minder scheve
+    // verhoudingen (zoals 12/15) geeft dit ruim voldoende marge om links en rechts gelijk te
+    // laten eindigen. Vloer op 0.20: lager zou de kaartjes te plat/onduidelijk maken.
+    uitklapFactor = Math.max(0.20, 1 / Math.pow(verhouding, 5));
   }
 
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
@@ -5123,7 +5125,20 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const hoek = ((h % 13) - 6); // -6 tot +6 graden
     const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
     const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
-    const rijHtml = renderUrenRij(naam, idx, namenNulUur, false, true);
+    const rijHtmlVolledig = renderUrenRij(naam, idx, namenNulUur, false, true);
+    // Het bovenste scheidingsbalkje (alleen bij idx===0) zit aan het BEGIN van rijHtmlVolledig
+    // (zie urenGrensHtml in renderUrenRij). Dat balkje moet altijd recht/horizontaal blijven
+    // staan, ongeacht de rotatie van het kaartje eronder — dus die wordt er hier uitgehaald en
+    // vóór (buiten) de .pr-kaart-wrapper geplaatst, in plaats van erbinnen mee te draaien.
+    let balkjeBoven = '';
+    let rijHtml = rijHtmlVolledig;
+    if (idx === 0) {
+      const scheidingIndex = rijHtmlVolledig.indexOf('<div class="pr-uren-rij');
+      if (scheidingIndex > 0) {
+        balkjeBoven = rijHtmlVolledig.slice(0, scheidingIndex);
+        rijHtml = rijHtmlVolledig.slice(scheidingIndex);
+      }
+    }
     // De "uitgeklapte" eindstand van dit kaartje is niet per se 0/0/0deg, maar de
     // ingeklapt-waarde vermenigvuldigd met (1 - uitklapFactor): bij factor 1 wordt dat dus 0
     // (volledig recht), bij een lagere factor blijft een deel van de scheve/overlappende stand
@@ -5131,7 +5146,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const hoekUitgeklapt = (hoek * (1 - uitklapFactor)).toFixed(2);
     const overlapUitgeklapt = idx === 0 ? 0 : (overlapMarge * (1 - uitklapFactor) + 4 * uitklapFactor).toFixed(2);
     const schuifUitgeklapt = (zijdelingseSchuif * (1 - uitklapFactor)).toFixed(2);
-    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}</div>`;
+    return `${balkjeBoven}<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
