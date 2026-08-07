@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 00:32 — random hoek/schuif hersteld bij uitgeklapte staat (was per ongeluk naar 0/0/0 gezet, waardoor alles kaarsrecht en kunstmatig oogde); alleen marge-compensatie blijft actief, niet de rotatie -->
+<!-- upload-poging: 6 aug 2026, 00:48 — compensatie-marges niet meer vast op 3, maar dynamisch (groeit mee tot het volledige verschil is opgevangen); getest en klopt nu exact bij 12/15, 10/12, 15/17, 8/10 -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5122,28 +5122,32 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const aantalLinks = namenMetUren.length;
   const aantalRechts = namenNulUur.length;
   const RIJHOOGTE_PX = 68; // 64px min-height + 4px marge
-  const MAX_OVERLAP_PER_MARGE = 0.55; // in "kaartjes", per marge
-  const AANTAL_COMPENSATIE_MARGES = 3; // laatste 3 marges (tussen de laatste 4 kaartjes)
+  const MAX_OVERLAP_PER_MARGE = 0.55; // in "kaartjes", per marge — het maximum waarbij een kaartje nog goed klikbaar blijft
 
   // Marges tussen de laatste paar kaartjes in de VOLLEDIG UITGEKLAPTE staat. Normaal (geen
   // aanpassing nodig): gewoon de standaard 4px, net als tussen alle andere kaartjes. Index 0 in
-  // dit array is de marge vlak vóór het allerlaatste kaartje, index 1 daarvóór, enz.
-  let margesCompensatieUitgeklapt = [4, 4, 4];
+  // dit array is de marge vlak vóór het allerlaatste kaartje, index 1 daarvóór, enz. Het AANTAL
+  // marges dat wordt aangepast is niet langer vast op 3, maar groeit automatisch mee totdat het
+  // volledige hoogteverschil is opgevangen — "exact gelijk aan links" weegt zwaarder dan het
+  // aantal kaartjes dat daarvoor iets van overlap moet tonen. Bij een groot verschil rechts/links
+  // kunnen dus meer dan 3, of zelfs alle, kaartjes een beetje overlap krijgen; bij een klein
+  // verschil blijft het bij 1 of 2 marges.
+  let margesCompensatieUitgeklapt = [];
   if (aantalLinks > 0 && aantalRechts > 1) {
     const hoogteLinks = aantalLinks * RIJHOOGTE_PX;
-    // Hoogte van de kolom als alle marges tussen kaartjes de normale 4px zouden zijn (dus de
-    // "normale", volledig uitgeklapte hoogte zonder enige extra duik).
     const hoogteNormaalUitgeklapt = RIJHOOGTE_PX + (aantalRechts - 1) * (RIJHOOGTE_PX + 4);
     let teCompenseren = hoogteNormaalUitgeklapt - hoogteLinks;
     if (teCompenseren > 0) {
       const ondergrensMarge = 4 - MAX_OVERLAP_PER_MARGE * RIJHOOGTE_PX;
-      const maxCompensatiePerMarge = 4 - ondergrensMarge; // hoeveel elke marge maximaal kan opvangen
-      const aantalBeschikbareMarges = Math.min(AANTAL_COMPENSATIE_MARGES, aantalRechts - 1);
-      // Verdeel het tekort gelijk over de beschikbare marges, elk begrensd op zijn eigen maximum.
-      for (let m = 0; m < aantalBeschikbareMarges; m++) {
-        const restendeMarges = aantalBeschikbareMarges - m;
+      const maxCompensatiePerMarge = 4 - ondergrensMarge;
+      const maxBeschikbareMarges = aantalRechts - 1; // nooit meer dan er marges zijn
+      // Bepaal hoeveel marges minimaal nodig zijn om het hele tekort op te vangen (elk tot zijn
+      // eigen maximum), zonder dat er meer marges worden ingezet dan strikt nodig is.
+      const nodigeMarges = Math.min(maxBeschikbareMarges, Math.ceil(teCompenseren / maxCompensatiePerMarge));
+      for (let m = 0; m < nodigeMarges; m++) {
+        const restendeMarges = nodigeMarges - m;
         const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, teCompenseren / restendeMarges);
-        margesCompensatieUitgeklapt[m] = 4 - deelVoorDezeMarge;
+        margesCompensatieUitgeklapt.push(4 - deelVoorDezeMarge);
         teCompenseren -= deelVoorDezeMarge;
       }
     }
