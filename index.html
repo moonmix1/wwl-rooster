@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 21:16 — klik-vertraging 200ms -->
+<!-- upload-poging: 5 aug 2026, 21:24 — animatie ease-in (traag start, snel einde) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5100,7 +5100,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
     const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
     const rijHtml = renderUrenRij(naam, idx, namenNulUur, false, true);
-    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 1s ease, margin-top 1s ease">${rijHtml}</div>`;
+    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 1s ease-in, margin-top 1s ease-in">${rijHtml}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
