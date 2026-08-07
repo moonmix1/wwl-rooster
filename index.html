@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 23:52 — laatste kaartje+balkje altijd exact recht bij uitklappen; elke kleur eigen -0.15/+0.15 brightness-verschuiving (blauw/paars bewegen nu ook mee, i.p.v. vaste waarde die nooit meebewoog) -->
+<!-- upload-poging: 6 aug 2026, 00:15 — herbouwd: alle kaartjes klappen weer natuurlijk/gelijk uit (geen geforceerde 0/0/0 op alleen het laatste kaartje meer, dat brak de illusie); compensatie nu verdeeld over de laatste 3 marges i.p.v. 1 -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5103,60 +5103,50 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // Bij elke nieuwe render (bijv. na een refresh) begint de kolom standaard ingeklapt — er wordt
   // niets onthouden tussen sessies.
   //
-  // UITKLAP-FACTOR: bij "uitklappen" gaat de kolom niet altijd 100% naar de volledig rechte
-  // weergave. Zijn er (aanmerkelijk) meer mensen rechts dan links, dan zou de rechterkolom
-  // anders hoger worden dan de linkerkolom, wat we willen vermijden. In plaats van dat te meten
-  // en achteraf te herschalen, wordt hier vooraf simpelweg bepaald hoever de uitklap-beweging
-  // gaat: bij evenveel of minder namen rechts dan links, volledig uitklappen (1.0); daarboven
-  // neemt de factor geleidelijk af, zodat er meer overlap/scheefheid blijft staan naarmate de
-  // rechterkolom relatief groter is. Dit is een inschatting, geen exacte hoogte-berekening — een
-  // beetje resterende overlap of een lichte scheefstand na het "uitklappen" bij een grote
-  // rechterkolom is prima, zolang naam/status/pijltje leesbaar en klikbaar blijven.
+  // NIEUWE AANPAK: in plaats van de HELE kolom evenredig samen te drukken (wat het natuurlijke,
+  // organische gevoel van de stapel verstoorde — elk kaartje bewoog dan net iets anders dan zijn
+  // "eigen" val zou doen), klappen alle kaartjes ALTIJD volledig natuurlijk uit (elk kaartje z'n
+  // eigen hoek/schuif, gewoon recht bij uitklappen, net als voorheen). Het enige dat wordt
+  // aangepast zijn de marges tussen de LAATSTE DRIE kaartjes (dus 3 tussenruimtes: tussen
+  // kaartje n-3/n-2, n-2/n-1, en n-1/n): die "duiken" een stukje verder in elkaar dan de normale
+  // 4px, verdeeld over die drie in plaats van geconcentreerd in één marge — dat geeft 3x zoveel
+  // compensatie-capaciteit binnen de klikbaarheids-grens per marge. De rest van de stapel (alle
+  // kaartjes daarvóór) blijft volledig ongemoeid, dus de "magie" van de stapel-illusie blijft
+  // grotendeels intact — alleen de allerlaatste paar kaartjes tonen iets meer overlap dan anders.
+  // Grens per marge: maximaal 0.55 kaartje overlap (zoals aangegeven) — daarboven zou het
+  // pijltje op zo'n kaartje niet meer goed te raken zijn. Bij een groot verschil tussen links en
+  // rechts (zoals 12 versus 15 namen) is zelfs 3 marges samen niet altijd genoeg om het HELE
+  // verschil weg te werken binnen die grens; in dat geval komt de kolom nog steeds iets langer
+  // uit dan links, maar wel met minder overlap per marge dan wanneer alles op één marge
+  // geconcentreerd zou zijn.
   const aantalLinks = namenMetUren.length;
   const aantalRechts = namenNulUur.length;
-  // Directe berekening met een BANDBREEDTE i.p.v. een gladde wiskundige curve: rechts mag
-  // (uitgeklapt) nooit meer dan 0.2 kaartje KORTER zijn dan links, en nooit meer dan 0.6
-  // kaartje LANGER. Binnen die band wordt zo dicht mogelijk bij volledig uitgeklapt (factor 1)
-  // gebleven — pas als dat de band zou overschrijden, wordt de factor teruggerekend naar precies
-  // het punt op de dichtstbijzijnde grens. Dit voorkomt zowel "onnodig ver in elkaar gedrukt"
-  // (bij een lage factor terwijl het eigenlijk prima uitgeklapt had gekund) als een te grote
-  // overschrijding van de linkerkolom-hoogte.
-  const RIJHOOGTE_PX = 68; // 64px min-height + 4px marge, gebruikt om kaartjes vs. pixels te vergelijken
-  const GEM_OVERLAP_MARGE_INGEKLAPT = -29; // gemiddelde van het -21 tot -37px bereik hierboven
-  const MAX_LANGER_KAARTJES = 0; // rechts mag NOOIT langer worden dan links
-  const MAX_KORTER_KAARTJES = 0.2; // rechts mag wel tot 0.2 kaartje korter zijn
+  const RIJHOOGTE_PX = 68; // 64px min-height + 4px marge
+  const MAX_OVERLAP_PER_MARGE = 0.55; // in "kaartjes", per marge
+  const AANTAL_COMPENSATIE_MARGES = 3; // laatste 3 marges (tussen de laatste 4 kaartjes)
 
-  const hoogteBijFactor = (aantal, factor) => {
-    if (aantal <= 0) return 0;
-    let hoogte = RIJHOOGTE_PX;
-    for (let i = 1; i < aantal; i++) {
-      const marge = GEM_OVERLAP_MARGE_INGEKLAPT * (1 - factor) + 4 * factor;
-      hoogte += RIJHOOGTE_PX + marge;
-    }
-    return hoogte;
-  };
-
-  let uitklapFactor = 1;
+  // Marges tussen de laatste paar kaartjes in de VOLLEDIG UITGEKLAPTE staat. Normaal (geen
+  // aanpassing nodig): gewoon de standaard 4px, net als tussen alle andere kaartjes. Index 0 in
+  // dit array is de marge vlak vóór het allerlaatste kaartje, index 1 daarvóór, enz.
+  let margesCompensatieUitgeklapt = [4, 4, 4];
   if (aantalLinks > 0 && aantalRechts > 1) {
     const hoogteLinks = aantalLinks * RIJHOOGTE_PX;
-    const maxToegestaan = hoogteLinks + MAX_LANGER_KAARTJES * RIJHOOGTE_PX;
-    const minToegestaan = hoogteLinks - MAX_KORTER_KAARTJES * RIJHOOGTE_PX;
-    const hoogteBijVolledig = hoogteBijFactor(aantalRechts, 1);
-
-    if (hoogteBijVolledig > maxToegestaan) {
-      // Te lang bij volledig uitgeklapt: reken de factor terug die precies op de bovengrens
-      // uitkomt (dit is een lineaire vergelijking in de factor, dus direct oplosbaar).
-      const n = aantalRechts - 1;
-      const rest = maxToegestaan - RIJHOOGTE_PX - n * RIJHOOGTE_PX;
-      uitklapFactor = (rest - n * GEM_OVERLAP_MARGE_INGEKLAPT) / (n * 4 - n * GEM_OVERLAP_MARGE_INGEKLAPT);
-      uitklapFactor = Math.max(0, Math.min(1, uitklapFactor));
-    } else if (hoogteBijVolledig < minToegestaan) {
-      // Bij volledig uitgeklapt al te kort (komt normaliter zelden voor, want uitklappen maakt
-      // altijd langer, niet korter — maar voor de volledigheid toch afgedekt): blijf op 1.
-      uitklapFactor = 1;
+    // Hoogte van de kolom als alle marges tussen kaartjes de normale 4px zouden zijn (dus de
+    // "normale", volledig uitgeklapte hoogte zonder enige extra duik).
+    const hoogteNormaalUitgeklapt = RIJHOOGTE_PX + (aantalRechts - 1) * (RIJHOOGTE_PX + 4);
+    let teCompenseren = hoogteNormaalUitgeklapt - hoogteLinks;
+    if (teCompenseren > 0) {
+      const ondergrensMarge = 4 - MAX_OVERLAP_PER_MARGE * RIJHOOGTE_PX;
+      const maxCompensatiePerMarge = 4 - ondergrensMarge; // hoeveel elke marge maximaal kan opvangen
+      const aantalBeschikbareMarges = Math.min(AANTAL_COMPENSATIE_MARGES, aantalRechts - 1);
+      // Verdeel het tekort gelijk over de beschikbare marges, elk begrensd op zijn eigen maximum.
+      for (let m = 0; m < aantalBeschikbareMarges; m++) {
+        const restendeMarges = aantalBeschikbareMarges - m;
+        const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, teCompenseren / restendeMarges);
+        margesCompensatieUitgeklapt[m] = 4 - deelVoorDezeMarge;
+        teCompenseren -= deelVoorDezeMarge;
+      }
     }
-    // Anders: hoogteBijVolledig valt al binnen de band, dus factor blijft gewoon 1
-    // (volledig recht/uitgeklapt) — geen enkele reden om samen te drukken.
   }
 
   // Als rechts NIET meer namen heeft dan links, is er geen enkele reden voor compressie: alles
@@ -5183,21 +5173,19 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
         rijHtml = rijHtmlVolledig.slice(scheidingIndex);
       }
     }
-    // De "uitgeklapte" eindstand van dit kaartje is niet per se 0/0/0deg, maar de
-    // ingeklapt-waarde vermenigvuldigd met (1 - uitklapFactor): bij factor 1 wordt dat dus 0
-    // (volledig recht), bij een lagere factor blijft een deel van de scheve/overlappende stand
-    // staan. UITZONDERING: het allerlaatste kaartje (met het vastzittende eindbalkje eronder)
-    // gaat bij uitklappen ALTIJD naar exact 0/0/0, ongeacht de uitklapFactor — zo staan het
-    // laatste kaartje én het balkje daaronder gegarandeerd recht bij uitgeklapte staat, ook als
-    // de rest van de kolom nog wat scheef/overlappend blijft door de bandbreedte-beperking.
-    const hoekUitgeklapt = isLaatsteKaartje ? '0.00' : (hoek * (1 - uitklapFactor)).toFixed(2);
-    const overlapUitgeklapt = idx === 0 ? 0 : isLaatsteKaartje ? '4.00' : (overlapMarge * (1 - uitklapFactor) + 4 * uitklapFactor).toFixed(2);
-    const schuifUitgeklapt = isLaatsteKaartje ? '0.00' : (zijdelingseSchuif * (1 - uitklapFactor)).toFixed(2);
+    // Bij uitklappen gaat elk kaartje gewoon naar zijn normale, volledig rechte eindstand
+    // (0/0/0) — geen enkele uitzondering meer nodig, dat organische gevoel blijft nu voor de
+    // hele stapel gelijk. Alleen de marges van de LAATSTE PAAR kaartjes wijken af van de
+    // standaard 4px: die gebruiken margesCompensatieUitgeklapt (hierboven berekend), verdeeld
+    // over meerdere kleine "duiken" i.p.v. één grote.
+    const hoekUitgeklapt = '0.00';
+    const afstandTotEinde = namenNulUur.length - 1 - idx; // 0 voor het allerlaatste kaartje, 1 voor het kaartje daarvoor, enz.
+    const overlapUitgeklapt = idx === 0 ? 0
+      : (afstandTotEinde < margesCompensatieUitgeklapt.length ? margesCompensatieUitgeklapt[afstandTotEinde].toFixed(2) : '4.00');
+    const schuifUitgeklapt = '0.00';
     // Het EINDBALKJE zit, alleen bij het allerlaatste kaartje, FYSIEK VAST binnen dezelfde
     // .pr-kaart-wrapper — het deelt dus exact dezelfde rotatie/schuif/overlap-variabelen als dat
-    // kaartje en kan er daarom nooit los van raken of "erdoorheen" komen te staan, ongeacht hoe
-    // de bandbreedte-berekening hierboven uitpakt. Simpele, vaste marge (6px) ertussen; geen
-    // enkele wiskundige afstemming op de linkerkolom nodig.
+    // kaartje en kan er daarom nooit los van raken. Simpele, vaste marge (6px) ertussen.
     const balkjeOnder = isLaatsteKaartje
       ? '<div style="height:8px;border-radius:4px;margin:6px 4px 0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
       : '';
