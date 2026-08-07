@@ -4806,6 +4806,18 @@ function prToggleKaartenKolom(kolomId) {
 const prKlikTimers = {};
 const PR_KLIK_VERTRAGING_MS = 300;
 
+// Klik ERGENS in de rechterkolom, NIET op de status-tekst (die heeft zijn eigen handler
+// hieronder). Krijgt dezelfde 300ms vertraging als de status-klik, puur voor een consistent,
+// niet-abrupt gevoel tussen de twee — hier is er verder geen dubbelklik-alternatief nodig, dus
+// de vertraging dient alleen om in- en uitklappen even soepel te laten aanvoelen.
+function prKolomKlikRechts(kolomId) {
+  if (prKlikTimers[kolomId]) clearTimeout(prKlikTimers[kolomId]);
+  prKlikTimers[kolomId] = setTimeout(() => {
+    prToggleKaartenKolom(kolomId);
+    prKlikTimers[kolomId] = null;
+  }, PR_KLIK_VERTRAGING_MS);
+}
+
 // Enkele klik specifiek op de status-tekst BINNEN de rechterkolom: wordt NIET meteen uitgevoerd,
 // maar pas na PR_KLIK_VERTRAGING_MS — zo krijgt de gebruiker daadwerkelijk de kans om een tweede
 // klik te geven voordat het enkele-klik-gevolg (de kolom omwisselen) al heeft plaatsgevonden.
@@ -5092,7 +5104,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
-    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" onclick="prToggleKaartenKolom('${kol2KolomId}')">${kol2KaartjesHtml}</div><div class="pr-uren-rij-nuluur-eindbalkje">${eindBalkjeHtml}</div>`
+    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" onclick="prKolomKlikRechts('${kol2KolomId}')">${kol2KaartjesHtml}</div><div class="pr-uren-rij-nuluur-eindbalkje">${eindBalkjeHtml}</div>`
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
