@@ -255,8 +255,8 @@
      CSS-variabelen (hoek/schuif/overlap) die inline zijn meegegeven; uitgeklapt zet alles terug
      naar de normale, rechte weergave (transform:none, geen overlap). De transitie (zie inline
      style bij het kaartje zelf) zorgt voor een vloeiende animatie tussen beide standen. */
-  .pr-kaart-ingeklapt { transform: rotate(var(--pr-kaart-hoek)) translateX(var(--pr-kaart-schuif)); margin-top: var(--pr-kaart-overlap); }
-  .pr-kaart-uitgeklapt { transform: none; margin-top: 4px; }
+  .pr-kaarten-kolom-ingeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek)) translateX(var(--pr-kaart-schuif)); margin-top: var(--pr-kaart-overlap); }
+  .pr-kaarten-kolom-uitgeklapt .pr-kaart { transform: none; margin-top: 4px; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -4781,19 +4781,20 @@ async function renderPapierRooster(voorafGeladenData) {
 const PR_DIENST_NAMEN = { dag: 'Dagdienst (10.00–18.00)', avond: 'Avonddienst (18.00–02.00)', nacht: 'Nachtdienst (02.00–10.00)' };
 const PR_DIENST_UREN = 8;
 
-// Wisselt een 0-uur-"kaartje" in de urenlijst tussen ingeklapt (scheef/gestapeld) en uitgeklapt
-// (recht, normale rij). Wordt aangeroepen via dubbeltik op het kaartje zelf. Er wordt niets
-// onthouden: bij een nieuwe render (bijv. na het wisselen van week, of een pagina-herlaad)
-// begint elk kaartje weer standaard ingeklapt.
-function prToggleKaart(kaartId) {
-  const el = document.getElementById(kaartId);
+// Wisselt de HELE 0-uur-"kaartenkolom" tegelijk tussen ingeklapt (scheef/gestapeld) en uitgeklapt
+// (recht, normale rijen). Wordt aangeroepen via dubbeltik ergens in de kolom (niet per kaartje) —
+// zo geeft een toevallige tik op bijvoorbeeld de status-tekst geen apart, ongewenst effect. Er
+// wordt niets onthouden: bij een nieuwe render (bijv. na het wisselen van week, of een
+// pagina-herlaad) begint de kolom weer standaard ingeklapt.
+function prToggleKaartenKolom(kolomId) {
+  const el = document.getElementById(kolomId);
   if (!el) return;
-  if (el.classList.contains('pr-kaart-ingeklapt')) {
-    el.classList.remove('pr-kaart-ingeklapt');
-    el.classList.add('pr-kaart-uitgeklapt');
+  if (el.classList.contains('pr-kaarten-kolom-ingeklapt')) {
+    el.classList.remove('pr-kaarten-kolom-ingeklapt');
+    el.classList.add('pr-kaarten-kolom-uitgeklapt');
   } else {
-    el.classList.remove('pr-kaart-uitgeklapt');
-    el.classList.add('pr-kaart-ingeklapt');
+    el.classList.remove('pr-kaarten-kolom-uitgeklapt');
+    el.classList.add('pr-kaarten-kolom-ingeklapt');
   }
 }
 
@@ -4952,7 +4953,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const huisjeIcoon = heeftHuisje ? '<span class="pr-uren-huisje-badge-status">🏠</span>' : '';
     const statusVeld = beheer
-      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
+      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
            ${huisjeIcoon}${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${huisjeIcoon}${statusTekstZichtbaar}</span>`;
@@ -5027,19 +5028,24 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // Rechterkolom (0-uur): "kaartenspel"-look — elke rij een beetje scheef en over de vorige
   // geschoven, met per naam een eigen (maar stabiele) hoek en overlap. Status-tekst, cijfer-badge
   // en zelfs een stukje van de naam mogen daarbij bedekt raken; dat is precies de bedoeling.
-  // Dubbeltikken op een kaartje klapt het (en alleen dat kaartje) uit naar de normale, rechte
-  // weergave; nogmaals dubbeltikken klapt het weer in. Bij elke nieuwe render (bijv. na een
-  // refresh) begint alles standaard ingeklapt — er wordt niets onthouden tussen sessies.
+  // Dubbeltikken ERGENS in de kolom (niet per kaartje) klapt de HELE kolom tegelijk uit naar de
+  // normale, rechte weergave; nogmaals dubbeltikken klapt alles weer in. De listener zit op de
+  // gezamenlijke container, niet op elk kaartje los, zodat een toevallige tik op bijvoorbeeld de
+  // status-tekst ("vrijwilliger" ecc.) geen apart, ongewenst effect geeft — die tekst behoudt zijn
+  // eigen enkele-klik-gedrag (het statusmenu openen), de dubbeltik-toggle werkt daar los van.
+  // Bij elke nieuwe render (bijv. na een refresh) begint de kolom standaard ingeklapt — er wordt
+  // niets onthouden tussen sessies.
+  const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
+    const h = naamHash(naam);
+    const hoek = ((h % 13) - 6); // -6 tot +6 graden
+    const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
+    const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
+    const rijHtml = renderUrenRij(naam, idx, namenNulUur, false);
+    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 0.25s ease, margin-top 0.25s ease">${rijHtml}</div>`;
+  }).join('');
+  const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
-    ? namenNulUur.map((naam, idx) => {
-        const h = naamHash(naam);
-        const hoek = ((h % 13) - 6); // -6 tot +6 graden
-        const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
-        const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
-        const rijHtml = renderUrenRij(naam, idx, namenNulUur, false);
-        const kaartId = `pr-kaart-${weekKey}-${idx}`;
-        return `<div id="${kaartId}" class="pr-kaart-ingeklapt" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 0.25s ease, margin-top 0.25s ease" ondblclick="prToggleKaart('${kaartId}')">${rijHtml}</div>`;
-      }).join('') + '<div class="pr-uren-rij-nuluur-eindbalkje">' + eindBalkjeHtml + '</div>'
+    ? `<div id="${kol2KolomId}" class="pr-kaarten-kolom-ingeklapt" ondblclick="prToggleKaartenKolom('${kol2KolomId}')">${kol2KaartjesHtml}</div><div class="pr-uren-rij-nuluur-eindbalkje">${eindBalkjeHtml}</div>`
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
