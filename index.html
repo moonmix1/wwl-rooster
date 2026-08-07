@@ -247,6 +247,13 @@
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+  /* Compactere rijen specifiek rechts (0-uur-kolom): naam en status gedeeltelijk over elkaar heen,
+     zodat de rij zo'n derde korter wordt. De rij zelf krijgt een lagere min-hoogte, en de
+     status-tekst wordt met een negatieve marge omhoog getrokken zodat die over de onderkant van
+     naam/nummer heen komt te liggen. Dat overlappende stukje mag best onduidelijk ogen (bijv. een
+     pijltje dat half bedekt raakt), dat is de bedoeling van deze compactere weergave. */
+  .pr-uren-rij-nuluur { min-height: 42px; padding: 4px 8px; }
+  .pr-uren-rij-nuluur .pr-status-label { margin-top: -14px; position: relative; z-index: 1; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
