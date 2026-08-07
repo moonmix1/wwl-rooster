@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 23:35 — cijfer-badge overflow gefixt (rij zelf overflow:hidden); brightness ingeklapt 0.65/uitgeklapt 0.95 (was beide 0.80); marge rechts max 0 langer / 0.2 korter (was 0.3 langer / 0.2 korter, en bleek altijd naar het maximum te rekenen i.p.v. een uiterste geval) -->
+<!-- upload-poging: 5 aug 2026, 23:52 — laatste kaartje+balkje altijd exact recht bij uitklappen; elke kleur eigen -0.15/+0.15 brightness-verschuiving (blauw/paars bewegen nu ook mee, i.p.v. vaste waarde die nooit meebewoog) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -205,23 +205,27 @@
   /* Bij 0 uur: dezelfde statuskleur blijft nog net herkenbaar, maar aanzienlijk donkerder
      en richting kleurloos/grijs-zwart getrokken, zodat het duidelijk "op de achtergrond"
      oogt vergeleken met wie wél uren heeft gemaakt. */
-  .pr-uren-rij-nuluur.pr-uren-status-vw   { background: #265684; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.3);
-    filter: brightness(0.65); }
+  .pr-uren-rij-nuluur.pr-uren-status-vw   { background: #265684; box-shadow: inset 0 0 5px 2px rgba(93,173,226,0.3); }
   .pr-uren-rij-nuluur.pr-uren-status-gast { background-image: linear-gradient(to right, #654146 0%, #4a2c32 35%, #654146 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.35); }
   .pr-uren-rij-nuluur.pr-uren-status-gvdw { background-image: linear-gradient(to right, #654146 0%, #4a2c32 35%, #654146 100%);
     box-shadow: inset 0 0 5px 1.5px rgba(230,150,180,0.35); }
   .pr-uren-rij-nuluur.pr-uren-status-oud  { background: #2d3835; box-shadow: inset 0 0 5px 2px rgba(102,255,102,0.3); }
-  .pr-uren-rij-nuluur.pr-uren-status-ext  { background: #362f3e; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.35);
-    filter: brightness(0.85); }
+  .pr-uren-rij-nuluur.pr-uren-status-ext  { background: #362f3e; box-shadow: inset 0 0 6px 2px rgba(147,51,204,0.35); }
   .pr-uren-rij-nuluur.pr-uren-status-geen { background: #484543; }
-  /* Extra, kleur-onafhankelijke lichtdemping over de HELE rechterkolom (0-uur), behalve blauw en
-     paars (die hebben hierboven al hun eigen specifieke brightness gekregen): verlaagt puur de
-     helderheid/lichtsterkte van alles hierboven, zonder de kleurverhoudingen zelf te wijzigen
-     (dus geen verzadiging/grijs-menging — dat gebeurt al per kleur hierboven). Werkt als een dimmer.
-     Ingeklapt: donkerder (0.65) dan voorheen (was 0.80 voor beide staten samen). Uitgeklapt:
-     lichter (0.95) dan voorheen, zodat het duidelijke visuele verschil ook een indicatie geeft
-     van welke staat de kolom in is. */
+  /* Elke statuskleur heeft zijn EIGEN basiswaarde (afgesteld op eerder verzoek — blauw en paars
+     weken al af van de rest), en elke kleur krijgt daarbovenop dezelfde soort verschuiving
+     tussen in- en uitgeklapt: -0.15 bij ingeklapt, +0.15 bij uitgeklapt t.o.v. de kleur-eigen
+     basiswaarde. Zo blijft het onderlinge verschil tussen bijv. blauw en groen intact (dat was
+     bewust zo afgesteld), maar beweegt WEL elke kleur mee met de in/uitklap-staat — voorheen had
+     blauw een vaste 0.65 die nooit meebewoog, waardoor het na uitklappen te bleek/te weinig
+     verschil had met de ingeklapte staat.
+     Basiswaarden: blauw 0.65, groen/rood/geen-status 0.80 (de algemene, kleur-onafhankelijke
+     waarde van vroeger), paars 0.85. */
+  .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur.pr-uren-status-vw   { filter: brightness(0.50); }
+  .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur.pr-uren-status-vw  { filter: brightness(0.80); }
+  .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur.pr-uren-status-ext  { filter: brightness(0.70); }
+  .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur.pr-uren-status-ext { filter: brightness(1.00); }
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { filter: brightness(0.65); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur { filter: brightness(0.95); }
 
@@ -5182,10 +5186,13 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // De "uitgeklapte" eindstand van dit kaartje is niet per se 0/0/0deg, maar de
     // ingeklapt-waarde vermenigvuldigd met (1 - uitklapFactor): bij factor 1 wordt dat dus 0
     // (volledig recht), bij een lagere factor blijft een deel van de scheve/overlappende stand
-    // staan.
-    const hoekUitgeklapt = (hoek * (1 - uitklapFactor)).toFixed(2);
-    const overlapUitgeklapt = idx === 0 ? 0 : (overlapMarge * (1 - uitklapFactor) + 4 * uitklapFactor).toFixed(2);
-    const schuifUitgeklapt = (zijdelingseSchuif * (1 - uitklapFactor)).toFixed(2);
+    // staan. UITZONDERING: het allerlaatste kaartje (met het vastzittende eindbalkje eronder)
+    // gaat bij uitklappen ALTIJD naar exact 0/0/0, ongeacht de uitklapFactor — zo staan het
+    // laatste kaartje én het balkje daaronder gegarandeerd recht bij uitgeklapte staat, ook als
+    // de rest van de kolom nog wat scheef/overlappend blijft door de bandbreedte-beperking.
+    const hoekUitgeklapt = isLaatsteKaartje ? '0.00' : (hoek * (1 - uitklapFactor)).toFixed(2);
+    const overlapUitgeklapt = idx === 0 ? 0 : isLaatsteKaartje ? '4.00' : (overlapMarge * (1 - uitklapFactor) + 4 * uitklapFactor).toFixed(2);
+    const schuifUitgeklapt = isLaatsteKaartje ? '0.00' : (zijdelingseSchuif * (1 - uitklapFactor)).toFixed(2);
     // Het EINDBALKJE zit, alleen bij het allerlaatste kaartje, FYSIEK VAST binnen dezelfde
     // .pr-kaart-wrapper — het deelt dus exact dezelfde rotatie/schuif/overlap-variabelen als dat
     // kaartje en kan er daarom nooit los van raken of "erdoorheen" komen te staan, ongeacht hoe
