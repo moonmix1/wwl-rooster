@@ -4952,7 +4952,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const huisjeIcoon = heeftHuisje ? '<span class="pr-uren-huisje-badge-status">🏠</span>' : '';
     const statusVeld = beheer
-      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
+      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="event.stopPropagation()" ondblclick="event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')">
            ${huisjeIcoon}${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${huisjeIcoon}${statusTekstZichtbaar}</span>`;
