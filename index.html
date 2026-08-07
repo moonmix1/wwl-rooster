@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 21:44 — korte pauze (150ms) vóór start, dan gelijkmatige ease-out beweging, geen snelle sprong meer -->
+<!-- upload-poging: 5 aug 2026, 22:05 — uitklap-factor: bij veel meer namen rechts dan links blijft bij "uitklappen" een deel van de overlap/scheefstand staan, zodat rechts nooit hoger wordt dan links -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -255,7 +255,7 @@
      naar de normale, rechte weergave (transform:none, geen overlap). De transitie (zie inline
      style bij het kaartje zelf) zorgt voor een vloeiende animatie tussen beide standen. */
   .pr-kaarten-kolom-ingeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek)) translateX(var(--pr-kaart-schuif)); margin-top: var(--pr-kaart-overlap); }
-  .pr-kaarten-kolom-uitgeklapt .pr-kaart { transform: none; margin-top: 4px; }
+  .pr-kaarten-kolom-uitgeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek-uit)) translateX(var(--pr-kaart-schuif-uit)); margin-top: var(--pr-kaart-overlap-uit); }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -5087,20 +5087,48 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // Rechterkolom (0-uur): "kaartenspel"-look — elke rij een beetje scheef en over de vorige
   // geschoven, met per naam een eigen (maar stabiele) hoek en overlap. Status-tekst, cijfer-badge
   // en zelfs een stukje van de naam mogen daarbij bedekt raken; dat is precies de bedoeling.
-  // Dubbeltikken ERGENS in de kolom (niet per kaartje) klapt de HELE kolom tegelijk uit naar de
-  // normale, rechte weergave; nogmaals dubbeltikken klapt alles weer in. De listener zit op de
+  // Klikken ERGENS in de kolom (niet per kaartje) klapt de HELE kolom tegelijk uit naar de
+  // normale, rechte weergave; nogmaals klikken klapt alles weer in. De listener zit op de
   // gezamenlijke container, niet op elk kaartje los, zodat een toevallige tik op bijvoorbeeld de
   // status-tekst ("vrijwilliger" ecc.) geen apart, ongewenst effect geeft — die tekst behoudt zijn
-  // eigen enkele-klik-gedrag (het statusmenu openen), de dubbeltik-toggle werkt daar los van.
+  // eigen enkele-klik-gedrag (het statusmenu openen), de kolom-toggle werkt daar los van.
   // Bij elke nieuwe render (bijv. na een refresh) begint de kolom standaard ingeklapt — er wordt
   // niets onthouden tussen sessies.
+  //
+  // UITKLAP-FACTOR: bij "uitklappen" gaat de kolom niet altijd 100% naar de volledig rechte
+  // weergave. Zijn er (aanmerkelijk) meer mensen rechts dan links, dan zou de rechterkolom
+  // anders hoger worden dan de linkerkolom, wat we willen vermijden. In plaats van dat te meten
+  // en achteraf te herschalen, wordt hier vooraf simpelweg bepaald hoever de uitklap-beweging
+  // gaat: bij evenveel of minder namen rechts dan links, volledig uitklappen (1.0); daarboven
+  // neemt de factor geleidelijk af, zodat er meer overlap/scheefheid blijft staan naarmate de
+  // rechterkolom relatief groter is. Dit is een inschatting, geen exacte hoogte-berekening — een
+  // beetje resterende overlap of een lichte scheefstand na het "uitklappen" bij een grote
+  // rechterkolom is прima, zolang naam/status/pijltje leesbaar en klikbaar blijven.
+  const aantalLinks = namenMetUren.length;
+  const aantalRechts = namenNulUur.length;
+  let uitklapFactor = 1;
+  if (aantalRechts > aantalLinks && aantalLinks > 0) {
+    const verhouding = aantalRechts / aantalLinks;
+    // Bij verhouding 1 (evenveel): factor 1. Bij verhouding 2 (dubbel zoveel rechts): factor 0.5.
+    // Bij verhouding 3+: factor blijft niet verder zakken dan 0.35, zodat de rijen sowieso nog
+    // enigszins te onderscheiden blijven, ook bij een zeer scheve verhouding.
+    uitklapFactor = Math.max(0.35, 1 / verhouding);
+  }
+
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
     const h = naamHash(naam);
     const hoek = ((h % 13) - 6); // -6 tot +6 graden
     const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
     const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
     const rijHtml = renderUrenRij(naam, idx, namenNulUur, false, true);
-    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}</div>`;
+    // De "uitgeklapte" eindstand van dit kaartje is niet per se 0/0/0deg, maar de
+    // ingeklapt-waarde vermenigvuldigd met (1 - uitklapFactor): bij factor 1 wordt dat dus 0
+    // (volledig recht), bij een lagere factor blijft een deel van de scheve/overlappende stand
+    // staan.
+    const hoekUitgeklapt = (hoek * (1 - uitklapFactor)).toFixed(2);
+    const overlapUitgeklapt = idx === 0 ? 0 : (overlapMarge * (1 - uitklapFactor) + 4 * uitklapFactor).toFixed(2);
+    const schuifUitgeklapt = (zijdelingseSchuif * (1 - uitklapFactor)).toFixed(2);
+    return `<div class="pr-kaart" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
