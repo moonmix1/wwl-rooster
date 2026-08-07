@@ -247,6 +247,10 @@
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
     padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+  /* Rechterkolom (0-uur): geen ruime min-hoogte nodig — naam past altijd op 1 regel, dus de
+     status/pijltje mag direct daaronder aansluiten in plaats van verticaal gecentreerd te staan
+     binnen een te hoge rij. */
+  .pr-uren-rij-nuluur { min-height: 0; align-content: start; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
