@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 22:35 — bovenste balkje rechts blijft nu altijd recht (staat los van kaartje-rotatie); uitklap-formule verder verfijnd op basis van 12/15 én 15/25 testpunten -->
+<!-- upload-poging: 5 aug 2026, 22:52 — uitklap-logica omgebouwd naar bandbreedte (rechts max 0.2 kaartje korter / 0.6 kaartje langer dan links), i.p.v. de vorige wiskundige curve -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5103,21 +5103,52 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // neemt de factor geleidelijk af, zodat er meer overlap/scheefheid blijft staan naarmate de
   // rechterkolom relatief groter is. Dit is een inschatting, geen exacte hoogte-berekening — een
   // beetje resterende overlap of een lichte scheefstand na het "uitklappen" bij een grote
-  // rechterkolom is прima, zolang naam/status/pijltje leesbaar en klikbaar blijven.
+  // rechterkolom is prima, zolang naam/status/pijltje leesbaar en klikbaar blijven.
   const aantalLinks = namenMetUren.length;
   const aantalRechts = namenNulUur.length;
+  // Directe berekening met een BANDBREEDTE i.p.v. een gladde wiskundige curve: rechts mag
+  // (uitgeklapt) nooit meer dan 0.2 kaartje KORTER zijn dan links, en nooit meer dan 0.6
+  // kaartje LANGER. Binnen die band wordt zo dicht mogelijk bij volledig uitgeklapt (factor 1)
+  // gebleven — pas als dat de band zou overschrijden, wordt de factor teruggerekend naar precies
+  // het punt op de dichtstbijzijnde grens. Dit voorkomt zowel "onnodig ver in elkaar gedrukt"
+  // (bij een lage factor terwijl het eigenlijk prima uitgeklapt had gekund) als een te grote
+  // overschrijding van de linkerkolom-hoogte.
+  const RIJHOOGTE_PX = 68; // 64px min-height + 4px marge, gebruikt om kaartjes vs. pixels te vergelijken
+  const GEM_OVERLAP_MARGE_INGEKLAPT = -29; // gemiddelde van het -21 tot -37px bereik hierboven
+  const MAX_LANGER_KAARTJES = 0.6;
+  const MAX_KORTER_KAARTJES = 0.2;
+
+  const hoogteBijFactor = (aantal, factor) => {
+    if (aantal <= 0) return 0;
+    let hoogte = RIJHOOGTE_PX;
+    for (let i = 1; i < aantal; i++) {
+      const marge = GEM_OVERLAP_MARGE_INGEKLAPT * (1 - factor) + 4 * factor;
+      hoogte += RIJHOOGTE_PX + marge;
+    }
+    return hoogte;
+  };
+
   let uitklapFactor = 1;
-  if (aantalRechts > aantalLinks && aantalLinks > 0) {
-    const verhouding = aantalRechts / aantalLinks;
-    // Steile daling (machtsverheffing i.p.v. lineair): getest en afgestemd op twee situaties —
-    // 12 links/15 rechts (verhouding 1.25, klein verschil) en 15 links/25 rechts (verhouding
-    // 1.67, groter verschil). Bij grote ABSOLUTE verschillen (10+ rijen) kan overlap alleen het
-    // hoogteverschil nooit helemaal wegwerken zonder de kaartjes onleesbaar plat te maken — bij
-    // 15/25 komt de rechterkolom met deze instelling nog een fractie lager uit dan links, maar
-    // wel aanzienlijk dichterbij dan met de vorige formule. Bij normale, minder scheve
-    // verhoudingen (zoals 12/15) geeft dit ruim voldoende marge om links en rechts gelijk te
-    // laten eindigen. Vloer op 0.20: lager zou de kaartjes te plat/onduidelijk maken.
-    uitklapFactor = Math.max(0.20, 1 / Math.pow(verhouding, 5));
+  if (aantalLinks > 0 && aantalRechts > 1) {
+    const hoogteLinks = aantalLinks * RIJHOOGTE_PX;
+    const maxToegestaan = hoogteLinks + MAX_LANGER_KAARTJES * RIJHOOGTE_PX;
+    const minToegestaan = hoogteLinks - MAX_KORTER_KAARTJES * RIJHOOGTE_PX;
+    const hoogteBijVolledig = hoogteBijFactor(aantalRechts, 1);
+
+    if (hoogteBijVolledig > maxToegestaan) {
+      // Te lang bij volledig uitgeklapt: reken de factor terug die precies op de bovengrens
+      // uitkomt (dit is een lineaire vergelijking in de factor, dus direct oplosbaar).
+      const n = aantalRechts - 1;
+      const rest = maxToegestaan - RIJHOOGTE_PX - n * RIJHOOGTE_PX;
+      uitklapFactor = (rest - n * GEM_OVERLAP_MARGE_INGEKLAPT) / (n * 4 - n * GEM_OVERLAP_MARGE_INGEKLAPT);
+      uitklapFactor = Math.max(0, Math.min(1, uitklapFactor));
+    } else if (hoogteBijVolledig < minToegestaan) {
+      // Bij volledig uitgeklapt al te kort (komt normaliter zelden voor, want uitklappen maakt
+      // altijd langer, niet korter — maar voor de volledigheid toch afgedekt): blijf op 1.
+      uitklapFactor = 1;
+    }
+    // Anders: hoogteBijVolledig valt al binnen de band, dus factor blijft gewoon 1
+    // (volledig recht/uitgeklapt) — geen enkele reden om samen te drukken.
   }
 
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
