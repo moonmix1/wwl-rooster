@@ -238,6 +238,7 @@
   .pr-uren-titel::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
     background: repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);
+    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     z-index: 0;
   }
   .pr-uren-titel::after {
@@ -4916,7 +4917,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return a.localeCompare(b, 'nl');
   });
 
-  const renderUrenRij = (naam, idx, lijst) => {
+  const renderUrenRij = (naam, idx, lijst, toonBalkjes = true) => {
     const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status');
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.geen_status;
     const naamVeilig = escHtml(naam).replace(/'/g,"&#39;");
@@ -4969,7 +4970,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // de kolom niet zomaar "in het niets" begint.
     const vorigeNaam = idx > 0 ? lijst[idx - 1] : null;
     const balkjeHtml = '<div style="height:8px;border-radius:4px;margin:2px 4px 6px 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>';
-    const urenGrensHtml = (idx === 0) ? balkjeHtml
+    const urenGrensHtml = !toonBalkjes ? ''
+      : (idx === 0) ? balkjeHtml
       : (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam]) ? balkjeHtml
       : '';
     return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px">
@@ -4987,7 +4989,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     ? namenMetUren.map((naam, idx) => renderUrenRij(naam, idx, namenMetUren)).join('') + eindBalkjeHtml
     : '<div style="font-size:0.76rem;color:#777">Niemand met uren deze week.</div>';
   const kol2Html = namenNulUur.length
-    ? namenNulUur.map((naam, idx) => renderUrenRij(naam, idx, namenNulUur)).join('') + eindBalkjeHtml
+    ? namenNulUur.map((naam, idx) => renderUrenRij(naam, idx, namenNulUur, false)).join('')
     : '<div style="font-size:0.76rem;color:#777">Niemand op 0 uur.</div>';
 
   // Vaste kolomverdeling: links altijd de mensen MET uren, rechts altijd de 0-uur-groep,
