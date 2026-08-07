@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 22:05 — uitklap-factor: bij veel meer namen rechts dan links blijft bij "uitklappen" een deel van de overlap/scheefstand staan, zodat rechts nooit hoger wordt dan links -->
+<!-- upload-poging: 5 aug 2026, 22:20 — uitklap-factor formule verscherpt (machtsverheffing i.p.v. lineair) na test met 12/15 namen, rechts kwam nog te laag uit -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5109,10 +5109,13 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   let uitklapFactor = 1;
   if (aantalRechts > aantalLinks && aantalLinks > 0) {
     const verhouding = aantalRechts / aantalLinks;
-    // Bij verhouding 1 (evenveel): factor 1. Bij verhouding 2 (dubbel zoveel rechts): factor 0.5.
-    // Bij verhouding 3+: factor blijft niet verder zakken dan 0.35, zodat de rijen sowieso nog
-    // enigszins te onderscheiden blijven, ook bij een zeer scheve verhouding.
-    uitklapFactor = Math.max(0.35, 1 / verhouding);
+    // Steile daling (machtsverheffing i.p.v. lineair): al bij een kleine overmaat rechts (bijv.
+    // 12 links / 15 rechts, verhouding 1.25) moet de factor flink lager dan de simpele "1 /
+    // verhouding" zou geven, anders blijft er bij zulke veelvoorkomende, niet-extreme verschillen
+    // nog te weinig overlap over om het hoogteverschil echt te compenseren (in de praktijk bleek
+    // 1/verhouding bij 1.25 nog altijd ~30% te hoog uit te komen). Vloer op 0.35, zodat het bij
+    // een zeer scheve verhouding nooit volledig plat/onleesbaar wordt.
+    uitklapFactor = Math.max(0.35, 1 / Math.pow(verhouding, 3.5));
   }
 
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
