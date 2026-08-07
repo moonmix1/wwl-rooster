@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 01:35 — correctie nu ALLEEN actief in uitgeklapte staat (niet meer ingeklapt); meting nu via transitionend-event i.p.v. gegokte timer, zodat gecorrigeerd wordt precies na afloop van de animatie -->
+<!-- upload-poging: 6 aug 2026, 01:50 — dubbele/opstapelende correctie gefixt: transitionend vuurde per CSS-eigenschap (transform + margin-top) apart af, waardoor een tweede meting bovenop de eerste corrigeerde; nu maar 1x meten, verse absolute berekening i.p.v. cumulatief -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4807,7 +4807,6 @@ function prToggleKaartenKolom(kolomId) {
     const balkjeKaartEl = el.querySelector('.pr-balkje-kaart');
     if (balkjeKaartEl) {
       balkjeKaartEl.style.marginTop = '';
-      balkjeKaartEl.dataset.prCorrectie = '0';
     }
   }
   prCorrigeerBalkjePositie(kolomId);
@@ -5199,17 +5198,30 @@ function prCorrigeerBalkjePositie(kolomIdRechts) {
   const balkjeKaartEl = kolomEl.querySelector('.pr-balkje-kaart');
   if (!balkjeKaartEl) return;
 
+  let alGemeten = false; // voorkomt dat meet() meerdere keren draait (transitionend vuurt per
+                          // CSS-eigenschap apart af — transform én margin-top geven allebei een
+                          // eigen event — en een tweede meting zou de EIGEN correctie van de
+                          // eerste meting als nieuwe, foute basis gebruiken en daar nogmaals
+                          // bovenop corrigeren, wat een veel te grote, opstapelende sprong gaf)
   const meet = () => {
-    const linksBalkje = document.querySelector('.pr-eindbalkje-links');
-    const rechtsBalkjeEl = balkjeKaartEl.querySelector('.pr-eindbalkje-rechts');
-    if (!linksBalkje || !rechtsBalkjeEl) return;
-    const linksTop = linksBalkje.getBoundingClientRect().top;
-    const rechtsTop = rechtsBalkjeEl.getBoundingClientRect().top;
-    const verschil = rechtsTop - linksTop; // positief = rechts staat lager dan links
-    const huidigeCorrectie = parseFloat(balkjeKaartEl.dataset.prCorrectie || '0');
-    const nieuweCorrectie = huidigeCorrectie - verschil;
-    balkjeKaartEl.style.marginTop = `calc(var(--pr-kaart-overlap-uit, 4px) + ${nieuweCorrectie}px)`;
-    balkjeKaartEl.dataset.prCorrectie = nieuweCorrectie;
+    if (alGemeten) return;
+    alGemeten = true;
+    // Start altijd vanaf de basis-marge (geen eerdere correctie erbij opgeteld), zodat elke
+    // meting een verse, absolute berekening is — geen cumulatieve opstapeling.
+    balkjeKaartEl.style.marginTop = '';
+    requestAnimationFrame(() => {
+      const linksBalkje = document.querySelector('.pr-eindbalkje-links');
+      const rechtsBalkjeEl = balkjeKaartEl.querySelector('.pr-eindbalkje-rechts');
+      if (!linksBalkje || !rechtsBalkjeEl) return;
+      const linksTop = linksBalkje.getBoundingClientRect().top;
+      const rechtsTop = rechtsBalkjeEl.getBoundingClientRect().top;
+      const verschil = rechtsTop - linksTop; // positief = rechts staat lager dan links
+      if (verschil > 0) {
+        // Alleen corrigeren als rechts daadwerkelijk lager staat (regel 2: nooit lager); staat
+        // rechts al hoger of gelijk, dan is er niets aan te passen.
+        balkjeKaartEl.style.marginTop = `calc(var(--pr-kaart-overlap-uit, 4px) - ${verschil}px)`;
+      }
+    });
   };
 
   // Wacht tot de CSS-transitie van dit kaartje echt is afgerond (transitionend), in plaats van
