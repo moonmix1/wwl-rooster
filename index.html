@@ -5005,7 +5005,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     ? namenNulUur.map((naam, idx) => {
         const h = naamHash(naam);
         const hoek = ((h % 13) - 6); // -6 tot +6 graden
-        const overlapMarge = idx === 0 ? 0 : -(16 + (h % 13)); // 0, of -16 tot -28px t.o.v. de vorige kaart
+        const overlapMarge = idx === 0 ? 0 : -(21 + (h % 17)); // 0, of -21 tot -37px t.o.v. de vorige kaart
         const zijdelingseSchuif = ((h % 9) - 4); // -4 tot +4 px zijwaarts, voor extra "slordige stapel"-gevoel
         const rijHtml = renderUrenRij(naam, idx, namenNulUur, false);
         return `<div style="transform:rotate(${hoek}deg) translateX(${zijdelingseSchuif}px);margin-top:${overlapMarge}px;position:relative;z-index:${idx + 1}">${rijHtml}</div>`;
