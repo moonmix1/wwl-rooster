@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 5 aug 2026, 23:20 — eindbalkje rechts zit nu FYSIEK vast aan het laatste kaartje (zelfde transform), kan er dus nooit los van komen of erdoorheen komen; bij rechts ≤ links staat alles altijd recht -->
+<!-- upload-poging: 5 aug 2026, 23:35 — cijfer-badge overflow gefixt (rij zelf overflow:hidden); brightness ingeklapt 0.65/uitgeklapt 0.95 (was beide 0.80); marge rechts max 0 langer / 0.2 korter (was 0.3 langer / 0.2 korter, en bleek altijd naar het maximum te rekenen i.p.v. een uiterste geval) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -218,8 +218,12 @@
   /* Extra, kleur-onafhankelijke lichtdemping over de HELE rechterkolom (0-uur), behalve blauw en
      paars (die hebben hierboven al hun eigen specifieke brightness gekregen): verlaagt puur de
      helderheid/lichtsterkte van alles hierboven, zonder de kleurverhoudingen zelf te wijzigen
-     (dus geen verzadiging/grijs-menging — dat gebeurt al per kleur hierboven). Werkt als een dimmer. */
-  .pr-uren-rij-nuluur { filter: brightness(0.80); }
+     (dus geen verzadiging/grijs-menging — dat gebeurt al per kleur hierboven). Werkt als een dimmer.
+     Ingeklapt: donkerder (0.65) dan voorheen (was 0.80 voor beide staten samen). Uitgeklapt:
+     lichter (0.95) dan voorheen, zodat het duidelijke visuele verschil ook een indicatie geeft
+     van welke staat de kolom in is. */
+  .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { filter: brightness(0.65); }
+  .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur { filter: brightness(0.95); }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
@@ -246,7 +250,7 @@
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
-    padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; }
+    padding: 6px 8px; min-height: 64px; border-radius: 6px; margin-bottom: 4px; break-inside: avoid; overflow: hidden; }
   /* Ingeklapt (rechts): compactere rij-hoogte, status/pijltje direct onder de naam.
      Uitgeklapt (rechts): dezelfde volle hoogte/centrering als links. */
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { min-height: 0; align-content: start; }
@@ -5115,8 +5119,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // overschrijding van de linkerkolom-hoogte.
   const RIJHOOGTE_PX = 68; // 64px min-height + 4px marge, gebruikt om kaartjes vs. pixels te vergelijken
   const GEM_OVERLAP_MARGE_INGEKLAPT = -29; // gemiddelde van het -21 tot -37px bereik hierboven
-  const MAX_LANGER_KAARTJES = 0.3;
-  const MAX_KORTER_KAARTJES = 0.2;
+  const MAX_LANGER_KAARTJES = 0; // rechts mag NOOIT langer worden dan links
+  const MAX_KORTER_KAARTJES = 0.2; // rechts mag wel tot 0.2 kaartje korter zijn
 
   const hoogteBijFactor = (aantal, factor) => {
     if (aantal <= 0) return 0;
