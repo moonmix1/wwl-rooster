@@ -4797,34 +4797,47 @@ function prToggleKaartenKolom(kolomId) {
   }
 }
 
-// Enkele klik specifiek op de status-tekst BINNEN de rechterkolom:
-// - Ingeklapt: gedraagt zich hetzelfde als een klik ernaast (elders in de kolom) — de kolom
-//   klapt uit. Het statusmenu opent hierbij NIET.
-// - Uitgeklapt: doet niets (geen menu, geen kolom-actie). Belangrijk: stopt WEL de klik-bubbling,
-//   anders zou de klik doorlekken naar de kolom-container en die alsnog laten inklappen — dat is
-//   uitdrukkelijk niet de bedoeling (een klik náást de status mag de kolom laten in-/uitklappen,
-//   een klik ÓP de status in uitgeklapte staat niet). Alleen een dubbele klik (zie
-//   prStatusDblKlikRechts hieronder) opent dan het statusmenu.
+// Enkele klik specifiek op de status-tekst BINNEN de rechterkolom: gedraagt zich in beide
+// staten hetzelfde als een klik ernaast — de kolom klapt om (uit als ingeklapt, in als
+// uitgeklapt). Het statusmenu opent hierbij NOOIT via een enkele klik; daarvoor is een dubbele
+// klik nodig (zie prStatusDblKlikRechts hieronder). stopPropagation voorkomt dat de klik ook
+// nog eens doorbubbelt naar de kolom-container (die zou anders de toggle een tweede keer
+// uitvoeren en het effect weer tenietdoen).
+// Vóórdat de kolom wordt omgewisseld, leggen we de staat van dít moment vast in een
+// data-attribuut — dat is nodig omdat bij een dubbelklik deze functie altijd als eerste draait,
+// en de latere dubbelklik-handler moet weten wat de staat was vóór deze (eerste) klik, niet pas
+// na de toggle die hieronder gebeurt.
 function prStatusKlikRechts(event, kolomId, weekKey, naam, status) {
+  event.stopPropagation();
   const kolomEl = document.getElementById(kolomId);
-  if (kolomEl && kolomEl.classList.contains('pr-kaarten-kolom-ingeklapt')) {
-    event.stopPropagation();
-    prToggleKaartenKolom(kolomId);
-  } else {
-    event.stopPropagation();
+  if (kolomEl) {
+    kolomEl.dataset.prStaatVoorKlik = kolomEl.classList.contains('pr-kaarten-kolom-ingeklapt') ? 'ingeklapt' : 'uitgeklapt';
   }
+  prToggleKaartenKolom(kolomId);
 }
 
-// Dubbeltik specifiek op de status-tekst BINNEN de rechterkolom: gedrag hangt af van de huidige
-// staat van de kolom. Ingeklapt -> telt als "ergens in de kolom dubbeltikken", dus de kolom klapt
-// uit (het statusmenu opent NIET). Uitgeklapt -> normaal gedrag, het statusmenu opent gewoon.
+// Dubbele klik specifiek op de status-tekst BINNEN de rechterkolom: gedrag hangt af van de staat
+// van de kolom VOORDAT deze klik-sequentie begon. Let op: een browser vuurt bij een dubbelklik
+// eerst de losse "klik"-handler (prStatusKlikRechts) en daarna pas deze dubbelklik-handler af —
+// die eerste klik heeft de kolom dan al omgewisseld. Om dat "voor de klik"-onderscheid toch te
+// kunnen maken, wordt de staat hier aan het BEGIN van prStatusKlikRechts al opgeslagen in een
+// data-attribuut op de kolom, en die eerder-opgeslagen waarde wordt hier gebruikt in plaats van
+// de (inmiddels alweer gewijzigde) live class.
 function prStatusDblKlikRechts(kolomId, weekKey, naam, status) {
   const kolomEl = document.getElementById(kolomId);
+  const waarVoorDeKlik = kolomEl ? kolomEl.dataset.prStaatVoorKlik : null;
+  if (waarVoorDeKlik === 'ingeklapt') {
+    // Was al ingeklapt: de eerste klik van de dubbelklik heeft 'm laten uitklappen — dat mag zo
+    // blijven staan, geen verdere actie nodig (geen menu openen, want dat was niet de bedoeling
+    // bij ingeklapte staat).
+    return;
+  }
+  // Was uitgeklapt: de eerste klik heeft 'm laten inklappen; zet dat expliciet terug naar
+  // uitgeklapt (zodat de status weer normaal zichtbaar/leesbaar is) en open het statusmenu.
   if (kolomEl && kolomEl.classList.contains('pr-kaarten-kolom-ingeklapt')) {
     prToggleKaartenKolom(kolomId);
-  } else {
-    prOpenUrenStatusKeuze(weekKey, naam, status);
   }
+  prOpenUrenStatusKeuze(weekKey, naam, status);
 }
 
 function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
@@ -4982,17 +4995,18 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusTekstZichtbaar = `${STATUS_TEKST[status] || STATUS_TEKST.geen_status}`;
     const huisjeIcoon = heeftHuisje ? '<span class="pr-uren-huisje-badge-status">🏠</span>' : '';
     const kol2KolomIdVoorStatus = `pr-kaarten-kolom-${weekKey}`;
-    // Links: enkele klik opent het statusmenu (ongewijzigd, origineel gedrag).
+    // Links: DUBBELE klik opent het statusmenu (enkele klik doet nu niets, om per ongeluk
+    // openen te voorkomen — consistent met hoe rechts ook op dubbelklik reageert).
     // Rechts, ingeklapt: een ENKELE klik op de status (net als ernaast) klapt de kolom uit.
-    // Rechts, uitgeklapt: een enkele klik op de status doet niets; pas een DUBBELE klik opent
-    // het statusmenu. Beide gevallen worden in prStatusKlikRechts hieronder afgehandeld, die
-    // de actuele staat van de kolom opzoekt op het moment van de klik zelf.
+    // Rechts, uitgeklapt: een ENKELE klik op de status klapt de kolom weer in; een DUBBELE klik
+    // opent het statusmenu. Beide rechtse gevallen worden in prStatusKlikRechts hieronder
+    // afgehandeld, die de actuele staat van de kolom opzoekt op het moment van de klik zelf.
     const statusOnClick = isRechterkolom
       ? `prStatusKlikRechts(event,'${kol2KolomIdVoorStatus}','${weekKey}','${naamVeilig}','${status}')`
-      : `event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')`;
+      : `event.stopPropagation()`;
     const statusDblKlik = isRechterkolom
       ? `event.stopPropagation();prStatusDblKlikRechts('${kol2KolomIdVoorStatus}','${weekKey}','${naamVeilig}','${status}')`
-      : '';
+      : `event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')`;
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="${statusOnClick}" ${statusDblKlik ? `ondblclick="${statusDblKlik}"` : ''}>
            ${huisjeIcoon}${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
