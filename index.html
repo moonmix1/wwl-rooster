@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 11:20 — "vrijwilliger"-tekst binnen het zwevende kok-kaartje 5px naar rechts + licht ingedrukte letters (negatieve letter-spacing), zodat die niet meer over het kok-icoon heen valt -->
+<!-- upload-poging: 6 aug 2026, 11:35 — margin-left werkte niet door justify-content:center, vervangen door padding-left (14px); kok-icoon 2px hoger (top:0); kaartje krijgt min-height:60px + flex-centrering, zelfde hoogte als normale cellen -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -172,13 +172,13 @@
      opnieuw afgestemd worden, zodat de bovenkant van de koksmuts precies in de bovenrand van dit
      kleinere kaartje uitkomt (in plaats van veel te laag, wat er zonder deze regel gebeurde).
      Overschrijft de algemene 18px hierboven via hogere specificiteit (2 klassen i.p.v. 1). */
-  .pr-kok-zwevend-kaartje .pr-kok-label { top: 2px; }
+  .pr-kok-zwevend-kaartje .pr-kok-label { top: 0px; }
   /* Het kaartje is smaller dan een normale, volle 1-mans-cel, dus de gecentreerde tekst kan
      tegen het (los, absoluut gepositioneerde) kok-icoon aan botsen. Twee kleine correcties:
      de status-tekst ("vrijwilliger" etc.) schuift 5px naar rechts, en de letters daarvan worden
      licht ingedrukt (negatieve letter-spacing) zodat de tekst iets smaller/compacter wordt. */
-  .pr-kok-zwevend-kaartje .pr-cel-label-rij { margin-left: 5px; }
-  .pr-kok-zwevend-kaartje .pr-cel-label { letter-spacing: -0.02em; }
+  .pr-kok-zwevend-kaartje .pr-cel-label-rij { padding-left: 14px; box-sizing: border-box; }
+  .pr-kok-zwevend-kaartje .pr-cel-label { letter-spacing: -0.03em; }
   /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
   .pr-kok-onderwater-scene {
     position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
@@ -4895,7 +4895,7 @@ async function renderPapierRooster(voorafGeladenData) {
               ${onderwaterHtml}
               <span class="pr-kok-duik-reis">
                 <span class="pr-kok-zwevend-kaartje">
-                  <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative">
+                  <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative;min-height:60px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">
                     <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
                   </div>
                 </span>
