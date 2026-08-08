@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 12:20 — "oude foto"-effect toegevoegd aan alle kaartjes rechts (0-uur-kolom): dunne witte SVG-haarscheurtjes + lichte sepia-tint via filter, met 3 varianten per rij zodat niet alles identiek beschadigd oogt; linkerkolom volledig ongemoeid -->
+<!-- upload-poging: 6 aug 2026, 12:35 — TEST: felrode, ondoorzichtige scheurtjes (i.p.v. subtiel wit+blend-mode) om te bevestigen of de ::after-laag zelf wel gerenderd wordt; ook filter-conflict gevonden (specifiekere brightness-regels overschrijven de sepia-filter volledig, CSS combineert filters niet) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -367,9 +367,9 @@
      kaartje identiek beschadigd oogt. De linkerkolom (uren-badges) blijft volledig ongemoeid. */
   .pr-uren-rij-nuluur { filter: sepia(0.18) contrast(0.96) brightness(0.98); }
   .pr-uren-rij-nuluur::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
-    opacity: 0.5; mix-blend-mode: soft-light;
-    background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%2280%22%3E%3Cpath d=%22M12,4 L34,22 L28,41 L52,58 L61,76%22 stroke=%22white%22 stroke-width=%220.6%22 fill=%22none%22 opacity=%220.55%22/%3E%3Cpath d=%22M140,2 L128,20 L152,33 L142,55%22 stroke=%22white%22 stroke-width=%220.5%22 fill=%22none%22 opacity=%220.45%22/%3E%3Cpath d=%22M175,45 L188,60 L170,74%22 stroke=%22white%22 stroke-width=%220.5%22 fill=%22none%22 opacity=%220.4%22/%3E%3C/svg%3E');
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 999;
+    opacity: 1;
+    background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%2280%22%3E%3Cpath d=%22M12,4 L34,22 L28,41 L52,58 L61,76%22 stroke=%22red%22 stroke-width=%222%22 fill=%22none%22/%3E%3Cpath d=%22M140,2 L128,20 L152,33 L142,55%22 stroke=%22red%22 stroke-width=%222%22 fill=%22none%22/%3E%3Cpath d=%22M175,45 L188,60 L170,74%22 stroke=%22red%22 stroke-width=%222%22 fill=%22none%22/%3E%3C/svg%3E');
     background-repeat: no-repeat; background-size: 100% 100%;
   }
   .pr-uren-rij-nuluur:nth-child(3n)::after { transform: scaleX(-1); opacity: 0.4; }
