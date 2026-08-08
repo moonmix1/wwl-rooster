@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 03:00 — console.log vervangen door zichtbaar debug-tekstblokje boven de rechterkolom (groen op zwart), zodat de gemeten waarden op mobiel afleesbaar zijn zonder devtools -->
+<!-- upload-poging: 6 aug 2026, 03:15 — gevonden dankzij debug-cijfers: doelHoogte werd gemeten vanaf kolom-container-top i.p.v. eerste-kaartje-top, dat verschil (bovenste balkje niet meegeteld) veroorzaakte de systematische ~1 kaartje afwijking; nu symmetrisch gemeten vanaf beide eerste-kaartjes -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5205,11 +5205,13 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
       alleKaarten.forEach(k => k.style.transition = 'none');
     }
 
-    // Meet de werkelijke pixel-afstand van de bovenkant van de kolom tot de onderkant van het
-    // linker eindbalkje — dat is het exacte doel-niveau waarop de harmonica moet uitkomen.
-    const kolomTop = kolomEl.getBoundingClientRect().top;
+    // Meet de werkelijke pixel-afstand van de bovenkant van het EERSTE HARMONICA-KAARTJE (niet
+    // de kolom-container zelf, want die kan nog een los "bovenste balkje" ervoor bevatten dat
+    // niet in alleKaarten zit) tot de onderkant van het linker eindbalkje — dat is het exacte
+    // doel-niveau waarop de harmonica moet uitkomen.
+    const eersteKaartTop = alleKaarten[0].getBoundingClientRect().top;
     const linksBalkjeOnder = linksBalkje.getBoundingClientRect().bottom;
-    const doelHoogteInKolom = linksBalkjeOnder - kolomTop;
+    const doelHoogteInKolom = linksBalkjeOnder - eersteKaartTop;
 
     // Meet de werkelijke hoogte van een los kaartje (incl. de standaard 4px marge), rechtstreeks
     // uit de DOM — geen vaste aanname zoals "68px", maar de daadwerkelijke gerenderde grootte,
