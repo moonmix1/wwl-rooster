@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 10:05 — Rooster A: rand van ACTUELE WEEK-badge nu geel (#b39a1f, zelfde als de tekst), was crème-wit -->
+<!-- upload-poging: 6 aug 2026, 10:20 — koks in 1-mans-vakken krijgen nu een zen-onderwaterscène (bubbels, zwemmende visjes, duiker) als achtergrond, met het naamkaartje zelf rustig, licht organisch zwevend op-en-neer -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -167,6 +167,54 @@
   .pr-eenmans-wrap .pr-naam-regel-top { position: static; }
   .pr-eenmans-wrap .pr-cel-label-rij { position: static; margin-top: 6px; }
   .pr-eenmans-wrap .pr-kok-label { top: 18px; }
+  /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
+  .pr-kok-onderwater-scene {
+    position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
+    background: linear-gradient(180deg, #0a3d5c 0%, #0e5a7a 45%, #0a4a68 100%);
+    z-index: 0; pointer-events: none;
+  }
+  .pr-kok-bel {
+    position: absolute; bottom: -10px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.9), rgba(180,220,255,0.25) 60%, transparent 70%);
+    animation-name: pr-kok-bel-omhoog; animation-timing-function: ease-in; animation-iteration-count: infinite;
+  }
+  @keyframes pr-kok-bel-omhoog {
+    0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
+    10%  { opacity: 0.85; }
+    90%  { opacity: 0.6; }
+    100% { transform: translate(var(--pr-bel-drift, 6px), -140px) scale(1.1); opacity: 0; }
+  }
+  .pr-kok-vis {
+    position: absolute; font-size: 0.9rem; opacity: 0.85; filter: drop-shadow(0 0 2px rgba(0,0,0,0.4));
+    animation-name: pr-kok-vis-zwem; animation-timing-function: ease-in-out; animation-iteration-count: infinite;
+  }
+  @keyframes pr-kok-vis-zwem {
+    0%   { transform: translateX(0) translateY(0) scaleX(1); }
+    48%  { transform: translateX(var(--pr-vis-afstand, 60px)) translateY(-4px) scaleX(1); }
+    50%  { transform: translateX(var(--pr-vis-afstand, 60px)) translateY(-4px) scaleX(-1); }
+    98%  { transform: translateX(0) translateY(3px) scaleX(-1); }
+    100% { transform: translateX(0) translateY(0) scaleX(1); }
+  }
+  .pr-kok-duiker {
+    position: absolute; font-size: 1rem; opacity: 0.7; filter: drop-shadow(0 0 2px rgba(0,0,0,0.4));
+    animation: pr-kok-duiker-dobber 7s ease-in-out infinite;
+  }
+  @keyframes pr-kok-duiker-dobber {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(6px) rotate(3deg); }
+  }
+  /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
+  .pr-kok-zwevend-kaartje {
+    position: relative; z-index: 1;
+    animation: pr-kok-zweven 6.5s ease-in-out infinite;
+  }
+  @keyframes pr-kok-zweven {
+    0%   { transform: translateY(0) rotate(0deg); }
+    22%  { transform: translateY(-5px) rotate(-0.6deg); }
+    48%  { transform: translateY(2px) rotate(0.4deg); }
+    71%  { transform: translateY(-3px) rotate(-0.3deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+  }
   .pr-cel-label { display: inline-block; text-align: center; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
     text-transform: lowercase; white-space: nowrap; }
   .pr-cel-gvdw .pr-cel-label { color: #d4b83f; opacity: 1; background: #332920; border-radius: 3px; padding: 2px 4px; line-height: 1.0; font-size: 0.6rem; box-shadow: inset 0 0 3px 1px rgba(180,150,90,0.7); width: auto; min-width: 62px; box-sizing: border-box; margin-top: 0px; text-align: center; white-space: nowrap; flex-shrink: 0; overflow: visible; }
@@ -4785,9 +4833,43 @@ async function renderPapierRooster(voorafGeladenData) {
           cellClasses = statusKlasse(status1, info.label1);
           const heeftExtra = info.label1;
           const naamTekst = naamRegelHtml(info.naam1, status1, info.label1);
-          cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
-            <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
-          </div>`;
+          const isKok1Mans = info.label1 === 'kok';
+          if (isKok1Mans) {
+            // Kleine, stabiele hash op de naam voor lichte variatie tussen verschillende koks
+            // (posities/timing van bellen en visjes), zonder dat het bij elke render willekeurig
+            // door elkaar springt.
+            let h = 0;
+            for (let i = 0; i < info.naam1.length; i++) h = (h * 31 + info.naam1.charCodeAt(i)) % 1000;
+            const belHtml = [18, 42, 68].map((links, i) => {
+              const vertraging = ((h + i * 137) % 40) / 10; // 0.0 - 4.0s
+              const duur = 3.5 + ((h + i * 53) % 20) / 10; // 3.5 - 5.5s
+              const grootte = 4 + ((h + i * 29) % 5);
+              const drift = 4 + ((h + i * 17) % 8);
+              return `<span class="pr-kok-bel" style="left:${links}%;width:${grootte}px;height:${grootte}px;animation-duration:${duur}s;animation-delay:-${vertraging}s;--pr-bel-drift:${drift}px"></span>`;
+            }).join('');
+            const vissenEmoji = ['🐠', '🐟', '🐡'];
+            const visHtml = [{top: 22, links: 8}, {top: 55, links: 55}].map((pos, i) => {
+              const emoji = vissenEmoji[(h + i * 7) % vissenEmoji.length];
+              const duur = 5 + ((h + i * 41) % 30) / 10; // 5.0 - 8.0s
+              const afstand = 30 + ((h + i * 19) % 40);
+              return `<span class="pr-kok-vis" style="top:${pos.top}%;left:${pos.links}%;animation-duration:${duur}s;--pr-vis-afstand:${afstand}px">${emoji}</span>`;
+            }).join('');
+            const onderwaterHtml = `<div class="pr-kok-onderwater-scene">
+              ${belHtml}
+              ${visHtml}
+              <span class="pr-kok-duiker" style="bottom:8%;right:12%">🤿</span>
+            </div>`;
+            cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
+              ${onderwaterHtml}
+              <span class="pr-kok-zwevend-kaartje">
+                <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+              </span>
+            </div>`;
+          } else {
+            cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
+              <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+            </div>`;
+          }
         } else {
           // Twee namen: cel altijd gesplitst in twee gekleurde helften (ook bij gelijke status),
           // naadloos aan elkaar. Het lijntje komt exact op de kleurgrens te staan.
