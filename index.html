@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 11:10 — kok-icoon-positie voor het zwevende kaartje specifiek aangepast (top:2px i.p.v. de algemene 18px), zodat de koksmuts weer bovenaan het kleinere kaartje uitkomt -->
+<!-- upload-poging: 6 aug 2026, 11:20 — "vrijwilliger"-tekst binnen het zwevende kok-kaartje 5px naar rechts + licht ingedrukte letters (negatieve letter-spacing), zodat die niet meer over het kok-icoon heen valt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -173,6 +173,12 @@
      kleinere kaartje uitkomt (in plaats van veel te laag, wat er zonder deze regel gebeurde).
      Overschrijft de algemene 18px hierboven via hogere specificiteit (2 klassen i.p.v. 1). */
   .pr-kok-zwevend-kaartje .pr-kok-label { top: 2px; }
+  /* Het kaartje is smaller dan een normale, volle 1-mans-cel, dus de gecentreerde tekst kan
+     tegen het (los, absoluut gepositioneerde) kok-icoon aan botsen. Twee kleine correcties:
+     de status-tekst ("vrijwilliger" etc.) schuift 5px naar rechts, en de letters daarvan worden
+     licht ingedrukt (negatieve letter-spacing) zodat de tekst iets smaller/compacter wordt. */
+  .pr-kok-zwevend-kaartje .pr-cel-label-rij { margin-left: 5px; }
+  .pr-kok-zwevend-kaartje .pr-cel-label { letter-spacing: -0.02em; }
   /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
   .pr-kok-onderwater-scene {
     position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
