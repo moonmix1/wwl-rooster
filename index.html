@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 12:35 — TEST: felrode, ondoorzichtige scheurtjes (i.p.v. subtiel wit+blend-mode) om te bevestigen of de ::after-laag zelf wel gerenderd wordt; ook filter-conflict gevonden (specifiekere brightness-regels overschrijven de sepia-filter volledig, CSS combineert filters niet) -->
+<!-- upload-poging: 6 aug 2026, 12:50 — "volledig recht"-staat rechts krijgt nu filter:none (i.p.v. brightness) en scheurtjes-laag display:none, exact gelijk aan de onbewerkte linkerkolom -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -293,13 +293,13 @@
      waarde van vroeger), paars 0.85. */
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur.pr-uren-status-vw   { filter: brightness(0.50); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur.pr-uren-status-vw  { filter: brightness(0.80); }
-  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur.pr-uren-status-vw { filter: brightness(0.80); }
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur.pr-uren-status-vw { filter: none; }
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur.pr-uren-status-ext  { filter: brightness(0.70); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur.pr-uren-status-ext { filter: brightness(1.00); }
-  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur.pr-uren-status-ext { filter: brightness(1.00); }
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur.pr-uren-status-ext { filter: none; }
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { filter: brightness(0.65); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur { filter: brightness(0.95); }
-  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur { filter: brightness(0.95); }
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur { filter: none; }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
@@ -374,6 +374,10 @@
   }
   .pr-uren-rij-nuluur:nth-child(3n)::after { transform: scaleX(-1); opacity: 0.4; }
   .pr-uren-rij-nuluur:nth-child(3n+1)::after { transform: rotate(180deg); opacity: 0.55; }
+  /* Bij "volledig recht" (derde staat): scheurtjes-laag volledig weg, hetzelfde als links.
+     display:none i.p.v. opacity:0 om zeker te zijn dat de laag ook geen invloed meer heeft op
+     bijv. klikbaarheid/hit-testing, ook al stond die al op pointer-events:none. */
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur::after { display: none; }
   /* Ingeklapt (rechts): compactere rij-hoogte, status/pijltje direct onder de naam.
      Uitgeklapt (rechts): dezelfde volle hoogte/centrering als links. */
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { min-height: 0; align-content: start; }
