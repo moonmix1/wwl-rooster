@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 13:05 — "volledig recht"-staat: alle statuskleuren rechts nu exact gelijk aan links (achtergrond + box-shadow), i.p.v. de dempende rechts-specifieke waarden -->
+<!-- upload-poging: 6 aug 2026, 13:15 — witte diagonale strepen op beide badges (Uren per week + ACTUELE WEEK) nu geel (#d9bc00), zelfde geel als de letters -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -329,8 +329,8 @@
      content wel — zo blijven de hoeken netjes rond. */
   .pr-uren-titel::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #ffffff 6px, #ffffff 12px);
-    box-shadow: inset 0 0 6px 1px rgba(255,255,255,1);
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #d9bc00 6px, #d9bc00 12px);
+    box-shadow: inset 0 0 6px 1px rgba(217,188,0,1);
     z-index: 0;
   }
   .pr-uren-titel::after {
@@ -347,8 +347,8 @@
     min-width: 220px; min-height: 62px; box-sizing: border-box; }
   .pr-actuele-week-badge::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #ffffff 6px, #ffffff 12px);
-    box-shadow: inset 0 0 6px 1px rgba(255,255,255,1);
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #d9bc00 6px, #d9bc00 12px);
+    box-shadow: inset 0 0 6px 1px rgba(217,188,0,1);
     z-index: 0;
   }
   .pr-actuele-week-badge::after {
