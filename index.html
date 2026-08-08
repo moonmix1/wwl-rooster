@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 10:20 — koks in 1-mans-vakken krijgen nu een zen-onderwaterscène (bubbels, zwemmende visjes, duiker) als achtergrond, met het naamkaartje zelf rustig, licht organisch zwevend op-en-neer -->
+<!-- upload-poging: 6 aug 2026, 10:35 — onderwaterscène semi-transparant gemaakt (paarse celkleur schijnt er nu doorheen); grote, trage verticale "duik-reis" (bijna hele celhoogte, 14s cyclus) toegevoegd BOVENOP de bestaande kleine zwevende wiebel -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -170,7 +170,7 @@
   /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
   .pr-kok-onderwater-scene {
     position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
-    background: linear-gradient(180deg, #0a3d5c 0%, #0e5a7a 45%, #0a4a68 100%);
+    background: linear-gradient(180deg, rgba(10,61,92,0.55) 0%, rgba(14,90,122,0.5) 45%, rgba(10,74,104,0.55) 100%);
     z-index: 0; pointer-events: none;
   }
   .pr-kok-bel {
@@ -202,6 +202,20 @@
   @keyframes pr-kok-duiker-dobber {
     0%, 100% { transform: translateY(0) rotate(-3deg); }
     50%      { transform: translateY(6px) rotate(3deg); }
+  }
+  /* Grote, trage verticale reis: het kaartje "duikt" bijna van de bovenkant naar de onderkant
+     van de cel en weer terug — een lange, langzame cyclus (14s) voor het echte drijf-gevoel.
+     Deze wrapper zit BUITEN de kleine wiebel-animatie (pr-kok-zwevend-kaartje) hieronder, zodat
+     beide bewegingen onafhankelijk van elkaar optellen: de grote reis bepaalt de algehele positie
+     in de cel, de kleine wiebel geeft er de organische, niet-perfecte souplesse bovenop. */
+  .pr-kok-duik-reis {
+    position: relative; z-index: 1;
+    animation: pr-kok-duiken 14s ease-in-out infinite;
+  }
+  @keyframes pr-kok-duiken {
+    0%   { transform: translateY(-38%); }
+    50%  { transform: translateY(38%); }
+    100% { transform: translateY(-38%); }
   }
   /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
   .pr-kok-zwevend-kaartje {
@@ -4861,8 +4875,10 @@ async function renderPapierRooster(voorafGeladenData) {
             </div>`;
             cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
               ${onderwaterHtml}
-              <span class="pr-kok-zwevend-kaartje">
-                <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+              <span class="pr-kok-duik-reis">
+                <span class="pr-kok-zwevend-kaartje">
+                  <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+                </span>
               </span>
             </div>`;
           } else {
