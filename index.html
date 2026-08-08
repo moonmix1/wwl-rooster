@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 06:40 — formule volledig herbouwd naar evenredig schalend (was gekalibreerd op 1 testgeval, brak bij andere verhoudingen); getest met 7 verschillende links/rechts-combinaties, blijft nu overal positief (11-56px marge) behalve het zelf al "ondenkbare" 12/50-geval -->
+<!-- upload-poging: 6 aug 2026, 07:00 — BUG GEVONDEN: kaartenspel-look (random hoek/schuif/overlap) was per ongeluk gekoppeld aan rechtsHeeftMeerDanLinks, waardoor bij links>rechts (14/13, 15/12 etc) alles ten onrechte kaarsrecht bleef, ook ingeklapt. Nu losgekoppeld: kaartenspel-look geldt altijd bij >1 naam rechts, compensatie alleen als rechts>links -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5151,12 +5151,18 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
     const h = naamHash(naam);
     const isBalkjeKaart = idx === namenNulUur.length - 1; // het kaartje waar het balkje aan vastzit (regel 6)
+    // Het "kaartenspel"-gevoel (willekeurige hoek/schuif, ingeklapte overlap) geldt altijd zodra
+    // er meer dan 1 naam in de rechterkolom staat — dat is volledig onafhankelijk van de
+    // links/rechts-verhouding! Eerder was dit per ongeluk gekoppeld aan rechtsHeeftMeerDanLinks
+    // (bedoeld voor de UITGEKLAPTE compensatie-marges hieronder), waardoor bij bijv. 14 links/13
+    // rechts de kaartjes ten onrechte helemaal recht bleven staan, zowel in- als uitgeklapt.
+    const heeftKaartenspelLook = namenNulUur.length > 1;
     // Regel 6+7: het balkje-kaartje is altijd waterpas (hoek/schuif 0); alle harmonica-kaartjes
     // behouden altijd hun eigen random hoek/schuif, ook bij uitklappen (regel 1 en 7) — nooit 0.
-    const hoek = (rechtsHeeftMeerDanLinks && !isBalkjeKaart) ? ((h % 13) - 6) : 0;
-    const zijdelingseSchuif = (rechtsHeeftMeerDanLinks && !isBalkjeKaart) ? ((h % 9) - 4) : 0;
+    const hoek = (heeftKaartenspelLook && !isBalkjeKaart) ? ((h % 13) - 6) : 0;
+    const zijdelingseSchuif = (heeftKaartenspelLook && !isBalkjeKaart) ? ((h % 9) - 4) : 0;
     // Ingeklapte overlap: normale kaartenspel-stapeling, ongewijzigd.
-    const overlapMarge = idx === 0 ? 0 : (rechtsHeeftMeerDanLinks ? -(21 + (h % 17)) : 0);
+    const overlapMarge = idx === 0 ? 0 : (heeftKaartenspelLook ? -(21 + (h % 17)) : 0);
     const rijHtmlVolledig = renderUrenRij(naam, idx, namenNulUur, false, true);
     let balkjeBoven = '';
     let rijHtml = rijHtmlVolledig;
