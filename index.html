@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 08:50 — 2-mans-vakken gebruiken nu exact dezelfde kleur/gloed als 1-mans-vakken (de 4 losse, lichtere .pr-tweemans-wrap-overschrijvingen zijn verwijderd) -->
+<!-- upload-poging: 6 aug 2026, 09:05 — "Wis alle namen" verplaatst naar links van "Kopieer rooster" (was ervoor onder de ACTUELE WEEK-badge) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4473,9 +4473,10 @@ function renderPrScanKnop() {
     <p style="font-size:0.68rem;color:var(--subtle);margin-top:2px;margin-bottom:6px">
       Maakt een foto van het handgeschreven rooster, en 'deze week' wordt op de app automatisch ingevuld — controleer daarna zoals gewend.
     </p>
-    <div style="margin-bottom:6px">
-      <div style="padding:3px;border-radius:14px;background:repeating-linear-gradient(45deg, #14532d 0 8px, #3a3a3a 8px 16px)">
-        <button class="cam-btn" style="width:100%;font-size:0.78rem;background:#0e6e30;border:none;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="prToonKopieerNaarAndereWeek()">
+    <div style="margin-bottom:6px;display:flex;gap:8px;align-items:stretch">
+      <div id="pr-wis-knop-plek" style="flex:0 0 84px"></div>
+      <div style="flex:1 1 auto;padding:3px;border-radius:14px;background:repeating-linear-gradient(45deg, #14532d 0 8px, #3a3a3a 8px 16px)">
+        <button class="cam-btn" style="width:100%;height:100%;font-size:0.78rem;background:#0e6e30;border:none;color:#fff;position:relative;display:flex;align-items:center;justify-content:center;gap:8px" onclick="prToonKopieerNaarAndereWeek()">
           <span>📋 Kopieer rooster naar een toekomstige week</span>
           <span style="display:inline-flex;align-items:center;flex-shrink:0">
             <span style="width:8px;height:2px;background:#fff"></span>
@@ -4647,12 +4648,9 @@ async function renderPapierRooster(voorafGeladenData) {
           <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`;
-    labelEl.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px">
-        <div style="flex:0 0 84px;width:84px;display:flex;align-items:center;justify-content:flex-start">${wisKnopHtml}</div>
-        <div style="width:fit-content;max-width:100%;margin:0 auto">${middenHtml}</div>
-        <div style="flex:0 0 84px;width:84px"></div>
-      </div>`;
+    labelEl.innerHTML = `<div style="width:fit-content;max-width:100%;margin:0 auto">${middenHtml}</div>`;
+    const wisKnopPlekEl = document.getElementById('pr-wis-knop-plek');
+    if (wisKnopPlekEl) wisKnopPlekEl.innerHTML = wisKnopHtml;
     labelEl.parentElement.style.opacity = '1';
   }
   const vorigeBtn = document.querySelector('.pr-nav-btn[onclick="prWeekNavigeer(-1)"]');
