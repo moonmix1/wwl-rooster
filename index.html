@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 03:30 — verschil nog niet volledig gevonden (857 i.p.v. verwachte ~947); extra debug toegevoegd die ook de linkerkolom-kaartjeshoogte meet, om te checken of links/rechts een andere kaartje-hoogte hebben -->
+<!-- upload-poging: 6 aug 2026, 04:20 — teruggekeerd naar simpele, oorspronkelijke aanpak (geen DOM-meting meer, alle debug-blokjes weg): een flexibele "veer" van 4 marges, elk begrensd tussen 2-8px overlap, gebaseerd op het simpele aantal-verschil rechts/links -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4803,10 +4803,9 @@ function prToggleKaartenKolom(kolomId) {
     el.classList.remove('pr-kaarten-kolom-uitgeklapt');
     el.classList.add('pr-kaarten-kolom-ingeklapt');
   }
-  // Geen aparte correctie-aanroep meer nodig hier: de marges van de laatste harmonica-kaartjes
-  // liggen al vooraf vast (berekend eenmalig bij het renderen, zie
-  // prBerekenEnPasHarmonicaMargesToe), dus de harmonica weet al bij het begin van de
-  // uitklap-animatie waar hij moet stoppen — geen correctie-na-afloop meer nodig.
+  // Geen aparte correctie-aanroep nodig: de marges van de laatste harmonica-kaartjes (de "veer")
+  // liggen al vast vanaf het renderen zelf, als simpele, begrensde waarden — geen DOM-meting of
+  // correctie-na-afloop meer nodig.
 }
 
 // Onthoudt per kolom een lopende timer, zodat een tweede klik die op tijd binnenkomt de eerste
@@ -5126,6 +5125,30 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   const aantalRechts = namenNulUur.length;
   const rechtsHeeftMeerDanLinks = aantalRechts > aantalLinks;
 
+  // FLEXIBELE "VEER" VAN VASTE, BEGRENSDE MARGES (2-8px per marge, geen DOM-meting): het
+  // hoogteverschil tussen links en rechts wordt rechtstreeks uit het AANTAL-verschil afgeleid
+  // (niet uit een gemeten pixel-hoogte), en verdeeld over de laatste AANTAL_VEER_KAARTJES
+  // overgangen. Elke marge ligt tussen 2px (minimum, zodat er nog wél een zichtbare
+  // tussenruimte blijft — net als overal in de linkerkolom) en 8px overlap. Bij een klein
+  // verschil (bijv. 2-3 namen meer rechts) worden de marges dicht bij 2px gehouden — de veer
+  // "ontspant" bijna volledig. Bij een groter verschil lopen ze op richting 8px — de veer wordt
+  // strakker ingedrukt. Dat geeft het bewegelijke, flexibele gevoel (in plaats van vaste,
+  // "vastgelijmde" getallen), zonder de eerdere complexiteit van een echte hoogte-meting.
+  const AANTAL_VEER_KAARTJES = Math.min(4, Math.max(0, aantalRechts - 1));
+  const MARGE_MIN = 2, MARGE_MAX = 8;
+  const veerMarges = new Array(AANTAL_VEER_KAARTJES).fill(4); // index 0 = marge vlak vóór het balkje-kaartje
+  if (rechtsHeeftMeerDanLinks && AANTAL_VEER_KAARTJES > 0) {
+    const aantalVerschil = aantalRechts - aantalLinks;
+    // Bij een verschil van 1-2 namen blijft de veer relatief ontspannen (dicht bij 2-4px); bij
+    // een verschil van 3 of meer is de veer al maximaal ingedrukt (8px per marge). Dat geeft het
+    // bewegelijke gevoel bij kleine verschillen, en genoeg compensatie bij de gebruikelijke,
+    // grotere verschillen.
+    const gewensteOverlapPerMarge = Math.min(MARGE_MAX, MARGE_MIN + (aantalVerschil / AANTAL_VEER_KAARTJES) * 8);
+    for (let i = 0; i < AANTAL_VEER_KAARTJES; i++) {
+      veerMarges[i] = 4 - Math.max(MARGE_MIN, Math.min(MARGE_MAX, gewensteOverlapPerMarge));
+    }
+  }
+
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
     const h = naamHash(naam);
     const isBalkjeKaart = idx === namenNulUur.length - 1; // het kaartje waar het balkje aan vastzit (regel 6)
@@ -5149,15 +5172,21 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // harmonica-kaartjes altijd hun eigen waarde (regel 1 en 7 gelden ook uitgeklapt).
     const hoekUitgeklapt = hoek.toFixed(2);
     const schuifUitgeklapt = zijdelingseSchuif.toFixed(2);
-    // De marge (--pr-kaart-overlap-uit) wordt hier NIET meer ingevuld — dat gebeurt pas na de
-    // meting van de linkerkolom-hoogte, zie prBerekenEnPasHarmonicaMargesToe hieronder. Elk
-    // kaartje krijgt een eigen, herkenbaar data-attribuut zodat die functie later precies weet
-    // welk kaartje welke marge moet krijgen.
+    // Marge komt uit de "veer" hierboven: de laatste AANTAL_VEER_KAARTJES overgangen (dus vóór
+    // het balkje-kaartje en vóór een paar kaartjes daarvoor) krijgen elk hun eigen, begrensde
+    // (2-8px) overlap-waarde. Alle marges daarvoor blijven gewoon de standaard 4px.
+    const afstandTotBalkje = namenNulUur.length - 1 - idx; // 0 = balkje-kaartje zelf, 1 = kaartje ervoor, enz.
+    let overlapUitgeklapt = '4.00';
+    if (idx === 0) {
+      overlapUitgeklapt = '0';
+    } else if (afstandTotBalkje < veerMarges.length) {
+      overlapUitgeklapt = veerMarges[afstandTotBalkje].toFixed(2);
+    }
     const balkjeOnder = isBalkjeKaart
       ? '<div class="pr-eindbalkje-rechts" style="height:8px;border-radius:4px;margin:6px 4px 0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
       : '';
     const kaartKlasse = isBalkjeKaart ? 'pr-kaart pr-balkje-kaart' : 'pr-kaart';
-    return `${balkjeBoven}<div class="${kaartKlasse}" data-pr-idx="${idx}" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:4px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}${balkjeOnder}</div>`;
+    return `${balkjeBoven}<div class="${kaartKlasse}" data-pr-idx="${idx}" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}${balkjeOnder}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
@@ -5168,105 +5197,6 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // ongeacht hoeveel mensen er in elke groep zitten (geen 50/50 aantal-verdeling meer).
   const eindHtml = `<div class="pr-uren-lijst-wrap pr-2kol"><div class="pr-uren-lijst-kolom">${kol1Html}</div><div class="pr-uren-lijst-kolom">${kol2Html}</div></div>`;
   el.innerHTML = eindHtml;
-  // Eenmalige, vooraf berekende marges (niet bij elke uitklap-klik opnieuw): meet de ECHTE
-  // hoogte van de linkerkolom in de DOM (geen aanname/schatting van rijhoogte), en bepaal
-  // daarmee — nu, één keer, meteen na het renderen — welke marges de laatste paar
-  // harmonica-kaartjes moeten krijgen zodat de harmonica bij uitklappen VAN NATURE stopt op
-  // exact het juiste niveau, in plaats van eerst door te schieten en achteraf gecorrigeerd te
-  // worden. Dit is de eenmalige, vooraf-bepalende berekening; er is geen aparte
-  // correctie-na-afloop meer nodig.
-  prBerekenEnPasHarmonicaMargesToe(kol2KolomId);
-}
-
-function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
-  requestAnimationFrame(() => {
-    const linksBalkje = document.querySelector('.pr-eindbalkje-links');
-    const kolomEl = document.getElementById(kolomIdRechts);
-    if (!linksBalkje || !kolomEl) return;
-    const alleKaarten = Array.from(kolomEl.querySelectorAll('.pr-kaart'));
-    if (alleKaarten.length < 2) return;
-
-    // BELANGRIJK: op dit moment staat de kolom nog in INGEKLAPTE staat (dit gebeurt direct bij
-    // het renderen, vóórdat de gebruiker ooit klikt). Een kaartje heeft in ingeklapte staat een
-    // compactere hoogte (zie .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { min-height: 0 })
-    // dan in uitgeklapte staat. Om de ECHTE, uitgeklapte kaartjeshoogte te meten, wordt de
-    // uitgeklapt-klasse hier heel even (onzichtbaar, binnen dezelfde animatie-frame) toegepast,
-    // gemeten, en weer teruggezet — zodat de gebruiker niets van deze tijdelijke wissel merkt.
-    const stondAlUitgeklapt = kolomEl.classList.contains('pr-kaarten-kolom-uitgeklapt');
-    // Onthoud de ECHTE, oorspronkelijke inline-transitie van elk kaartje vóórdat die wordt
-    // uitgezet — 'transition = ""' zou die waarde niet terugbrengen (het wist het inline
-    // attribuut leeg in plaats van de vorige waarde te herstellen), dus we bewaren 'm expliciet.
-    const oorspronkelijkeTransities = alleKaarten.map(k => k.style.transition);
-    if (!stondAlUitgeklapt) {
-      kolomEl.classList.remove('pr-kaarten-kolom-ingeklapt');
-      kolomEl.classList.add('pr-kaarten-kolom-uitgeklapt');
-      // Transities tijdelijk uitzetten zodat de meting niet midden in een (onzichtbare, want dit
-      // gebeurt in dezelfde frame) animatie plaatsvindt, en niets zichtbaar overgaat.
-      alleKaarten.forEach(k => k.style.transition = 'none');
-    }
-
-    // Meet de werkelijke pixel-afstand van de bovenkant van het EERSTE HARMONICA-KAARTJE (niet
-    // de kolom-container zelf, want die kan nog een los "bovenste balkje" ervoor bevatten dat
-    // niet in alleKaarten zit) tot de onderkant van het linker eindbalkje — dat is het exacte
-    // doel-niveau waarop de harmonica moet uitkomen.
-    const eersteKaartTop = alleKaarten[0].getBoundingClientRect().top;
-    const linksBalkjeOnder = linksBalkje.getBoundingClientRect().bottom;
-    const doelHoogteInKolom = linksBalkjeOnder - eersteKaartTop;
-
-    // Meet de werkelijke hoogte van een los kaartje (incl. de standaard 4px marge), rechtstreeks
-    // uit de DOM — geen vaste aanname zoals "68px", maar de daadwerkelijke gerenderde grootte,
-    // nu correct gemeten in (tijdelijk geforceerde) uitgeklapte staat.
-    const eersteKaartHoogte = alleKaarten[0].getBoundingClientRect().height;
-    const standaardStap = eersteKaartHoogte + 4;
-
-    // Hoogte die de harmonica zou hebben als ALLE marges gewoon de standaard 4px zouden zijn.
-    const hoogteNormaal = eersteKaartHoogte + (alleKaarten.length - 1) * standaardStap;
-    let teCompenseren = hoogteNormaal - doelHoogteInKolom;
-
-    if (teCompenseren > 0) {
-      // Maximale overlap per marge: 0.55 kaartje-hoogte, zoals afgesproken.
-      const maxCompensatiePerMarge = 0.55 * eersteKaartHoogte;
-      const maxBeschikbareMarges = alleKaarten.length - 1;
-      const nodigeMarges = Math.min(maxBeschikbareMarges, Math.ceil(teCompenseren / maxCompensatiePerMarge));
-
-      // Verdeel het tekort over de laatste 'nodigeMarges' kaartjes (van achteren naar voren
-      // geteld), elk begrensd op zijn eigen maximum.
-      let resterend = teCompenseren;
-      const debugMarges = [];
-      for (let m = 0; m < nodigeMarges; m++) {
-        const restendeMarges = nodigeMarges - m;
-        const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, resterend / restendeMarges);
-        const idxVanKaart = alleKaarten.length - 1 - m; // van achteren naar voren
-        const kaartEl = alleKaarten[idxVanKaart];
-        const margeWaarde = (4 - deelVoorDezeMarge).toFixed(2);
-        if (kaartEl) kaartEl.style.setProperty('--pr-kaart-overlap-uit', `${margeWaarde}px`);
-        debugMarges.push(`idx${idxVanKaart}:${margeWaarde}px`);
-        resterend -= deelVoorDezeMarge;
-      }
-
-      // TIJDELIJK DEBUG-BLOKJE: toont de gemeten/berekende waarden zichtbaar op het scherm (i.p.v.
-      // console.log, want devtools zijn lastig te bereiken op mobiel). Verwijder dit blok zodra
-      // het probleem is opgelost.
-      const debugDiv = document.createElement('div');
-      debugDiv.style.cssText = 'background:#000;color:#0f0;font-size:0.6rem;font-family:monospace;padding:6px;margin-bottom:6px;white-space:pre-wrap;border:1px solid #0f0;';
-      const linksKolomEl = kolomEl.parentElement.previousElementSibling;
-      const linksKaarten = linksKolomEl ? linksKolomEl.querySelectorAll('.pr-uren-rij') : [];
-      const linksEersteKaartHoogte = linksKaarten[0] ? linksKaarten[0].closest('div[style*="padding-right"]').getBoundingClientRect().height : -1;
-      debugDiv.textContent = `DEBUG: doelHoogte=${doelHoogteInKolom.toFixed(1)} eersteKaartH(R)=${eersteKaartHoogte.toFixed(1)} eersteKaartH(L)=${linksEersteKaartHoogte.toFixed(1)} aantalLinksKaarten=${linksKaarten.length} standaardStap=${standaardStap.toFixed(1)} hoogteNormaal=${hoogteNormaal.toFixed(1)} teCompenseren=${teCompenseren.toFixed(1)} nodigeMarges=${nodigeMarges} aantalKaarten=${alleKaarten.length} marges=[${debugMarges.join(', ')}]`;
-      kolomEl.parentElement.insertBefore(debugDiv, kolomEl);
-    }
-
-    // Zet de tijdelijke uitgeklapte staat weer terug naar ingeklapt (de gebruiker moet nog op
-    // uitklappen klikken) en herstel de transities.
-    if (!stondAlUitgeklapt) {
-      kolomEl.classList.remove('pr-kaarten-kolom-uitgeklapt');
-      kolomEl.classList.add('pr-kaarten-kolom-ingeklapt');
-      // Forceer een reflow vóór het herstellen van de transitie, zodat de browser de teruggezette
-      // ingeklapte stand niet zelf als "animatie" gaat afspelen.
-      void kolomEl.offsetHeight;
-      alleKaarten.forEach((k, i) => { k.style.transition = oorspronkelijkeTransities[i]; });
-    }
-  });
 }
 
 function prOpenUrenStatusKeuze(weekKey, naam, huidigeStatus) {
