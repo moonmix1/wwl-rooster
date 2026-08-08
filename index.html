@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 09:15 — "Wis alle namen"-knop krijgt nu height:100% i.p.v. vaste 40px, rekt zich automatisch uit tot dezelfde hoogte als "Kopieer rooster" (via de al aanwezige align-items:stretch container) -->
+<!-- upload-poging: 6 aug 2026, 09:25 — "ACTUELE WEEK"-badge herbouwd met exact dezelfde structuur (VLC-rand, gele tekst, gloed) als "Uren per week"-badge, via nieuwe .pr-actuele-week-badge klasse -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -245,6 +245,23 @@
     z-index: 0;
   }
   .pr-uren-titel::after {
+    content: ''; position: absolute; inset: 3px; border-radius: 2px; background: #402860; z-index: 0;
+    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
+  }
+  /* Exacte kopie van .pr-uren-titel hierboven, hergebruikt voor de "ACTUELE WEEK"-badge naast de
+     rooster-tabel — beide badges moeten er identiek uitzien (zelfde VLC-rand, gloed, kleuren). */
+  .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #d9bc00; text-transform: uppercase;
+    background: #402860; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
+    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
+    filter: brightness(0.75);
+    letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25; }
+  .pr-actuele-week-badge::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #ffffff 6px, #ffffff 12px);
+    box-shadow: inset 0 0 6px 1px rgba(255,255,255,1);
+    z-index: 0;
+  }
+  .pr-actuele-week-badge::after {
     content: ''; position: absolute; inset: 3px; border-radius: 2px; background: #402860; z-index: 0;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
   }
@@ -4640,9 +4657,11 @@ async function renderPapierRooster(voorafGeladenData) {
     const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#7dd3fc' : '#d2691e');
     const wisKnopHtml = isCoordinator() ? prWisKnopHtml(weekKey, dinsdag, prWeekOffset < 0) : '';
     const middenHtml = prWeekOffset === 0
-      ? `<div style="width:100%;box-sizing:border-box;text-align:center;background:#402860;border-radius:8px;padding:6px 10px;box-shadow:inset 0 0 6px 2px rgba(147,51,204,0.8)">
-          <div style="color:#d9bc00;font-weight:800;white-space:nowrap;letter-spacing:0.05em">ACTUELE WEEK</div>
-          <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:#d9bc00;margin-top:3px">wo ${prFormatDatum(labelStart)} – di ${prFormatDatum(labelEind)}</div>
+      ? `<div class="pr-actuele-week-badge" style="width:100%;box-sizing:border-box">
+          <span style="position:relative;z-index:1;display:block">
+            <span style="white-space:nowrap">ACTUELE WEEK</span><br>
+            <span style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;text-transform:none;margin-top:3px;display:inline-block">wo ${prFormatDatum(labelStart)} – di ${prFormatDatum(labelEind)}</span>
+          </span>
         </div>`
       : `<div style="width:100%;text-align:center">
           <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
