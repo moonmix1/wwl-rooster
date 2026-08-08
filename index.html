@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 05:15 — EXTREME TEST: balkje-kaartje krijgt !important -100px margin + knalroze achtergrond bij uitklappen, los van alle berekening — om definitief te bevestigen of wijzigingen op deze specifieke plek wel/niet doorkomen -->
+<!-- upload-poging: 6 aug 2026, 05:35 — vorige roze test gaf onduidelijk resultaat (achtergrond werd verborgen door kind-element); nu dikke gele rand + hoge z-index i.p.v. achtergrondkleur, om zeker te weten of het kaartje daadwerkelijk verplaatst wordt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -268,7 +268,7 @@
      los van alle berekeningen hierboven — als dit GEEN zichtbaar effect heeft, ligt het probleem
      niet in de marge-berekening zelf maar ergens anders (bijv. een andere regel die wint, of de
      wijziging komt niet door). */
-  .pr-kaarten-kolom-uitgeklapt .pr-balkje-kaart { margin-top: -100px !important; background: #ff00ff !important; }
+  .pr-kaarten-kolom-uitgeklapt .pr-balkje-kaart { margin-top: -100px !important; border: 10px solid #ffff00 !important; z-index: 9999 !important; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
