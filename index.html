@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 03:15 — gevonden dankzij debug-cijfers: doelHoogte werd gemeten vanaf kolom-container-top i.p.v. eerste-kaartje-top, dat verschil (bovenste balkje niet meegeteld) veroorzaakte de systematische ~1 kaartje afwijking; nu symmetrisch gemeten vanaf beide eerste-kaartjes -->
+<!-- upload-poging: 6 aug 2026, 03:30 — verschil nog niet volledig gevonden (857 i.p.v. verwachte ~947); extra debug toegevoegd die ook de linkerkolom-kaartjeshoogte meet, om te checken of links/rechts een andere kaartje-hoogte hebben -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5249,7 +5249,10 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
       // het probleem is opgelost.
       const debugDiv = document.createElement('div');
       debugDiv.style.cssText = 'background:#000;color:#0f0;font-size:0.6rem;font-family:monospace;padding:6px;margin-bottom:6px;white-space:pre-wrap;border:1px solid #0f0;';
-      debugDiv.textContent = `DEBUG: doelHoogte=${doelHoogteInKolom.toFixed(1)} eersteKaartH=${eersteKaartHoogte.toFixed(1)} standaardStap=${standaardStap.toFixed(1)} hoogteNormaal=${hoogteNormaal.toFixed(1)} teCompenseren=${teCompenseren.toFixed(1)} nodigeMarges=${nodigeMarges} aantalKaarten=${alleKaarten.length} marges=[${debugMarges.join(', ')}]`;
+      const linksKolomEl = kolomEl.parentElement.previousElementSibling;
+      const linksKaarten = linksKolomEl ? linksKolomEl.querySelectorAll('.pr-uren-rij') : [];
+      const linksEersteKaartHoogte = linksKaarten[0] ? linksKaarten[0].closest('div[style*="padding-right"]').getBoundingClientRect().height : -1;
+      debugDiv.textContent = `DEBUG: doelHoogte=${doelHoogteInKolom.toFixed(1)} eersteKaartH(R)=${eersteKaartHoogte.toFixed(1)} eersteKaartH(L)=${linksEersteKaartHoogte.toFixed(1)} aantalLinksKaarten=${linksKaarten.length} standaardStap=${standaardStap.toFixed(1)} hoogteNormaal=${hoogteNormaal.toFixed(1)} teCompenseren=${teCompenseren.toFixed(1)} nodigeMarges=${nodigeMarges} aantalKaarten=${alleKaarten.length} marges=[${debugMarges.join(', ')}]`;
       kolomEl.parentElement.insertBefore(debugDiv, kolomEl);
     }
 
