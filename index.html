@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 11:55 — kaartje 2px hoger gemaakt via padding-bottom (6px i.p.v. 4px), zonder de bovenkant (waar kok-icoon staat) te raken -->
+<!-- upload-poging: 6 aug 2026, 12:05 — 3-staten-cyclus voor de rechterkolom afgemaakt: ingeklapt -> uitgeklapt (veer) -> volledig recht (transform:none, geen scheve hoeken meer) -> terug naar ingeklapt; ontbrekende CSS voor de derde staat toegevoegd (JS-logica bestond al) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -293,10 +293,13 @@
      waarde van vroeger), paars 0.85. */
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur.pr-uren-status-vw   { filter: brightness(0.50); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur.pr-uren-status-vw  { filter: brightness(0.80); }
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur.pr-uren-status-vw { filter: brightness(0.80); }
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur.pr-uren-status-ext  { filter: brightness(0.70); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur.pr-uren-status-ext { filter: brightness(1.00); }
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur.pr-uren-status-ext { filter: brightness(1.00); }
   .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { filter: brightness(0.65); }
   .pr-kaarten-kolom-uitgeklapt .pr-uren-rij-nuluur { filter: brightness(0.95); }
+  .pr-kaarten-kolom-volledig-recht .pr-uren-rij-nuluur { filter: brightness(0.95); }
 
   .pr-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .pr-layout > div:first-child { flex: 1 1 340px; min-width: 0; }
@@ -367,6 +370,11 @@
      style bij het kaartje zelf) zorgt voor een vloeiende animatie tussen beide standen. */
   .pr-kaarten-kolom-ingeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek)) translateX(var(--pr-kaart-schuif)); margin-top: var(--pr-kaart-overlap); }
   .pr-kaarten-kolom-uitgeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek-uit)) translateX(var(--pr-kaart-schuif-uit)); margin-top: var(--pr-kaart-overlap-uit); }
+  /* Derde staat: VOLLEDIG RECHT — elk kaartje gaat naar transform:none en de standaard 4px
+     marge, ongeacht zijn eigen --pr-kaart-hoek/-schuif/-overlap-variabelen (die worden hier
+     simpelweg genegeerd). De lengte die de kolom daardoor krijgt is bewust onbelangrijk in deze
+     staat — geen enkele scheve hoek meer, puur een rechte lijst. */
+  .pr-kaarten-kolom-volledig-recht .pr-kaart { transform: none; margin-top: 4px; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -4949,11 +4957,16 @@ const PR_DIENST_UREN = 8;
 function prToggleKaartenKolom(kolomId) {
   const el = document.getElementById(kolomId);
   if (!el) return;
+  // 3-staten-cyclus: ingeklapt -> uitgeklapt (met veer/lichte scheefheid) -> volledig recht -> weer
+  // terug naar ingeklapt. Elke tik gaat één stap verder in deze vaste volgorde.
   if (el.classList.contains('pr-kaarten-kolom-ingeklapt')) {
     el.classList.remove('pr-kaarten-kolom-ingeklapt');
     el.classList.add('pr-kaarten-kolom-uitgeklapt');
-  } else {
+  } else if (el.classList.contains('pr-kaarten-kolom-uitgeklapt')) {
     el.classList.remove('pr-kaarten-kolom-uitgeklapt');
+    el.classList.add('pr-kaarten-kolom-volledig-recht');
+  } else {
+    el.classList.remove('pr-kaarten-kolom-volledig-recht');
     el.classList.add('pr-kaarten-kolom-ingeklapt');
   }
   // Geen aparte correctie-aanroep nodig: de marges van de laatste harmonica-kaartjes (de "veer")
