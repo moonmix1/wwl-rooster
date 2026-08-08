@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 02:10 — fundamenteel herbouwd: harmonica-marges worden nu EENMALIG vooraf berekend obv een echte DOM-meting van de linkerkolom-hoogte (via CSS custom properties, met requestAnimationFrame), niet meer achteraf gecorrigeerd na de animatie -->
+<!-- upload-poging: 6 aug 2026, 02:30 — kernfout gevonden: kaartje-hoogte werd gemeten in INGEKLAPTE staat (compacter door min-height:0), waardoor alle marge-berekeningen te laag uitvielen en er nauwelijks compensatie werd toegepast; nu wordt kort de uitgeklapte staat gesimuleerd (transities uit) om de echte hoogte te meten, en daarna teruggezet -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5186,6 +5186,21 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
     const alleKaarten = Array.from(kolomEl.querySelectorAll('.pr-kaart'));
     if (alleKaarten.length < 2) return;
 
+    // BELANGRIJK: op dit moment staat de kolom nog in INGEKLAPTE staat (dit gebeurt direct bij
+    // het renderen, vóórdat de gebruiker ooit klikt). Een kaartje heeft in ingeklapte staat een
+    // compactere hoogte (zie .pr-kaarten-kolom-ingeklapt .pr-uren-rij-nuluur { min-height: 0 })
+    // dan in uitgeklapte staat. Om de ECHTE, uitgeklapte kaartjeshoogte te meten, wordt de
+    // uitgeklapt-klasse hier heel even (onzichtbaar, binnen dezelfde animatie-frame) toegepast,
+    // gemeten, en weer teruggezet — zodat de gebruiker niets van deze tijdelijke wissel merkt.
+    const stondAlUitgeklapt = kolomEl.classList.contains('pr-kaarten-kolom-uitgeklapt');
+    if (!stondAlUitgeklapt) {
+      kolomEl.classList.remove('pr-kaarten-kolom-ingeklapt');
+      kolomEl.classList.add('pr-kaarten-kolom-uitgeklapt');
+      // Transities tijdelijk uitzetten zodat de meting niet midden in een (onzichtbare, want dit
+      // gebeurt in dezelfde frame) animatie plaatsvindt, en niets zichtbaar overgaat.
+      alleKaarten.forEach(k => k.style.transition = 'none');
+    }
+
     // Meet de werkelijke pixel-afstand van de bovenkant van de kolom tot de onderkant van het
     // linker eindbalkje — dat is het exacte doel-niveau waarop de harmonica moet uitkomen.
     const kolomTop = kolomEl.getBoundingClientRect().top;
@@ -5193,35 +5208,43 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
     const doelHoogteInKolom = linksBalkjeOnder - kolomTop;
 
     // Meet de werkelijke hoogte van een los kaartje (incl. de standaard 4px marge), rechtstreeks
-    // uit de DOM — geen vaste aanname zoals "68px", maar de daadwerkelijke gerenderde grootte.
+    // uit de DOM — geen vaste aanname zoals "68px", maar de daadwerkelijke gerenderde grootte,
+    // nu correct gemeten in (tijdelijk geforceerde) uitgeklapte staat.
     const eersteKaartHoogte = alleKaarten[0].getBoundingClientRect().height;
     const standaardStap = eersteKaartHoogte + 4;
 
     // Hoogte die de harmonica zou hebben als ALLE marges gewoon de standaard 4px zouden zijn.
     const hoogteNormaal = eersteKaartHoogte + (alleKaarten.length - 1) * standaardStap;
     let teCompenseren = hoogteNormaal - doelHoogteInKolom;
-    if (teCompenseren <= 0) return; // harmonica past sowieso al, geen aanpassing nodig
 
-    // Maximale overlap per marge (regel 4/5: 2 tot 10px was het idee, maar om ook grotere
-    // verschillen op te kunnen vangen zonder de klikbaarheid te verliezen, staat hier een ruimere,
-    // praktische grens van 0.55 kaartje-hoogte per marge — zelfde grens als eerder afgesproken).
-    const maxCompensatiePerMarge = 0.55 * eersteKaartHoogte;
-    const maxBeschikbareMarges = alleKaarten.length - 1;
-    const nodigeMarges = Math.min(maxBeschikbareMarges, Math.ceil(teCompenseren / maxCompensatiePerMarge));
+    if (teCompenseren > 0) {
+      // Maximale overlap per marge: 0.55 kaartje-hoogte, zoals afgesproken.
+      const maxCompensatiePerMarge = 0.55 * eersteKaartHoogte;
+      const maxBeschikbareMarges = alleKaarten.length - 1;
+      const nodigeMarges = Math.min(maxBeschikbareMarges, Math.ceil(teCompenseren / maxCompensatiePerMarge));
 
-    // Verdeel het tekort over de laatste 'nodigeMarges' kaartjes (van achteren naar voren geteld),
-    // elk begrensd op zijn eigen maximum — en pas dit NU, eenmalig, toe als CSS-variabele. Dit
-    // gebeurt vóórdat de gebruiker ooit op uitklappen klikt; er is geen aparte "correctie na de
-    // animatie" meer nodig, want de harmonica weet al bij het begin van de animatie waar hij moet
-    // stoppen.
-    let resterend = teCompenseren;
-    for (let m = 0; m < nodigeMarges; m++) {
-      const restendeMarges = nodigeMarges - m;
-      const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, resterend / restendeMarges);
-      const idxVanKaart = alleKaarten.length - 1 - m; // van achteren naar voren
-      const kaartEl = alleKaarten[idxVanKaart];
-      if (kaartEl) kaartEl.style.setProperty('--pr-kaart-overlap-uit', `${(4 - deelVoorDezeMarge).toFixed(2)}px`);
-      resterend -= deelVoorDezeMarge;
+      // Verdeel het tekort over de laatste 'nodigeMarges' kaartjes (van achteren naar voren
+      // geteld), elk begrensd op zijn eigen maximum.
+      let resterend = teCompenseren;
+      for (let m = 0; m < nodigeMarges; m++) {
+        const restendeMarges = nodigeMarges - m;
+        const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, resterend / restendeMarges);
+        const idxVanKaart = alleKaarten.length - 1 - m; // van achteren naar voren
+        const kaartEl = alleKaarten[idxVanKaart];
+        if (kaartEl) kaartEl.style.setProperty('--pr-kaart-overlap-uit', `${(4 - deelVoorDezeMarge).toFixed(2)}px`);
+        resterend -= deelVoorDezeMarge;
+      }
+    }
+
+    // Zet de tijdelijke uitgeklapte staat weer terug naar ingeklapt (de gebruiker moet nog op
+    // uitklappen klikken) en herstel de transities.
+    if (!stondAlUitgeklapt) {
+      kolomEl.classList.remove('pr-kaarten-kolom-uitgeklapt');
+      kolomEl.classList.add('pr-kaarten-kolom-ingeklapt');
+      // Forceer een reflow vóór het herstellen van de transitie, zodat de browser de teruggezette
+      // ingeklapte stand niet zelf als "animatie" gaat afspelen.
+      void kolomEl.offsetHeight;
+      alleKaarten.forEach(k => k.style.transition = '');
     }
   });
 }
