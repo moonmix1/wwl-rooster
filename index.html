@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 07:25 — pijltje (▾) verwijderd uit het statusveld: overbodig nu er sowieso op het hele veld (of hele kaart rechts) geklikt/dubbelgeklikt kan worden om het menu te openen -->
+<!-- upload-poging: 6 aug 2026, 07:35 — dubbelklik werkt nu op de HELE kaart rechts (niet meer alleen op de status-tekst), enkele klik blijft ongewijzigd werken -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5156,6 +5156,12 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
 
   const kol2KaartjesHtml = namenNulUur.map((naam, idx) => {
     const h = naamHash(naam);
+    // Status en veilige naam ook hier beschikbaar (naast binnen renderUrenRij), nodig voor de
+    // dubbelklik-handler die straks op de HELE kaart komt te staan (niet meer alleen op de
+    // status-tekst zelf).
+    const statusVoorDblKlik = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status');
+    const naamVeiligVoorDblKlik = escHtml(naam).replace(/'/g,"&#39;");
+    const kol2KolomIdVoorDblKlik = `pr-kaarten-kolom-${weekKey}`;
     const isBalkjeKaart = idx === namenNulUur.length - 1; // het kaartje waar het balkje aan vastzit (regel 6)
     // Het "kaartenspel"-gevoel (willekeurige hoek/schuif, ingeklapte overlap) geldt altijd zodra
     // er meer dan 1 naam in de rechterkolom staat — dat is volledig onafhankelijk van de
@@ -5225,7 +5231,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       ? '<div class="pr-eindbalkje-rechts" style="height:8px;border-radius:4px;margin:6px 4px 0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
       : '';
     const kaartKlasse = isBalkjeKaart ? 'pr-kaart pr-balkje-kaart' : 'pr-kaart';
-    return `${balkjeBoven}<div class="${kaartKlasse}" data-pr-idx="${idx}" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}${balkjeOnder}</div>`;
+    return `${balkjeBoven}<div class="${kaartKlasse}" data-pr-idx="${idx}" ondblclick="event.stopPropagation();prStatusDblKlikRechts('${kol2KolomIdVoorDblKlik}','${weekKey}','${naamVeiligVoorDblKlik}','${statusVoorDblKlik}')" style="--pr-kaart-hoek:${hoek}deg;--pr-kaart-schuif:${zijdelingseSchuif}px;--pr-kaart-overlap:${overlapMarge}px;--pr-kaart-hoek-uit:${hoekUitgeklapt}deg;--pr-kaart-schuif-uit:${schuifUitgeklapt}px;--pr-kaart-overlap-uit:${overlapUitgeklapt}px;position:relative;z-index:${idx + 1};transition:transform 1.5s ease-out 150ms, margin-top 1.5s ease-out 150ms">${rijHtml}${balkjeOnder}</div>`;
   }).join('');
   const kol2KolomId = `pr-kaarten-kolom-${weekKey}`;
   const kol2Html = namenNulUur.length
