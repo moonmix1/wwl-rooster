@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 11:35 — margin-left werkte niet door justify-content:center, vervangen door padding-left (14px); kok-icoon 2px hoger (top:0); kaartje krijgt min-height:60px + flex-centrering, zelfde hoogte als normale cellen -->
+<!-- upload-poging: 6 aug 2026, 11:45 — min-height:60px teruggedraaid (gaf lelijk extra stuk paars onderaan i.p.v. organisch groter kaartje); kaartje weer op zijn natuurlijke, tekst-bepaalde hoogte -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4895,7 +4895,7 @@ async function renderPapierRooster(voorafGeladenData) {
               ${onderwaterHtml}
               <span class="pr-kok-duik-reis">
                 <span class="pr-kok-zwevend-kaartje">
-                  <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative;min-height:60px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">
+                  <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative">
                     <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
                   </div>
                 </span>
