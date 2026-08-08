@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 02:45 — animatie-transitie fix (bewaar+herstel exacte oorspronkelijke waarde i.p.v. leegmaken); tijdelijke console.log-debug toegevoegd om de 1.5-kaartje-afwijking te achterhalen -->
+<!-- upload-poging: 6 aug 2026, 03:00 — console.log vervangen door zichtbaar debug-tekstblokje boven de rechterkolom (groen op zwart), zodat de gemeten waarden op mobiel afleesbaar zijn zonder devtools -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5226,11 +5226,11 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
       const maxCompensatiePerMarge = 0.55 * eersteKaartHoogte;
       const maxBeschikbareMarges = alleKaarten.length - 1;
       const nodigeMarges = Math.min(maxBeschikbareMarges, Math.ceil(teCompenseren / maxCompensatiePerMarge));
-      console.log('[PR-DEBUG] doelHoogteInKolom:', doelHoogteInKolom, 'eersteKaartHoogte:', eersteKaartHoogte, 'hoogteNormaal:', hoogteNormaal, 'teCompenseren:', teCompenseren, 'nodigeMarges:', nodigeMarges, 'aantalKaarten:', alleKaarten.length);
 
       // Verdeel het tekort over de laatste 'nodigeMarges' kaartjes (van achteren naar voren
       // geteld), elk begrensd op zijn eigen maximum.
       let resterend = teCompenseren;
+      const debugMarges = [];
       for (let m = 0; m < nodigeMarges; m++) {
         const restendeMarges = nodigeMarges - m;
         const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, resterend / restendeMarges);
@@ -5238,9 +5238,17 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
         const kaartEl = alleKaarten[idxVanKaart];
         const margeWaarde = (4 - deelVoorDezeMarge).toFixed(2);
         if (kaartEl) kaartEl.style.setProperty('--pr-kaart-overlap-uit', `${margeWaarde}px`);
-        console.log('[PR-DEBUG] marge', m, 'idxVanKaart:', idxVanKaart, 'margeWaarde:', margeWaarde);
+        debugMarges.push(`idx${idxVanKaart}:${margeWaarde}px`);
         resterend -= deelVoorDezeMarge;
       }
+
+      // TIJDELIJK DEBUG-BLOKJE: toont de gemeten/berekende waarden zichtbaar op het scherm (i.p.v.
+      // console.log, want devtools zijn lastig te bereiken op mobiel). Verwijder dit blok zodra
+      // het probleem is opgelost.
+      const debugDiv = document.createElement('div');
+      debugDiv.style.cssText = 'background:#000;color:#0f0;font-size:0.6rem;font-family:monospace;padding:6px;margin-bottom:6px;white-space:pre-wrap;border:1px solid #0f0;';
+      debugDiv.textContent = `DEBUG: doelHoogte=${doelHoogteInKolom.toFixed(1)} eersteKaartH=${eersteKaartHoogte.toFixed(1)} standaardStap=${standaardStap.toFixed(1)} hoogteNormaal=${hoogteNormaal.toFixed(1)} teCompenseren=${teCompenseren.toFixed(1)} nodigeMarges=${nodigeMarges} aantalKaarten=${alleKaarten.length} marges=[${debugMarges.join(', ')}]`;
+      kolomEl.parentElement.insertBefore(debugDiv, kolomEl);
     }
 
     // Zet de tijdelijke uitgeklapte staat weer terug naar ingeklapt (de gebruiker moet nog op
