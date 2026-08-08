@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 08:28 — "Uren per week"-tekst voor actuele week nu geel (#d9bc00), zelfde als "ACTUELE WEEK"; verleden/toekomst behouden expliciet wit -->
+<!-- upload-poging: 6 aug 2026, 08:38 — kok-vrijwilliger in het rooster is nu paars (ondersteuner-kleur) i.p.v. blauw; gast/oud bewoner/etc. die kok zijn behouden hun eigen status-kleur -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4723,7 +4723,13 @@ async function renderPapierRooster(voorafGeladenData) {
 
   const STATUS_KLASSEN = { gast: 'pr-cel-gast', gast_week: 'pr-cel-gvdw', oud_bewoner: 'pr-cel-oud', extern: 'pr-cel-ext', vrijwilliger: 'pr-cel-vw', inwerk: 'pr-cel-gast' };
   const STATUS_TEKST = { gast: 'gast', gast_week: 'gast vd week', oud_bewoner: 'oud bewoner', extern: 'ondersteuner', vrijwilliger: 'vrijwilliger', inwerk: 'gast' };
-  const statusKlasse = (status) => STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
+  const statusKlasse = (status, celLabel) => {
+    // Uitzondering: een vrijwilliger die kok is, mag niet blauw zijn — die krijgt dezelfde
+    // paarse kleur als "ondersteuner". Bij elke andere status (gast, oud bewoner, etc.) blijft
+    // de oorspronkelijke kleur gewoon staan, ook als die persoon kok is.
+    if (celLabel === 'kok' && status === 'vrijwilliger') return STATUS_KLASSEN.extern;
+    return STATUS_KLASSEN[status] || STATUS_KLASSEN.vrijwilliger;
+  };
   const statusLabelTekst = (status) => STATUS_TEKST[status] || STATUS_TEKST.vrijwilliger;
 
   const naamRegelHtml = (naam, status, celLabel) => {
@@ -4762,7 +4768,7 @@ async function renderPapierRooster(voorafGeladenData) {
         const status2 = info.naam2 ? (heeftSpecialeFunctie(info.naam2) ? 'extern' : (statusVoorRij[info.naam2] || bewonersLaatsteStatus[info.naam2] || 'vrijwilliger')) : null;
         if (!info.naam2) {
           // Eén naam: hele cel in die kleur.
-          cellClasses = statusKlasse(status1);
+          cellClasses = statusKlasse(status1, info.label1);
           const heeftExtra = info.label1;
           const naamTekst = naamRegelHtml(info.naam1, status1, info.label1);
           cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
@@ -4773,10 +4779,10 @@ async function renderPapierRooster(voorafGeladenData) {
           // naadloos aan elkaar. Het lijntje komt exact op de kleurgrens te staan.
           cellHtml = `
             <div class="pr-tweemans-wrap" style="display:flex;flex-direction:column;margin:-4px -8px;flex:1;position:relative;gap:3px">
-              <div class="${statusKlasse(status1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px;overflow:hidden;position:relative">
+              <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;flex:1;border-radius:4px;overflow:hidden;position:relative">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam1, status1, info.label1)}</span>
               </div>
-              <div class="${statusKlasse(status2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px;overflow:hidden">
+              <div class="${statusKlasse(status2, info.label2)}" style="padding:4px 8px;line-height:1.15;flex:1;position:relative;border-radius:4px;overflow:hidden">
                 <span class="pr-naam" style="font-size:0.76rem">${naamRegelHtml(info.naam2, status2, info.label2)}</span>
               </div>
             </div>`;
