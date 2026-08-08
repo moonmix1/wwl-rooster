@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 04:55 — GROVE TEST: veiligheidsmarge naar 3.5 kaartje (was 1), puur om te zien of de ~2.5-kaartje-afwijking daarmee wegvalt, als tussenstap richting een definitieve oplossing -->
+<!-- upload-poging: 6 aug 2026, 05:05 — plafond gevonden (10px max liet weinig ruimte voor de eerdere veiligheidsmarge-verhoging): aantal veer-kaartjes van 4→8, max marge van 10→20px, geeft nu ~60px totale compensatiecapaciteit i.p.v. ~36px -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5133,8 +5133,8 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   // lopen ze op richting 10px. Een kleine VEILIGHEIDSMARGE wordt bewust toegevoegd aan het
   // effectieve verschil: liever een fractie te veel compensatie (balkje soms een fractie hoger
   // dan strikt nodig) dan het risico dat het balkje ook maar 1px onder het linker niveau komt.
-  const AANTAL_VEER_KAARTJES = Math.min(4, Math.max(0, aantalRechts - 1));
-  const MARGE_MIN = 1, MARGE_MAX = 10;
+  const AANTAL_VEER_KAARTJES = Math.min(8, Math.max(0, aantalRechts - 1));
+  const MARGE_MIN = 1, MARGE_MAX = 20;
   const VEILIGHEIDSMARGE_KAARTJES = 3.5; // GROVE TEST: was 1, nu +2.5 extra (dus 3.5 totaal) om te zien of dat de ~2.5-kaartje-afwijking wegwerkt
   const veerMarges = new Array(AANTAL_VEER_KAARTJES).fill(4); // index 0 = marge vlak vóór het balkje-kaartje
   if (rechtsHeeftMeerDanLinks && AANTAL_VEER_KAARTJES > 0) {
