@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 09:55 — teruggedraaid: ACTUELE WEEK weer fit-content (compact); UREN PER WEEK krijgt nu diezelfde fit-content-wrapper i.p.v. volle breedte, zodat beide even smal/breed zijn -->
+<!-- upload-poging: 6 aug 2026, 10:05 — Rooster A: rand van ACTUELE WEEK-badge nu geel (#b39a1f, zelfde als de tekst), was crème-wit -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -1475,7 +1475,7 @@ function renderWeekALabel() {
   const magVolgende = (weekAOffset + 1) <= MAX_SCROLL_WEKEN;
 
   const achtergrondBlok = weekAOffset === 0 ? '#1e5236' : (toekomst ? '#051a20' : '#170c05');
-  const randKleur = weekAOffset === 0 ? '#f5e8c8' : (toekomst ? '#0e5865' : '#5c2f14');
+  const randKleur = weekAOffset === 0 ? '#b39a1f' : (toekomst ? '#0e5865' : '#5c2f14');
   const tekstInBlok = kleur;
 
   const inhoudHtml = weekAOffset === 0
