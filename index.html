@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 08:05 — actuele-week badge nu paars-wit (#6b2fa8) i.p.v. oranje-wit; verleden/toekomst-weken blijven hun eigen afzetlint-kleuren behouden -->
+<!-- upload-poging: 6 aug 2026, 08:20 — badge-tekst "Uren deze week" gewijzigd naar "Uren per week" (statische én dynamische versie) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -236,7 +236,7 @@
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #ffffff; text-transform: uppercase;
-    background: #6b2fa8; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
+    background: #402860; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     filter: brightness(0.75);
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25; }
@@ -245,12 +245,12 @@
      content wel — zo blijven de hoeken netjes rond. */
   .pr-uren-titel::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: repeating-linear-gradient(45deg, #6b2fa8 0px, #6b2fa8 6px, #ffffff 6px, #ffffff 12px);
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #ffffff 6px, #ffffff 12px);
     box-shadow: inset 0 0 6px 1px rgba(255,255,255,1);
     z-index: 0;
   }
   .pr-uren-titel::after {
-    content: ''; position: absolute; inset: 3px; border-radius: 2px; background: #6b2fa8; z-index: 0;
+    content: ''; position: absolute; inset: 3px; border-radius: 2px; background: #402860; z-index: 0;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
   }
   /* Bij een niet-actuele week (verleden/toekomst) neemt de "Uren deze week"-badge dezelfde
@@ -917,7 +917,7 @@
         </div>
       </div>
       <div class="pr-uren-kolom">
-        <div class="pr-uren-titel"><span style="position:relative;z-index:1;display:block">Uren deze week</span></div>
+        <div class="pr-uren-titel"><span style="position:relative;z-index:1;display:block">Uren per week</span></div>
         <div id="pr-uren-lijst"></div>
         <div class="pr-gasten-hint">🏠 = beheerderswoning</div>
       </div>
@@ -4875,7 +4875,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const startDatum = new Date(weekKey + 'T00:00:00');
     const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
     const weekLabel = `wo ${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – di ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
-    titelEl.innerHTML = `<span style="position:relative;z-index:1;display:block">Uren deze week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span></span>`;
+    titelEl.innerHTML = `<span style="position:relative;z-index:1;display:block">Uren per week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span></span>`;
   }
 
   const uren = {}; // naam -> totaal uren deze week
