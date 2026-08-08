@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 07:00 — BUG GEVONDEN: kaartenspel-look (random hoek/schuif/overlap) was per ongeluk gekoppeld aan rechtsHeeftMeerDanLinks, waardoor bij links>rechts (14/13, 15/12 etc) alles ten onrechte kaarsrecht bleef, ook ingeklapt. Nu losgekoppeld: kaartenspel-look geldt altijd bij >1 naam rechts, compensatie alleen als rechts>links -->
+<!-- upload-poging: 6 aug 2026, 07:15 — status-opschuiving-schaal gecorrigeerd: 1 regeltje is bij deze kleine tekst (0.44rem) ongeveer 8px, niet 14px zoals eerder aangenomen; nieuwe waarden 4/8/12px i.p.v. 7-21px -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5001,7 +5001,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     return a.localeCompare(b, 'nl');
   });
 
-  const renderUrenRij = (naam, idx, lijst, toonBalkjes = true, isRechterkolom = false) => {
+  const renderUrenRij = (naam, idx, lijst, toonBalkjes = true, isRechterkolom = false, statusOpschuivingPx = 0) => {
     const status = heeftSpecialeFunctie(naam) ? 'extern' : (statusMap[naam] || bewonersLaatsteStatus[naam] || 'geen_status');
     const klasse = STATUS_KLASSEN[status] || STATUS_KLASSEN.geen_status;
     const naamVeilig = escHtml(naam).replace(/'/g,"&#39;");
@@ -5022,11 +5022,15 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const statusDblKlik = isRechterkolom
       ? `event.stopPropagation();prStatusDblKlikRechts('${kol2KolomIdVoorStatus}','${weekKey}','${naamVeilig}','${status}')`
       : `event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')`;
+    // Bij een strak ingedrukte veer (statusOpschuivingPx > 0) wordt de status-tekst een klein
+    // beetje omhoog getrokken binnen zijn eigen kaartje — zo blijft die minder diep onder het
+    // volgende, overlappende kaartje verdwijnen en dus makkelijker te raken/dubbelklikken.
+    const statusMarginTop = 0 - statusOpschuivingPx;
     const statusVeld = beheer
-      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0;position:relative;cursor:pointer" onclick="${statusOnClick}" ${statusDblKlik ? `ondblclick="${statusDblKlik}"` : ''}>
+      ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:${statusMarginTop}px;position:relative;cursor:pointer" onclick="${statusOnClick}" ${statusDblKlik ? `ondblclick="${statusDblKlik}"` : ''}>
            ${huisjeIcoon}${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
          </span>`
-      : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:0">${huisjeIcoon}${statusTekstZichtbaar}</span>`;
+      : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:${statusMarginTop}px">${huisjeIcoon}${statusTekstZichtbaar}</span>`;
     // Grootte en kleur schalen beide stuksgewijs-lineair, elk met hun eigen controlepunten.
     const urenVoorGrootte = Math.max(0, Math.min(40, uren[naam]));
     const groottePunten = [[0,20],[8,25],[40,52]];
@@ -5163,7 +5167,29 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const zijdelingseSchuif = (heeftKaartenspelLook && !isBalkjeKaart) ? ((h % 9) - 4) : 0;
     // Ingeklapte overlap: normale kaartenspel-stapeling, ongewijzigd.
     const overlapMarge = idx === 0 ? 0 : (heeftKaartenspelLook ? -(21 + (h % 17)) : 0);
-    const rijHtmlVolledig = renderUrenRij(naam, idx, namenNulUur, false, true);
+    // Hoe strakker de veer bij DIT kaartje al ingedrukt is (dus hoe negatiever zijn eigen
+    // overlapUitgeklapt-marge straks wordt), hoe meer de status-tekst binnen dat kaartje al een
+    // beetje omhoog kruipt — zodat die minder diep onder het volgende kaartje verdwijnt en dus
+    // makkelijker te (dubbel)klikken blijft. Schaal: bij de eerste tekenen van een strakke veer
+    // (rond 12px overlap) ongeveer een half regeltje (7px); bij een zeer strakke veer (rond 25px+
+    // overlap) ongeveer anderhalf regeltje (21px). Puur gebaseerd op de AL berekende overlap van
+    // dit specifieke kaartje (niet op de links/rechts-ratio), dus schaalt vanzelf geleidelijk mee.
+    let statusOpschuivingPx = 0;
+    if (typeof veerMarges !== 'undefined' && veerMarges.length > 0) {
+      const afstandTotBalkjeVoorOpschuiving = namenNulUur.length - 1 - idx;
+      if (!isBalkjeKaart && afstandTotBalkjeVoorOpschuiving - 1 >= 0 && afstandTotBalkjeVoorOpschuiving - 1 < veerMarges.length) {
+        const eigenOverlapPx = 4 - veerMarges[afstandTotBalkjeVoorOpschuiving - 1]; // hoe groot de overlap van DIT kaartje is
+        // De status-tekst is klein (font-size 0.44rem ≈ 7px), dus 1 "regeltje" is ongeveer 8px,
+        // een half regeltje ongeveer 4px. Drempels afgestemd op het daadwerkelijke bereik van
+        // eigenOverlapPx bij deze balkje-formule (ongeveer 20-30px): onder 20px geen opschuiving,
+        // 20-22px een half regeltje (4px), 22-29px een heel regeltje (8px), 29px+ anderhalf
+        // regeltje (12px).
+        if (eigenOverlapPx >= 20 && eigenOverlapPx < 22) statusOpschuivingPx = 4;
+        else if (eigenOverlapPx >= 22 && eigenOverlapPx < 29) statusOpschuivingPx = 8;
+        else if (eigenOverlapPx >= 29) statusOpschuivingPx = 12;
+      }
+    }
+    const rijHtmlVolledig = renderUrenRij(naam, idx, namenNulUur, false, true, statusOpschuivingPx);
     let balkjeBoven = '';
     let rijHtml = rijHtmlVolledig;
     if (idx === 0) {
