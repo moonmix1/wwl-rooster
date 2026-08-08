@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 07:15 — status-opschuiving-schaal gecorrigeerd: 1 regeltje is bij deze kleine tekst (0.44rem) ongeveer 8px, niet 14px zoals eerder aangenomen; nieuwe waarden 4/8/12px i.p.v. 7-21px -->
+<!-- upload-poging: 6 aug 2026, 07:25 — pijltje (▾) verwijderd uit het statusveld: overbodig nu er sowieso op het hele veld (of hele kaart rechts) geklikt/dubbelgeklikt kan worden om het menu te openen -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5026,9 +5026,11 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // beetje omhoog getrokken binnen zijn eigen kaartje — zo blijft die minder diep onder het
     // volgende, overlappende kaartje verdwijnen en dus makkelijker te raken/dubbelklikken.
     const statusMarginTop = 0 - statusOpschuivingPx;
+    // Het pijltje (▾) is verwijderd: nu klikken/dubbelklikken op het hele statusveld (of, rechts,
+    // de hele kaart) al het menu opent/de kolom toggelt, is een apart klik-icoontje overbodig.
     const statusVeld = beheer
       ? `<span class="pr-status-label pr-uren-status-plek" style="margin-top:${statusMarginTop}px;position:relative;cursor:pointer" onclick="${statusOnClick}" ${statusDblKlik ? `ondblclick="${statusDblKlik}"` : ''}>
-           ${huisjeIcoon}${statusTekstZichtbaar} <span style="font-size:1em;line-height:1;vertical-align:middle;margin-left:4px;display:inline-block">▾</span>
+           ${huisjeIcoon}${statusTekstZichtbaar}
          </span>`
       : `<span class="pr-status-label pr-uren-status-plek" style="margin-top:${statusMarginTop}px">${huisjeIcoon}${statusTekstZichtbaar}</span>`;
     // Grootte en kleur schalen beide stuksgewijs-lineair, elk met hun eigen controlepunten.
