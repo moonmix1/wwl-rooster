@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 10:45 — transparantie van de onderwaterscène fors verder verlaagd (0.5-0.55 naar 0.20-0.22 alpha) om te testen of het paars daardoor wél goed doorschijnt -->
+<!-- upload-poging: 6 aug 2026, 11:00 — fundamenteel anders: kok-kaartje is nu de EXACTE 2-mans-kaartje-opmaak (volle paarse achtergrond/gloed), dat zwevend BOVENOP de weer-volledig-dekkende onderwaterscène staat, i.p.v. te proberen paars door de scène heen te laten schijnen; buitenste cel blijft voor koks neutraal -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -170,7 +170,7 @@
   /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
   .pr-kok-onderwater-scene {
     position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
-    background: linear-gradient(180deg, rgba(10,61,92,0.22) 0%, rgba(14,90,122,0.20) 45%, rgba(10,74,104,0.22) 100%);
+    background: linear-gradient(180deg, #0a3d5c 0%, #0e5a7a 45%, #0a4a68 100%);
     z-index: 0; pointer-events: none;
   }
   .pr-kok-bel {
@@ -4843,11 +4843,13 @@ async function renderPapierRooster(voorafGeladenData) {
         const status1 = heeftSpecialeFunctie(info.naam1) ? 'extern' : (statusVoorRij[info.naam1] || bewonersLaatsteStatus[info.naam1] || 'vrijwilliger');
         const status2 = info.naam2 ? (heeftSpecialeFunctie(info.naam2) ? 'extern' : (statusVoorRij[info.naam2] || bewonersLaatsteStatus[info.naam2] || 'vrijwilliger')) : null;
         if (!info.naam2) {
-          // Eén naam: hele cel in die kleur.
-          cellClasses = statusKlasse(status1, info.label1);
           const heeftExtra = info.label1;
           const naamTekst = naamRegelHtml(info.naam1, status1, info.label1);
           const isKok1Mans = info.label1 === 'kok';
+          // Bij een kok blijft de buitenste cel neutraal/donker: de paarse kleur zit nu op het
+          // zwevende kaartje zelf (zie hieronder), niet meer op de hele cel — anders zou het
+          // dubbel-paars en rommelig ogen naast de onderwaterscène.
+          cellClasses = isKok1Mans ? '' : statusKlasse(status1, info.label1);
           if (isKok1Mans) {
             // Kleine, stabiele hash op de naam voor lichte variatie tussen verschillende koks
             // (posities/timing van bellen en visjes), zonder dat het bij elke render willekeurig
@@ -4873,11 +4875,17 @@ async function renderPapierRooster(voorafGeladenData) {
               ${visHtml}
               <span class="pr-kok-duiker" style="bottom:8%;right:12%">🤿</span>
             </div>`;
+            // Het zwevende kaartje is nu de EXACTE opmaak van een normale 2-mans-kaartje-helft
+            // (zelfde klasse, padding, border-radius, line-height) — dus volledig paars/gloed,
+            // net zo herkenbaar als in een gewone 2-mans-cel, en niet vermengd/doorschijnend met
+            // de onderwaterscène erachter.
             cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
               ${onderwaterHtml}
               <span class="pr-kok-duik-reis">
                 <span class="pr-kok-zwevend-kaartje">
-                  <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+                  <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative">
+                    <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+                  </div>
                 </span>
               </span>
             </div>`;
