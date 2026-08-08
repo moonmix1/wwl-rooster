@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 14:05 — "OUD"/"NIEUW"-herhalende tekst (::before rondom .pr-layout) ook verwijderd; badges blijven ongewijzigd -->
+<!-- upload-poging: 6 aug 2026, 14:15 — tekst "Vorige week"/"2 weken geleden"/"Over 1 week" etc. nu zelfde lettergrootte (1.15rem) en stijl (uppercase, letter-spacing) als "ACTUELE WEEK" -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4759,7 +4759,7 @@ async function renderPapierRooster(voorafGeladenData) {
           </span>
         </div>`
       : `<div style="width:100%;text-align:center">
-          <div style="color:${kleur};font-weight:800;white-space:nowrap;letter-spacing:0.05em">${offsetTekst}</div>
+          <div style="color:${kleur};font-weight:800;font-size:1.15rem;text-transform:uppercase;white-space:nowrap;letter-spacing:0.08em">${offsetTekst}</div>
           <div style="font-weight:800;font-size:0.95rem;line-height:1.2em;white-space:nowrap;color:${kleur};margin-top:3px">${prFormatDatum(labelStart)} – ${prFormatDatum(labelEind)}</div>
         </div>`;
     labelEl.innerHTML = `<div style="width:100%">${middenHtml}</div>`;
