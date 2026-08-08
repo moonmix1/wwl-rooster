@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 09:25 — "ACTUELE WEEK"-badge herbouwd met exact dezelfde structuur (VLC-rand, gele tekst, gloed) als "Uren per week"-badge, via nieuwe .pr-actuele-week-badge klasse -->
+<!-- upload-poging: 6 aug 2026, 09:35 — beide badges nu min-width:220px/min-height:62px voor gelijke absolute afmeting; maanden afgekort (short i.p.v. long) bij "Uren per week", consistent met "ACTUELE WEEK" -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -234,7 +234,8 @@
     background: #402860; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     filter: brightness(0.75);
-    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25; }
+    letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
+    min-width: 220px; min-height: 62px; box-sizing: border-box; }
   /* Gestreepte "VLC-rand" als een losse laag erachter i.p.v. border-image: border-image werkt
      niet samen met afgeronde hoeken (border-radius), een gewone background-image achter de
      content wel — zo blijven de hoeken netjes rond. */
@@ -254,7 +255,8 @@
     background: #402860; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     filter: brightness(0.75);
-    letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25; }
+    letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
+    min-width: 220px; min-height: 62px; box-sizing: border-box; }
   .pr-actuele-week-badge::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
     background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #ffffff 6px, #ffffff 12px);
@@ -4896,7 +4898,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
   if (titelEl) {
     const startDatum = new Date(weekKey + 'T00:00:00');
     const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
-    const weekLabel = `wo ${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})} – di ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'long'})}`;
+    const weekLabel = `wo ${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} – di ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}`;
     titelEl.innerHTML = `<span style="position:relative;z-index:1;display:block">Uren per week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span></span>`;
   }
 
