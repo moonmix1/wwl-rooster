@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 11:00 — fundamenteel anders: kok-kaartje is nu de EXACTE 2-mans-kaartje-opmaak (volle paarse achtergrond/gloed), dat zwevend BOVENOP de weer-volledig-dekkende onderwaterscène staat, i.p.v. te proberen paars door de scène heen te laten schijnen; buitenste cel blijft voor koks neutraal -->
+<!-- upload-poging: 6 aug 2026, 11:10 — kok-icoon-positie voor het zwevende kaartje specifiek aangepast (top:2px i.p.v. de algemene 18px), zodat de koksmuts weer bovenaan het kleinere kaartje uitkomt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -167,6 +167,12 @@
   .pr-eenmans-wrap .pr-naam-regel-top { position: static; }
   .pr-eenmans-wrap .pr-cel-label-rij { position: static; margin-top: 6px; }
   .pr-eenmans-wrap .pr-kok-label { top: 18px; }
+  /* Specifiek voor het ZWEVENDE kok-kaartje (binnen de onderwaterscène): het icoon zit hier in
+     een kleiner, eigen kaartje i.p.v. de volle, gecentreerde cel — daardoor moet de top-offset
+     opnieuw afgestemd worden, zodat de bovenkant van de koksmuts precies in de bovenrand van dit
+     kleinere kaartje uitkomt (in plaats van veel te laag, wat er zonder deze regel gebeurde).
+     Overschrijft de algemene 18px hierboven via hogere specificiteit (2 klassen i.p.v. 1). */
+  .pr-kok-zwevend-kaartje .pr-kok-label { top: 2px; }
   /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
   .pr-kok-onderwater-scene {
     position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
