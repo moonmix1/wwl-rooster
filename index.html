@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 07:35 — dubbelklik werkt nu op de HELE kaart rechts (niet meer alleen op de status-tekst), enkele klik blijft ongewijzigd werken -->
+<!-- upload-poging: 6 aug 2026, 07:45 — dubbelklik werkt nu ook op de HELE rij links (niet meer alleen op de status-tekst), consistent met de rechterkolom-aanpassing van net -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5077,7 +5077,13 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       : !toonBalkjes ? ''
       : (vorigeNaam !== null && uren[vorigeNaam] !== uren[naam]) ? balkjeHtml
       : '';
-    return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px">
+    // Dubbelklik werkt nu op de HELE rij (niet meer alleen op de status-tekst) — maar alleen
+    // voor LINKS: rechts heeft deze handler al op zijn eigen .pr-kaart-wrapper zitten (zie
+    // kol2KaartjesHtml verderop), dus die hier nogmaals toevoegen zou een dubbele aanroep geven.
+    const rijDblKlik = !isRechterkolom
+      ? `event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')`
+      : '';
+    return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px" ${rijDblKlik ? `ondblclick="${rijDblKlik}"` : ''}>
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span></span>
