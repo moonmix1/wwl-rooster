@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 05:50 — TEST 2: -100px gaf nauwelijks effect, nu +100px (POSITIEF) getest om te checken of specifiek NEGATIEVE margin-top wordt tegengehouden (bijv. door een overflow:hidden ergens) -->
+<!-- upload-poging: 6 aug 2026, 06:05 — BUG GEVONDEN EN OPGELOST: negatieve margin-top op het balkje-kaartje zelf werd genegeerd (bevestigd met +100px vs -100px test); de "duik"-marges zitten nu op de harmonica-kaartjes VÓÓR het balkje-kaartje, niet meer op het balkje-kaartje zelf -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -264,11 +264,6 @@
      style bij het kaartje zelf) zorgt voor een vloeiende animatie tussen beide standen. */
   .pr-kaarten-kolom-ingeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek)) translateX(var(--pr-kaart-schuif)); margin-top: var(--pr-kaart-overlap); }
   .pr-kaarten-kolom-uitgeklapt .pr-kaart { transform: rotate(var(--pr-kaart-hoek-uit)) translateX(var(--pr-kaart-schuif-uit)); margin-top: var(--pr-kaart-overlap-uit); }
-  /* TIJDELIJKE EXTREME TEST: dwingt het balkje-kaartje 100px omhoog te schuiven bij uitklappen,
-     los van alle berekeningen hierboven — als dit GEEN zichtbaar effect heeft, ligt het probleem
-     niet in de marge-berekening zelf maar ergens anders (bijv. een andere regel die wint, of de
-     wijziging komt niet door). */
-  .pr-kaarten-kolom-uitgeklapt .pr-balkje-kaart { margin-top: 100px !important; border: 10px solid #ffff00 !important; z-index: 9999 !important; }
   .pr-uren-rij, .pr-uren-rij * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: transparent !important; touch-action: manipulation !important; outline: none !important; }
@@ -5175,15 +5170,21 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     // harmonica-kaartjes altijd hun eigen waarde (regel 1 en 7 gelden ook uitgeklapt).
     const hoekUitgeklapt = hoek.toFixed(2);
     const schuifUitgeklapt = zijdelingseSchuif.toFixed(2);
-    // Marge komt uit de "veer" hierboven: de laatste AANTAL_VEER_KAARTJES overgangen (dus vóór
-    // het balkje-kaartje en vóór een paar kaartjes daarvoor) krijgen elk hun eigen, begrensde
-    // (2-8px) overlap-waarde. Alle marges daarvoor blijven gewoon de standaard 4px.
+    // Marge komt uit de "veer" hierboven — MAAR: de negatieve "duik"-marges worden hier bewust
+    // NIET op het balkje-kaartje zelf gezet (dat bleek in de praktijk niet te werken: een
+    // negatieve margin-top op juist dát element werd om een onbekende technische reden
+    // grotendeels genegeerd/tegengehouden, getest en bevestigd met een extreme -100px !important
+    // test die nauwelijks effect had, terwijl +100px wél perfect werkte). In plaats daarvan
+    // krijgen de HARMONICA-kaartjes vlak vóór het balkje-kaartje de negatieve marges — exact
+    // hetzelfde mechanisme dat al goed werkte bij de ingeklapte stapeling. Het balkje-kaartje
+    // zelf houdt altijd gewoon zijn standaard 4px marge, en "volgt" passief mee doordat de
+    // kaartjes erboven dichter opeen zijn geschoven.
     const afstandTotBalkje = namenNulUur.length - 1 - idx; // 0 = balkje-kaartje zelf, 1 = kaartje ervoor, enz.
     let overlapUitgeklapt = '4.00';
     if (idx === 0) {
       overlapUitgeklapt = '0';
-    } else if (afstandTotBalkje < veerMarges.length) {
-      overlapUitgeklapt = veerMarges[afstandTotBalkje].toFixed(2);
+    } else if (!isBalkjeKaart && afstandTotBalkje - 1 < veerMarges.length) {
+      overlapUitgeklapt = veerMarges[afstandTotBalkje - 1].toFixed(2);
     }
     const balkjeOnder = isBalkjeKaart
       ? '<div class="pr-eindbalkje-rechts" style="height:8px;border-radius:4px;margin:6px 4px 0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75)"></div>'
