@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 02:30 — kernfout gevonden: kaartje-hoogte werd gemeten in INGEKLAPTE staat (compacter door min-height:0), waardoor alle marge-berekeningen te laag uitvielen en er nauwelijks compensatie werd toegepast; nu wordt kort de uitgeklapte staat gesimuleerd (transities uit) om de echte hoogte te meten, en daarna teruggezet -->
+<!-- upload-poging: 6 aug 2026, 02:45 — animatie-transitie fix (bewaar+herstel exacte oorspronkelijke waarde i.p.v. leegmaken); tijdelijke console.log-debug toegevoegd om de 1.5-kaartje-afwijking te achterhalen -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5193,6 +5193,10 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
     // uitgeklapt-klasse hier heel even (onzichtbaar, binnen dezelfde animatie-frame) toegepast,
     // gemeten, en weer teruggezet — zodat de gebruiker niets van deze tijdelijke wissel merkt.
     const stondAlUitgeklapt = kolomEl.classList.contains('pr-kaarten-kolom-uitgeklapt');
+    // Onthoud de ECHTE, oorspronkelijke inline-transitie van elk kaartje vóórdat die wordt
+    // uitgezet — 'transition = ""' zou die waarde niet terugbrengen (het wist het inline
+    // attribuut leeg in plaats van de vorige waarde te herstellen), dus we bewaren 'm expliciet.
+    const oorspronkelijkeTransities = alleKaarten.map(k => k.style.transition);
     if (!stondAlUitgeklapt) {
       kolomEl.classList.remove('pr-kaarten-kolom-ingeklapt');
       kolomEl.classList.add('pr-kaarten-kolom-uitgeklapt');
@@ -5222,6 +5226,7 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
       const maxCompensatiePerMarge = 0.55 * eersteKaartHoogte;
       const maxBeschikbareMarges = alleKaarten.length - 1;
       const nodigeMarges = Math.min(maxBeschikbareMarges, Math.ceil(teCompenseren / maxCompensatiePerMarge));
+      console.log('[PR-DEBUG] doelHoogteInKolom:', doelHoogteInKolom, 'eersteKaartHoogte:', eersteKaartHoogte, 'hoogteNormaal:', hoogteNormaal, 'teCompenseren:', teCompenseren, 'nodigeMarges:', nodigeMarges, 'aantalKaarten:', alleKaarten.length);
 
       // Verdeel het tekort over de laatste 'nodigeMarges' kaartjes (van achteren naar voren
       // geteld), elk begrensd op zijn eigen maximum.
@@ -5231,7 +5236,9 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
         const deelVoorDezeMarge = Math.min(maxCompensatiePerMarge, resterend / restendeMarges);
         const idxVanKaart = alleKaarten.length - 1 - m; // van achteren naar voren
         const kaartEl = alleKaarten[idxVanKaart];
-        if (kaartEl) kaartEl.style.setProperty('--pr-kaart-overlap-uit', `${(4 - deelVoorDezeMarge).toFixed(2)}px`);
+        const margeWaarde = (4 - deelVoorDezeMarge).toFixed(2);
+        if (kaartEl) kaartEl.style.setProperty('--pr-kaart-overlap-uit', `${margeWaarde}px`);
+        console.log('[PR-DEBUG] marge', m, 'idxVanKaart:', idxVanKaart, 'margeWaarde:', margeWaarde);
         resterend -= deelVoorDezeMarge;
       }
     }
@@ -5244,7 +5251,7 @@ function prBerekenEnPasHarmonicaMargesToe(kolomIdRechts) {
       // Forceer een reflow vóór het herstellen van de transitie, zodat de browser de teruggezette
       // ingeklapte stand niet zelf als "animatie" gaat afspelen.
       void kolomEl.offsetHeight;
-      alleKaarten.forEach(k => k.style.transition = '');
+      alleKaarten.forEach((k, i) => { k.style.transition = oorspronkelijkeTransities[i]; });
     }
   });
 }
