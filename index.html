@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 10:35 — onderwaterscène semi-transparant gemaakt (paarse celkleur schijnt er nu doorheen); grote, trage verticale "duik-reis" (bijna hele celhoogte, 14s cyclus) toegevoegd BOVENOP de bestaande kleine zwevende wiebel -->
+<!-- upload-poging: 6 aug 2026, 10:45 — transparantie van de onderwaterscène fors verder verlaagd (0.5-0.55 naar 0.20-0.22 alpha) om te testen of het paars daardoor wél goed doorschijnt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -170,7 +170,7 @@
   /* ── ZEN-ONDERWATERSCÈNE voor een kok in een 1-mans-vak ── */
   .pr-kok-onderwater-scene {
     position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
-    background: linear-gradient(180deg, rgba(10,61,92,0.55) 0%, rgba(14,90,122,0.5) 45%, rgba(10,74,104,0.55) 100%);
+    background: linear-gradient(180deg, rgba(10,61,92,0.22) 0%, rgba(14,90,122,0.20) 45%, rgba(10,74,104,0.22) 100%);
     z-index: 0; pointer-events: none;
   }
   .pr-kok-bel {
