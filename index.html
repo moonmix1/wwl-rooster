@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 13:55 — badge-streep-verwijdering teruggedraaid (was niet de bedoeling); alleen de GROTE, rooster-brede afzetlint-strepen (::after rondom .pr-layout) blijven weg. "OUD"/"NIEUW"-tekst en badge-streping blijven ongewijzigd -->
+<!-- upload-poging: 6 aug 2026, 14:05 — "OUD"/"NIEUW"-herhalende tekst (::before rondom .pr-layout) ook verwijderd; badges blijven ongewijzigd -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -855,25 +855,11 @@
     outline-offset: 0;
     border-radius: 10px;
   }
-  .week-afzetlint-verleden::before {
-    content: 'OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD ·';
-    position: absolute; top: -20px; left: 0; right: 0;
-    white-space: nowrap; overflow: hidden; text-align: center;
-    font-weight: 800; font-size: 0.62rem; letter-spacing: 0.12em;
-    color: #f87171; pointer-events: none;
-  }
   .week-afzetlint-toekomst {
     position: relative;
     outline: 6px solid transparent;
     outline-offset: 0;
     border-radius: 10px;
-  }
-  .week-afzetlint-toekomst::before {
-    content: 'NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW ·';
-    position: absolute; top: -20px; left: 0; right: 0;
-    white-space: nowrap; overflow: hidden; text-align: center;
-    font-weight: 800; font-size: 0.62rem; letter-spacing: 0.12em;
-    color: #93c5fd; pointer-events: none;
   }
   /* ── GROOT SCHERM: rooster compacter zodat het past zonder scrollen ── */
   @media (min-width: 1100px) and (min-height: 700px) {
