@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 09:05 — "Wis alle namen" verplaatst naar links van "Kopieer rooster" (was ervoor onder de ACTUELE WEEK-badge) -->
+<!-- upload-poging: 6 aug 2026, 09:15 — "Wis alle namen"-knop krijgt nu height:100% i.p.v. vaste 40px, rekt zich automatisch uit tot dezelfde hoogte als "Kopieer rooster" (via de al aanwezige align-items:stretch container) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5535,8 +5535,12 @@ function prWisKnopHtml(weekKey, dinsdag, gedempt) {
   const achtergrondKleur = gedempt ? '#2a1414' : '#8a1c1c';
   const disabledAttr = gedempt ? 'disabled' : '';
   const cursor = gedempt ? 'not-allowed' : 'pointer';
+  // height:100% (i.p.v. een vaste 40px) laat deze knop meegroeien tot exact dezelfde hoogte als
+  // de ernaast staande "Kopieer rooster"-knop — die container heeft align-items:stretch, dus
+  // beide knoppen krijgen automatisch de hoogte van de hoogste van de twee (in de praktijk dus
+  // de kopieer-knop, die over 2 tekstregels loopt).
   return `<button type="button" onclick="prToonWisBevestiging('${weekKey}')" ${disabledAttr}
-    style="width:100%;height:40px;border:2px solid ${randKleur};border-radius:8px;
+    style="width:100%;height:100%;min-height:40px;border:2px solid ${randKleur};border-radius:8px;
     color:${tekstKleur};background:${achtergrondKleur};font-weight:900;font-size:0.65rem;line-height:1.1;cursor:${cursor}">
     🗑 Wis alle<br>namen</button>`;
 }
