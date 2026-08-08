@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 13:35 — geel-streep-fix: basisregel terug naar wit, gele streep nu expliciet via :not(.week-afzetlint-verleden):not(.week-afzetlint-toekomst) i.p.v. te vertrouwen op specificiteit-volgorde, die kennelijk niet werkte zoals verwacht -->
+<!-- upload-poging: 6 aug 2026, 13:55 — badge-streep-verwijdering teruggedraaid (was niet de bedoeling); alleen de GROTE, rooster-brede afzetlint-strepen (::after rondom .pr-layout) blijven weg. "OUD"/"NIEUW"-tekst en badge-streping blijven ongewijzigd -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -855,11 +855,6 @@
     outline-offset: 0;
     border-radius: 10px;
   }
-  .week-afzetlint-verleden::after {
-    content: ''; position: absolute; inset: -6px; z-index: -1; pointer-events: none;
-    background: repeating-linear-gradient(45deg, #8a4a1f 0 18px, #f5f1e8 18px 36px);
-    border-radius: 12px;
-  }
   .week-afzetlint-verleden::before {
     content: 'OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD · OUD ·';
     position: absolute; top: -20px; left: 0; right: 0;
@@ -872,11 +867,6 @@
     outline: 6px solid transparent;
     outline-offset: 0;
     border-radius: 10px;
-  }
-  .week-afzetlint-toekomst::after {
-    content: ''; position: absolute; inset: -6px; z-index: -1; pointer-events: none;
-    background: repeating-linear-gradient(45deg, #1e3a8a 0 18px, #c7d6ec 18px 36px);
-    border-radius: 12px;
   }
   .week-afzetlint-toekomst::before {
     content: 'NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW · NIEUW ·';
