@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 19:40 — VOLLEDIG HERBOUWD naar het juiste concept: geen elastische weerstand meer (dat was een verkeerde interpretatie), maar echt scroll-snap-gedrag zoals het Rad van Fortuin — als je scrollt en stopt met de bovenrand van een badge dicht bij de schermtop, klikt de pagina daar automatisch op vast -->
+<!-- upload-poging: 6 aug 2026, 19:55 — DIAGNOSE: permanent, live debug-blokje onderaan het scherm toegevoegd, toont scroll-teller, gevonden badge-kandidaten en hun afstanden tot de schermtop, om te zien waar het scroll-snap-mechanisme precies vastloopt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5947,22 +5947,31 @@ initSupabase();
   const MAGNETISCH_SNAP_AFSTAND_PX = 60; // alleen snappen als de badge-rand binnen deze afstand van de schermtop staat
   let magnetischScrollTimer = null;
 
+  // TIJDELIJK DEBUG-BLOKJE: toont live de scroll-status en gevonden badges, om te bepalen waar
+  // het vastloopt (scroll-event zelf, badge-detectie, of de scrollBy-actie).
+  const debugEl = document.createElement('div');
+  debugEl.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:0.55rem;font-family:monospace;padding:6px;z-index:99999;max-height:120px;overflow-y:auto;white-space:pre-wrap;border-top:2px solid #0f0;';
+  debugEl.textContent = 'MAGNETISCH-DEBUG: wachten op scroll...';
+  document.body.appendChild(debugEl);
+  let magnetischScrollTeller = 0;
+
   function magnetischVindDichtstbijzijndeBadge() {
     // Verzamelt alle mogelijke "badge"-achtige ankerpunten: de Uren-titel, de Actuele-week-badge,
     // en de week-labels (Vorige/Volgende week etc.) — wat er ook op dit moment zichtbaar/aanwezig is.
     const kandidaten = Array.from(document.querySelectorAll('.pr-uren-titel, .pr-actuele-week-badge, .pr-week-label'));
     let beste = null;
     let besteAfstand = Infinity;
+    const alleAfstanden = [];
     for (const el of kandidaten) {
       const rect = el.getBoundingClientRect();
-      // Alleen badges die redelijk dicht bij de bovenkant van het scherm staan (niet ver weg,
-      // anders zou een badge onderaan de pagina ook "aantrekken" wat niet de bedoeling is).
       const afstand = Math.abs(rect.top);
+      alleAfstanden.push(`${el.className.split(' ')[0]}:${afstand.toFixed(0)}px`);
       if (afstand < MAGNETISCH_SNAP_AFSTAND_PX && afstand < besteAfstand) {
         besteAfstand = afstand;
         beste = el;
       }
     }
+    debugEl.textContent = `MAGNETISCH-DEBUG: scrollY=${window.scrollY} teller=${magnetischScrollTeller} kandidaten=${kandidaten.length}\nafstanden: ${alleAfstanden.join(', ')}\ngekozen: ${beste ? beste.className.split(' ')[0] + ' @ ' + besteAfstand.toFixed(0) + 'px' : 'GEEN'}`;
     return beste;
   }
 
@@ -5976,6 +5985,7 @@ initSupabase();
   }
 
   window.addEventListener('scroll', () => {
+    magnetischScrollTeller++;
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
     magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150);
   }, { passive: true });
