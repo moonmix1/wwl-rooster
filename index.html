@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 17:35 — binnenkant badge nu #0f0613 (exact dezelfde kleur als de dagnaam-cellen in het rooster, .pr-tabel td:first-child), i.p.v. wit -->
+<!-- upload-poging: 6 aug 2026, 17:45 — rand van ACTUELE WEEK naar lichtblauw (#7dd3fc, was donkerblauw); Uren per week-badge volledig herbouwd met exact dezelfde formule (donkere achtergrond #0f0613, lichtblauwe rand+tekst) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -318,25 +318,13 @@
   .pr-uren-lijst-wrap { display: flex; gap: 14px; }
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
-  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; text-transform: uppercase;
-    background: #402860; padding: 10px 12px; border-radius: 8px; position: relative; overflow: hidden;
-    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
-    filter: brightness(0.75);
+  /* Compleet opnieuw opgebouwd, exact dezelfde formule als .pr-actuele-week-badge hieronder:
+     geen gelaagde ::before/::after meer (die problemen gaven), simpele directe opbouw. */
+  .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
+    background: #0f0613; border: 6px solid #7dd3fc; border-radius: 8px; position: relative;
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
-    min-width: 220px; min-height: 62px; box-sizing: border-box; }
-  /* Gestreepte "VLC-rand" als een losse laag erachter i.p.v. border-image: border-image werkt
-     niet samen met afgeronde hoeken (border-radius), een gewone background-image achter de
-     content wel — zo blijven de hoeken netjes rond. */
-  .pr-uren-titel::before {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: #ff00aa;
-    box-shadow: inset 0 0 6px 1px rgba(255,255,255,1);
-    z-index: 0;
-  }
-  .pr-uren-titel::after {
-    content: ''; position: absolute; inset: 6px; border-radius: 2px; background: #402860; z-index: 0;
-    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
-  }
+    min-width: 220px; min-height: 62px; box-sizing: border-box;
+    padding: 10px 12px; }
   /* Exacte kopie van .pr-uren-titel hierboven, hergebruikt voor de "ACTUELE WEEK"-badge naast de
      rooster-tabel — beide badges moeten er identiek uitzien (zelfde VLC-rand, gloed, kleuren). */
   /* Compleet opnieuw opgebouwd (na herhaalde problemen met de gelaagde ::before/::after-opzet
@@ -344,7 +332,7 @@
      ondanks meerdere pogingen om dat lokaal te overrulen). Simpele, directe opbouw zonder lagen:
      witte achtergrond, een normale 6px donkerblauwe rand, lichtblauwe tekst. */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
-    background: #0f0613; border: 6px solid #1e3a8a; border-radius: 8px; position: relative;
+    background: #0f0613; border: 6px solid #7dd3fc; border-radius: 8px; position: relative;
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
     padding: 10px 12px; }
