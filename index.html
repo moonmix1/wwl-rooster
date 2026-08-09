@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 19:55 — DIAGNOSE: permanent, live debug-blokje onderaan het scherm toegevoegd, toont scroll-teller, gevonden badge-kandidaten en hun afstanden tot de schermtop, om te zien waar het scroll-snap-mechanisme precies vastloopt -->
+<!-- upload-poging: 6 aug 2026, 20:10 — echte oorzaak gevonden: TWEE elementen delen de klasse .pr-week-label (Rooster A's lege, onzichtbare "week-a-label" gaf een vals 0px-resultaat). Nu gefilterd op offsetParent+hoogte, alleen echt zichtbare badges tellen mee -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5958,20 +5958,26 @@ initSupabase();
   function magnetischVindDichtstbijzijndeBadge() {
     // Verzamelt alle mogelijke "badge"-achtige ankerpunten: de Uren-titel, de Actuele-week-badge,
     // en de week-labels (Vorige/Volgende week etc.) — wat er ook op dit moment zichtbaar/aanwezig is.
-    const kandidaten = Array.from(document.querySelectorAll('.pr-uren-titel, .pr-actuele-week-badge, .pr-week-label'));
+    // BELANGRIJK: er bestaan TWEE elementen met de klasse .pr-week-label (week-a-label voor
+    // Rooster A, en pr-week-label voor Rooster B) — als je in Rooster B zit, staat het lege,
+    // onzichtbare Rooster-A-label nog steeds ergens bovenaan de pagina en gaf dat een vals
+    // "0px"-resultaat. Nu expliciet uitgesloten: alleen elementen die zichtbaar zijn
+    // (offsetParent bestaat) én een echte, meetbare hoogte hebben (geen leeg/verborgen label).
+    const kandidaten = Array.from(document.querySelectorAll('.pr-uren-titel, .pr-actuele-week-badge, .pr-week-label'))
+      .filter(el => el.offsetParent !== null && el.getBoundingClientRect().height > 5);
     let beste = null;
     let besteAfstand = Infinity;
     const alleAfstanden = [];
     for (const el of kandidaten) {
       const rect = el.getBoundingClientRect();
       const afstand = Math.abs(rect.top);
-      alleAfstanden.push(`${el.className.split(' ')[0]}:${afstand.toFixed(0)}px`);
+      alleAfstanden.push(`${el.id || el.className.split(' ')[0]}:${afstand.toFixed(0)}px(h${rect.height.toFixed(0)})`);
       if (afstand < MAGNETISCH_SNAP_AFSTAND_PX && afstand < besteAfstand) {
         besteAfstand = afstand;
         beste = el;
       }
     }
-    debugEl.textContent = `MAGNETISCH-DEBUG: scrollY=${window.scrollY} teller=${magnetischScrollTeller} kandidaten=${kandidaten.length}\nafstanden: ${alleAfstanden.join(', ')}\ngekozen: ${beste ? beste.className.split(' ')[0] + ' @ ' + besteAfstand.toFixed(0) + 'px' : 'GEEN'}`;
+    debugEl.textContent = `MAGNETISCH-DEBUG: scrollY=${window.scrollY} teller=${magnetischScrollTeller} kandidaten=${kandidaten.length}\nafstanden: ${alleAfstanden.join(', ')}\ngekozen: ${beste ? (beste.id || beste.className.split(' ')[0]) + ' @ ' + besteAfstand.toFixed(0) + 'px' : 'GEEN'}`;
     return beste;
   }
 
