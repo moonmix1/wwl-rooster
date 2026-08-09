@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 20:10 — echte oorzaak gevonden: TWEE elementen delen de klasse .pr-week-label (Rooster A's lege, onzichtbare "week-a-label" gaf een vals 0px-resultaat). Nu gefilterd op offsetParent+hoogte, alleen echt zichtbare badges tellen mee -->
+<!-- upload-poging: 6 aug 2026, 20:20 — magnetisch effect krachtiger: aantrekkingsbereik 60px->150px, reactietijd 150ms->80ms -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5944,7 +5944,7 @@ initSupabase();
 // in beeld staat. Werkt via een korte debounce op het scroll-event: pas nadat er 150ms niet meer
 // gescrolld is, wordt bepaald of snappen nodig is (voorkomt dat het "vecht" met actief scrollen).
 (function() {
-  const MAGNETISCH_SNAP_AFSTAND_PX = 60; // alleen snappen als de badge-rand binnen deze afstand van de schermtop staat
+  const MAGNETISCH_SNAP_AFSTAND_PX = 150; // krachtiger: was 60, nu een veel groter "aantrekkingsbereik"
   let magnetischScrollTimer = null;
 
   // TIJDELIJK DEBUG-BLOKJE: toont live de scroll-status en gevonden badges, om te bepalen waar
@@ -5993,7 +5993,7 @@ initSupabase();
   window.addEventListener('scroll', () => {
     magnetischScrollTeller++;
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
-    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150);
+    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 80); // krachtiger: was 150ms, nu sneller reagerend
   }, { passive: true });
 })();
 
