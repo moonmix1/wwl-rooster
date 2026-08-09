@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 19:15 — glow-gradient omgedraaid (feller naar de randen toe, transparant in het midden, voor een "invallend licht"-gevoel); EXTREME TEST: felrode outline rondom het hele scherm bij trekken, om te bevestigen of touchmove daadwerkelijk afgaat -->
+<!-- upload-poging: 6 aug 2026, 19:25 — DIAGNOSE: groen "MAGNETISCH SCRIPT ACTIEF"-label rechtsonder toegevoegd, om te bevestigen of dit codeblok sowieso wordt bereikt/uitgevoerd bij het laden van de pagina -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5942,6 +5942,11 @@ initSupabase();
 // gebruiker los vóórdat de "magneet" het houdt, dan veert de pagina automatisch en soepel terug
 // naar precies bovenaan (snap-back), alsof hij daar vastgezogen wordt.
 (function() {
+  console.log('[MAGNETISCH-DEBUG] Script geladen en IIFE gestart');
+  const debugIndicator = document.createElement('div');
+  debugIndicator.textContent = 'MAGNETISCH SCRIPT ACTIEF';
+  debugIndicator.style.cssText = 'position:fixed;bottom:10px;right:10px;background:lime;color:black;padding:6px 10px;font-size:0.6rem;font-weight:900;z-index:99999;border-radius:4px;';
+  document.body.appendChild(debugIndicator);
   let magnetischStartY = null;
   let magnetischActief = false;
   const MAGNETISCHE_WEERSTANDSFACTOR = 0.35; // hoe "zwaar" de weerstand aanvoelt: lager = meer weerstand
