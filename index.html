@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 15:35 — diagonale strepen volledig vervangen door effen felroze (#ff00aa); rand-dikte nu 2x zo dik via inset 3px->6px op de ::after-laag i.p.v. het diagonale-patroon geknoei van eerder -->
+<!-- upload-poging: 6 aug 2026, 15:45 — border-radius van beide badges (Uren per week + ACTUELE WEEK) naar 8px (was 4px), voor rondere hoeken -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -319,7 +319,7 @@
   .pr-uren-lijst-kolom { flex: 1; min-width: 0; }
   .pr-uren-lijst-wrap.pr-2kol .pr-uren-lijst-kolom:first-child { border-right: 1px solid #3a3a3a; padding-right: 14px; }
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #d9bc00; text-transform: uppercase;
-    background: #402860; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
+    background: #402860; padding: 10px 12px; border-radius: 8px; position: relative; overflow: hidden;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     filter: brightness(0.75);
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
@@ -340,7 +340,7 @@
   /* Exacte kopie van .pr-uren-titel hierboven, hergebruikt voor de "ACTUELE WEEK"-badge naast de
      rooster-tabel — beide badges moeten er identiek uitzien (zelfde VLC-rand, gloed, kleuren). */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #d9bc00; text-transform: uppercase;
-    background: #402860; padding: 10px 12px; border-radius: 4px; position: relative; overflow: hidden;
+    background: #402860; padding: 10px 12px; border-radius: 8px; position: relative; overflow: hidden;
     box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
     filter: brightness(0.75);
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
