@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 20:20 — magnetisch effect krachtiger: aantrekkingsbereik 60px->150px, reactietijd 150ms->80ms -->
+<!-- upload-poging: 6 aug 2026, 20:25 — verder versterkt: aantrekkingsbereik 150px->250px, reactietijd 80ms->60ms -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5944,7 +5944,7 @@ initSupabase();
 // in beeld staat. Werkt via een korte debounce op het scroll-event: pas nadat er 150ms niet meer
 // gescrolld is, wordt bepaald of snappen nodig is (voorkomt dat het "vecht" met actief scrollen).
 (function() {
-  const MAGNETISCH_SNAP_AFSTAND_PX = 150; // krachtiger: was 60, nu een veel groter "aantrekkingsbereik"
+  const MAGNETISCH_SNAP_AFSTAND_PX = 250; // krachtiger: was 150, nu nog groter aantrekkingsbereik
   let magnetischScrollTimer = null;
 
   // TIJDELIJK DEBUG-BLOKJE: toont live de scroll-status en gevonden badges, om te bepalen waar
@@ -5993,7 +5993,7 @@ initSupabase();
   window.addEventListener('scroll', () => {
     magnetischScrollTeller++;
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
-    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 80); // krachtiger: was 150ms, nu sneller reagerend
+    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 60); // krachtiger: was 80ms, nu nog sneller
   }, { passive: true });
 })();
 
