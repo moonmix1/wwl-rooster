@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 17:55 — rand van beide badges naar normaal/midden-blauw (#3b82f6, was lichtblauw #7dd3fc); tekstkleur blijft lichtblauw -->
+<!-- upload-poging: 6 aug 2026, 18:05 — bovenste toekomst-tekst geel->wit; "Uren per week"-badge neemt bij verleden/toekomst dynamisch dezelfde kleur aan als de bovenste weektekst, actuele week behoudt zijn eigen vaste #7dd3fc -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4730,7 +4730,7 @@ async function renderPapierRooster(voorafGeladenData) {
     const nietActueel = prWeekOffset !== 0;
     const offsetTekst = prWeekOffset === 0 ? 'Deze week' : (prWeekOffset === -1 ? 'Vorige week' : (prWeekOffset === 1 ? 'Volgende week' : (prWeekOffset < 0 ? `${Math.abs(prWeekOffset)} weken geleden` : `Over ${prWeekOffset} weken`)));
     const toekomst = prWeekOffset > 0;
-    const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#d9bc00' : '#d2691e');
+    const kleur = prWeekOffset === 0 ? '#f5d800' : (toekomst ? '#ffffff' : '#d2691e');
     const wisKnopHtml = isCoordinator() ? prWisKnopHtml(weekKey, dinsdag, prWeekOffset < 0) : '';
     const middenHtml = prWeekOffset === 0
       ? `<div class="pr-actuele-week-badge" style="width:100%;box-sizing:border-box">
@@ -5023,6 +5023,20 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const eindDatum = new Date(startDatum.getTime() + 6 * 86400000);
     const weekLabel = `wo ${startDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} – di ${eindDatum.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}`;
     titelEl.innerHTML = `<span style="position:relative;z-index:1;display:block">Uren per week<br><span style="font-size:0.85rem;font-weight:800;text-transform:none;opacity:0.9">${weekLabel}</span></span>`;
+    // Rand en tekstkleur van de badge nemen dezelfde kleur aan als de bovenste weektekst
+    // (verleden/toekomst), zodat "Uren per week" er per weekstaat consistent uitziet met
+    // "Vorige week"/"Volgende week" enz. hierboven — BEHALVE bij de actuele week: die behoudt
+    // gewoon zijn eigen, vaste kleur (#7dd3fc, uit de basis-CSS), dus daar wordt de inline-style
+    // hier expliciet leeggemaakt in plaats van een kleur te forceren.
+    const prToekomstVoorBadge = prWeekOffset > 0;
+    if (prWeekOffset === 0) {
+      titelEl.style.borderColor = '';
+      titelEl.style.color = '';
+    } else {
+      const prBadgeKleur = prToekomstVoorBadge ? '#ffffff' : '#d2691e';
+      titelEl.style.borderColor = prBadgeKleur;
+      titelEl.style.color = prBadgeKleur;
+    }
   }
 
   const uren = {}; // naam -> totaal uren deze week
