@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 15:05 — teruggedraaid: alle streep-"dikte"-experimenten (30%/20%/10px/20px) verwijderd. Dat waren fouten — die vergrootten het herhalende diagonale patroon, niet de randdikte. Terug naar 6px/12px, het punt waar paars-geel op beide badges correct was -->
+<!-- upload-poging: 6 aug 2026, 15:15 — elke individuele streep naar 12px dikte (was 6px), cyclus dus naar 24px -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -329,7 +329,7 @@
      content wel — zo blijven de hoeken netjes rond. */
   .pr-uren-titel::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #ffffff 6px, #ffffff 12px);
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 12px, #ffffff 12px, #ffffff 24px);
     box-shadow: inset 0 0 6px 1px rgba(255,255,255,1);
     z-index: 0;
   }
@@ -347,7 +347,7 @@
     min-width: 220px; min-height: 62px; box-sizing: border-box; }
   .pr-actuele-week-badge::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #d9bc00 6px, #d9bc00 12px);
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 12px, #d9bc00 12px, #d9bc00 24px);
     box-shadow: inset 0 0 6px 1px rgba(217,188,0,1);
     z-index: 0;
   }
@@ -374,7 +374,7 @@
      (dus alleen bij de actuele week) — expliciet via :not(), i.p.v. te vertrouwen op
      CSS-specificiteit tussen meerdere regels, wat eerder onbedoeld overal geel gaf. */
   .pr-layout:not(.week-afzetlint-verleden):not(.week-afzetlint-toekomst) .pr-uren-titel::before {
-    background: repeating-linear-gradient(45deg, #402860 0px, #402860 6px, #d9bc00 6px, #d9bc00 12px);
+    background: repeating-linear-gradient(45deg, #402860 0px, #402860 12px, #d9bc00 12px, #d9bc00 24px);
     box-shadow: inset 0 0 6px 1px rgba(217,188,0,1);
   }
   .pr-uren-rij { position: relative; display: grid; grid-template-columns: 15px 1fr; column-gap: 6px; row-gap: 2px;
