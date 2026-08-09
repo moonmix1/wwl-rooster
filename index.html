@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 17:05 — echte oorzaak: filter:brightness(0.75) op de HELE badge werkt door naar alle nakomelingen (kan niet lokaal worden overruled, CSS-eigenaardigheid), en verdonkerde wit naar crème. Filter + resterende box-shadow volledig verwijderd van de basisregel -->
+<!-- upload-poging: 6 aug 2026, 17:15 — nog een resterende gele box-shadow-gloed op ::before verwijderd (kon over de rand van de witte ::after-laag heen lekken en zo een warm/geel randje geven, wat het nog niet-helemaal-wit-effect verklaart) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -346,7 +346,6 @@
   .pr-actuele-week-badge::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit;
     background: #ff00aa;
-    box-shadow: inset 0 0 6px 1px rgba(217,188,0,1);
     z-index: 0;
   }
   .pr-actuele-week-badge::after {
