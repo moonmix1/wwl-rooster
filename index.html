@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 17:15 — nog een resterende gele box-shadow-gloed op ::before verwijderd (kon over de rand van de witte ::after-laag heen lekken en zo een warm/geel randje geven, wat het nog niet-helemaal-wit-effect verklaart) -->
+<!-- upload-poging: 6 aug 2026, 17:25 — ACTUELE WEEK-badge compleet herbouwd: geen ::before/::after-lagen meer (die bleven problemen geven), simpele directe opbouw met background:#ffffff + border:6px solid #1e3a8a + tekst #7dd3fc -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -339,18 +339,15 @@
   }
   /* Exacte kopie van .pr-uren-titel hierboven, hergebruikt voor de "ACTUELE WEEK"-badge naast de
      rooster-tabel — beide badges moeten er identiek uitzien (zelfde VLC-rand, gloed, kleuren). */
+  /* Compleet opnieuw opgebouwd (na herhaalde problemen met de gelaagde ::before/::after-opzet
+     hierboven — filters en box-shadows op voorouder-niveau bleven de witte kleur beïnvloeden,
+     ondanks meerdere pogingen om dat lokaal te overrulen). Simpele, directe opbouw zonder lagen:
+     witte achtergrond, een normale 6px donkerblauwe rand, lichtblauwe tekst. */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
-    background: #402860; padding: 10px 12px; border-radius: 8px; position: relative; overflow: hidden;
+    background: #ffffff; border: 6px solid #1e3a8a; border-radius: 8px; position: relative;
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
-    min-width: 220px; min-height: 62px; box-sizing: border-box; }
-  .pr-actuele-week-badge::before {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: #ff00aa;
-    z-index: 0;
-  }
-  .pr-actuele-week-badge::after {
-    content: ''; position: absolute; inset: 6px; border-radius: 2px; background: #ffffff !important; z-index: 0;
-  }
+    min-width: 220px; min-height: 62px; box-sizing: border-box;
+    padding: 10px 12px; }
   /* Bij een niet-actuele week (verleden/toekomst) neemt de "Uren deze week"-badge dezelfde
      kleuren over als het afzetlint rondom het rooster zelf, zodat badge en weekrand visueel
      bij elkaar horen en meteen duidelijk is dat je niet in de actuele week zit. De gele
