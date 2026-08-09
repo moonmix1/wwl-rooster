@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 18:05 — bovenste toekomst-tekst geel->wit; "Uren per week"-badge neemt bij verleden/toekomst dynamisch dezelfde kleur aan als de bovenste weektekst, actuele week behoudt zijn eigen vaste #7dd3fc -->
+<!-- upload-poging: 6 aug 2026, 18:20 — badge-kleur bij verleden verder gedempt naar #a9541a (was #d2691e, oogde nog te fel t.o.v. de bovenste tekst op de donkere pagina-achtergrond) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5033,7 +5033,7 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
       titelEl.style.borderColor = '';
       titelEl.style.color = '';
     } else {
-      const prBadgeKleur = prToekomstVoorBadge ? '#ffffff' : '#d2691e';
+      const prBadgeKleur = prToekomstVoorBadge ? '#ffffff' : '#a9541a';
       titelEl.style.borderColor = prBadgeKleur;
       titelEl.style.color = prBadgeKleur;
     }
