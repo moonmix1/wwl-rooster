@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 19:05 — TIJDELIJKE TEST: scrollY-checks uitgeschakeld, effect nu altijd actief bij elke touch-aanraking ongeacht scroll-positie, om te isoleren of window.scrollY het probleem is -->
+<!-- upload-poging: 6 aug 2026, 19:15 — glow-gradient omgedraaid (feller naar de randen toe, transparant in het midden, voor een "invallend licht"-gevoel); EXTREME TEST: felrode outline rondom het hele scherm bij trekken, om te bevestigen of touchmove daadwerkelijk afgaat -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5953,8 +5953,7 @@ initSupabase();
     magnetischGloedEl = document.createElement('div');
     magnetischGloedEl.id = 'pr-magnetisch-gloed';
     magnetischGloedEl.style.cssText = 'position:fixed;top:0;left:0;right:0;height:0px;pointer-events:none;z-index:9998;'
-      + 'background:linear-gradient(180deg, rgba(125,211,252,0.7) 0%, rgba(125,211,252,0.35) 45%, transparent 100%);'
-      + 'box-shadow:inset 0 -20px 30px -10px rgba(125,211,252,0.5);'
+      + 'background:radial-gradient(ellipse 140% 100% at 50% -20%, transparent 40%, rgba(125,211,252,0.6) 75%, rgba(125,211,252,0.85) 100%);'
       + 'opacity:0;transition:opacity 0.25s ease-out;';
     document.body.appendChild(magnetischGloedEl);
     return magnetischGloedEl;
@@ -5967,6 +5966,9 @@ initSupabase();
     const gloedHoogte = Math.min(90, 20 + rekPx * 0.9);
     gloed.style.height = gloedHoogte + 'px';
     gloed.style.opacity = rekPx > 2 ? String(Math.min(1, rekPx / 40)) : '0';
+    // TIJDELIJKE EXTREME TEST: felrode rand rondom het HELE scherm zodra er getrokken wordt,
+    // om te bevestigen dat touchmove daadwerkelijk afgaat, los van of de body-transform zichtbaar is.
+    document.documentElement.style.outline = rekPx > 0 ? '20px solid red' : 'none';
   }
 
   function magnetischSnapTerug() {
