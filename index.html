@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 19:25 — DIAGNOSE: groen "MAGNETISCH SCRIPT ACTIEF"-label rechtsonder toegevoegd, om te bevestigen of dit codeblok sowieso wordt bereikt/uitgevoerd bij het laden van de pagina -->
+<!-- upload-poging: 6 aug 2026, 19:40 — VOLLEDIG HERBOUWD naar het juiste concept: geen elastische weerstand meer (dat was een verkeerde interpretatie), maar echt scroll-snap-gedrag zoals het Rad van Fortuin — als je scrollt en stopt met de bovenrand van een badge dicht bij de schermtop, klikt de pagina daar automatisch op vast -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5936,94 +5936,48 @@ function weekASwipeNavigeer(richting) {
 
 initSupabase();
 
-// ── MAGNETISCH BOVENAAN: als de pagina helemaal boven is en de gebruiker trekt (via touch) nog
-// verder naar beneden, voelt dat aan als een magneet die tegenhoudt (elastische weerstand i.p.v.
-// meteen los meebewegen), met een zachte, lichtblauwe gloed die tegelijk oplicht. Laat de
-// gebruiker los vóórdat de "magneet" het houdt, dan veert de pagina automatisch en soepel terug
-// naar precies bovenaan (snap-back), alsof hij daar vastgezogen wordt.
+// ── MAGNETISCH SNAPPEN NAAR BADGE-BOVENRAND: net als het Rad van Fortuin dat nooit halverwege
+// een vakje stopt, maar altijd op een heel vakje — als de gebruiker stopt met scrollen en de
+// bovenrand van een badge (Uren per week / Actuele week / Vorige week / Volgende week) dicht bij
+// de bovenkant van het scherm staat, "klikt" de pagina daar automatisch op vast (die rand komt
+// dan exact gelijk met de bovenkant van het scherm), zodat het rooster daaronder zoveel mogelijk
+// in beeld staat. Werkt via een korte debounce op het scroll-event: pas nadat er 150ms niet meer
+// gescrolld is, wordt bepaald of snappen nodig is (voorkomt dat het "vecht" met actief scrollen).
 (function() {
-  console.log('[MAGNETISCH-DEBUG] Script geladen en IIFE gestart');
-  const debugIndicator = document.createElement('div');
-  debugIndicator.textContent = 'MAGNETISCH SCRIPT ACTIEF';
-  debugIndicator.style.cssText = 'position:fixed;bottom:10px;right:10px;background:lime;color:black;padding:6px 10px;font-size:0.6rem;font-weight:900;z-index:99999;border-radius:4px;';
-  document.body.appendChild(debugIndicator);
-  let magnetischStartY = null;
-  let magnetischActief = false;
-  const MAGNETISCHE_WEERSTANDSFACTOR = 0.35; // hoe "zwaar" de weerstand aanvoelt: lager = meer weerstand
-  const MAGNETISCHE_MAX_REK_PX = 70; // hoever de pagina maximaal "uitrekt" voordat de weerstand een plafond bereikt
+  const MAGNETISCH_SNAP_AFSTAND_PX = 60; // alleen snappen als de badge-rand binnen deze afstand van de schermtop staat
+  let magnetischScrollTimer = null;
 
-  let magnetischGloedEl = null;
-  function magnetischGloedInit() {
-    if (magnetischGloedEl) return magnetischGloedEl;
-    magnetischGloedEl = document.createElement('div');
-    magnetischGloedEl.id = 'pr-magnetisch-gloed';
-    magnetischGloedEl.style.cssText = 'position:fixed;top:0;left:0;right:0;height:0px;pointer-events:none;z-index:9998;'
-      + 'background:radial-gradient(ellipse 140% 100% at 50% -20%, transparent 40%, rgba(125,211,252,0.6) 75%, rgba(125,211,252,0.85) 100%);'
-      + 'opacity:0;transition:opacity 0.25s ease-out;';
-    document.body.appendChild(magnetischGloedEl);
-    return magnetischGloedEl;
-  }
-
-  function magnetischPasToe(rekPx) {
-    const gloed = magnetischGloedInit();
-    document.body.style.transform = rekPx > 0 ? `translateY(${rekPx}px)` : '';
-    document.body.style.transition = 'none';
-    const gloedHoogte = Math.min(90, 20 + rekPx * 0.9);
-    gloed.style.height = gloedHoogte + 'px';
-    gloed.style.opacity = rekPx > 2 ? String(Math.min(1, rekPx / 40)) : '0';
-    // TIJDELIJKE EXTREME TEST: felrode rand rondom het HELE scherm zodra er getrokken wordt,
-    // om te bevestigen dat touchmove daadwerkelijk afgaat, los van of de body-transform zichtbaar is.
-    document.documentElement.style.outline = rekPx > 0 ? '20px solid red' : 'none';
-  }
-
-  function magnetischSnapTerug() {
-    const gloed = magnetischGloedInit();
-    document.body.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
-    document.body.style.transform = '';
-    gloed.style.transition = 'opacity 0.35s ease-out, height 0.35s ease-out';
-    gloed.style.opacity = '0';
-    gloed.style.height = '0px';
-    setTimeout(() => {
-      document.body.style.transition = '';
-    }, 460);
-  }
-
-  document.addEventListener('touchstart', (e) => {
-    // TIJDELIJKE TEST: scrollY-check verwijderd, effect nu altijd actief bij elke aanraking —
-    // om te bevestigen of window.scrollY wel/niet correct 0 wordt bij het scrollen van deze pagina.
-    if (e.touches.length === 1) {
-      magnetischStartY = e.touches[0].clientY;
-      magnetischActief = true;
-    } else {
-      magnetischStartY = null;
-      magnetischActief = false;
+  function magnetischVindDichtstbijzijndeBadge() {
+    // Verzamelt alle mogelijke "badge"-achtige ankerpunten: de Uren-titel, de Actuele-week-badge,
+    // en de week-labels (Vorige/Volgende week etc.) — wat er ook op dit moment zichtbaar/aanwezig is.
+    const kandidaten = Array.from(document.querySelectorAll('.pr-uren-titel, .pr-actuele-week-badge, .pr-week-label'));
+    let beste = null;
+    let besteAfstand = Infinity;
+    for (const el of kandidaten) {
+      const rect = el.getBoundingClientRect();
+      // Alleen badges die redelijk dicht bij de bovenkant van het scherm staan (niet ver weg,
+      // anders zou een badge onderaan de pagina ook "aantrekken" wat niet de bedoeling is).
+      const afstand = Math.abs(rect.top);
+      if (afstand < MAGNETISCH_SNAP_AFSTAND_PX && afstand < besteAfstand) {
+        besteAfstand = afstand;
+        beste = el;
+      }
     }
-  }, { passive: true });
+    return beste;
+  }
 
-  document.addEventListener('touchmove', (e) => {
-    if (!magnetischActief || magnetischStartY === null) return;
-    // TIJDELIJKE TEST: scrollY-check hier ook uitgeschakeld (regel eronder staat in commentaar).
-    // if (window.scrollY > 0) { magnetischActief = false; magnetischPasToe(0); return; }
-    const deltaY = e.touches[0].clientY - magnetischStartY;
-    if (deltaY <= 0) { magnetischPasToe(0); return; } // omhoog/normaal scrollen: geen effect
-    // Elastische demping: hoe verder getrokken, hoe meer weerstand (kwadratisch afvlakkend),
-    // met een zacht plafond op MAGNETISCHE_MAX_REK_PX zodat het nooit oneindig doorrekt.
-    const gedempt = Math.min(MAGNETISCHE_MAX_REK_PX, deltaY * MAGNETISCHE_WEERSTANDSFACTOR - (deltaY * deltaY) / 2400);
-    magnetischPasToe(Math.max(0, gedempt));
-  }, { passive: true });
+  function magnetischProbeerSnappen() {
+    const badge = magnetischVindDichtstbijzijndeBadge();
+    if (!badge) return; // geen enkele badge dicht genoeg bij de rand: niets doen, gewoon laten staan waar het is
+    const rect = badge.getBoundingClientRect();
+    // Als de rand al vrijwel exact op 0 staat, is er niets te doen (voorkomt onnodige micro-scrolls).
+    if (Math.abs(rect.top) < 2) return;
+    window.scrollBy({ top: rect.top, left: 0, behavior: 'smooth' });
+  }
 
-  document.addEventListener('touchend', () => {
-    if (magnetischActief) {
-      magnetischSnapTerug();
-    }
-    magnetischStartY = null;
-    magnetischActief = false;
-  }, { passive: true });
-
-  document.addEventListener('touchcancel', () => {
-    if (magnetischActief) magnetischSnapTerug();
-    magnetischStartY = null;
-    magnetischActief = false;
+  window.addEventListener('scroll', () => {
+    if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
+    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150);
   }, { passive: true });
 })();
 
