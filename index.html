@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 16:55 — echte oorzaak van crème i.p.v. wit gevonden dankzij screenshot: de inset box-shadow-gloed (bedoeld voor paars) vermengde optisch met wit tot crème. Box-shadow verwijderd voor pure witte kleur -->
+<!-- upload-poging: 6 aug 2026, 17:05 — echte oorzaak: filter:brightness(0.75) op de HELE badge werkt door naar alle nakomelingen (kan niet lokaal worden overruled, CSS-eigenaardigheid), en verdonkerde wit naar crème. Filter + resterende box-shadow volledig verwijderd van de basisregel -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -341,8 +341,6 @@
      rooster-tabel — beide badges moeten er identiek uitzien (zelfde VLC-rand, gloed, kleuren). */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
     background: #402860; padding: 10px 12px; border-radius: 8px; position: relative; overflow: hidden;
-    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
-    filter: brightness(0.75);
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box; }
   .pr-actuele-week-badge::before {
