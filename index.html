@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 18:55 — magnetische gloed veranderd van radial-gradient (ovale vlek, buiten-gevoel) naar linear-gradient + inset box-shadow (invallend-licht-gevoel, meer naar binnen schijnend) -->
+<!-- upload-poging: 6 aug 2026, 19:05 — TIJDELIJKE TEST: scrollY-checks uitgeschakeld, effect nu altijd actief bij elke touch-aanraking ongeacht scroll-positie, om te isoleren of window.scrollY het probleem is -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5982,7 +5982,9 @@ initSupabase();
   }
 
   document.addEventListener('touchstart', (e) => {
-    if (window.scrollY <= 0 && e.touches.length === 1) {
+    // TIJDELIJKE TEST: scrollY-check verwijderd, effect nu altijd actief bij elke aanraking —
+    // om te bevestigen of window.scrollY wel/niet correct 0 wordt bij het scrollen van deze pagina.
+    if (e.touches.length === 1) {
       magnetischStartY = e.touches[0].clientY;
       magnetischActief = true;
     } else {
@@ -5993,9 +5995,8 @@ initSupabase();
 
   document.addEventListener('touchmove', (e) => {
     if (!magnetischActief || magnetischStartY === null) return;
-    // Alleen ingrijpen als de pagina nog steeds bovenaan staat (voorkomt conflicten met normaal
-    // scrollen zodra de gebruiker al voorbij de bovenkant is gescrolld tijdens deze aanraking).
-    if (window.scrollY > 0) { magnetischActief = false; magnetischPasToe(0); return; }
+    // TIJDELIJKE TEST: scrollY-check hier ook uitgeschakeld (regel eronder staat in commentaar).
+    // if (window.scrollY > 0) { magnetischActief = false; magnetischPasToe(0); return; }
     const deltaY = e.touches[0].clientY - magnetischStartY;
     if (deltaY <= 0) { magnetischPasToe(0); return; } // omhoog/normaal scrollen: geen effect
     // Elastische demping: hoe verder getrokken, hoe meer weerstand (kwadratisch afvlakkend),
