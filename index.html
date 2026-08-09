@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 18:30 — lichtblauwe glow-rand toegevoegd aan ACTUELE WEEK-badge (box-shadow, buiten de rand, verspreide gloed) -->
+<!-- upload-poging: 6 aug 2026, 18:45 — "magnetisch bovenaan"-gevoel toegevoegd voor de hele pagina: elastische weerstand bij naar-beneden-trekken bovenaan (touchmove), soepele snap-back terugveer (touchend), en een lichtblauwe gloed die tegelijk oplicht -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5936,8 +5936,87 @@ function weekASwipeNavigeer(richting) {
 
 initSupabase();
 
+// ── MAGNETISCH BOVENAAN: als de pagina helemaal boven is en de gebruiker trekt (via touch) nog
+// verder naar beneden, voelt dat aan als een magneet die tegenhoudt (elastische weerstand i.p.v.
+// meteen los meebewegen), met een zachte, lichtblauwe gloed die tegelijk oplicht. Laat de
+// gebruiker los vóórdat de "magneet" het houdt, dan veert de pagina automatisch en soepel terug
+// naar precies bovenaan (snap-back), alsof hij daar vastgezogen wordt.
+(function() {
+  let magnetischStartY = null;
+  let magnetischActief = false;
+  const MAGNETISCHE_WEERSTANDSFACTOR = 0.35; // hoe "zwaar" de weerstand aanvoelt: lager = meer weerstand
+  const MAGNETISCHE_MAX_REK_PX = 70; // hoever de pagina maximaal "uitrekt" voordat de weerstand een plafond bereikt
 
+  let magnetischGloedEl = null;
+  function magnetischGloedInit() {
+    if (magnetischGloedEl) return magnetischGloedEl;
+    magnetischGloedEl = document.createElement('div');
+    magnetischGloedEl.id = 'pr-magnetisch-gloed';
+    magnetischGloedEl.style.cssText = 'position:fixed;top:0;left:0;right:0;height:0px;pointer-events:none;z-index:9998;'
+      + 'background:radial-gradient(ellipse at 50% 0%, rgba(125,211,252,0.55) 0%, rgba(125,211,252,0.15) 55%, transparent 80%);'
+      + 'opacity:0;transition:opacity 0.25s ease-out;';
+    document.body.appendChild(magnetischGloedEl);
+    return magnetischGloedEl;
+  }
 
+  function magnetischPasToe(rekPx) {
+    const gloed = magnetischGloedInit();
+    document.body.style.transform = rekPx > 0 ? `translateY(${rekPx}px)` : '';
+    document.body.style.transition = 'none';
+    const gloedHoogte = Math.min(90, 20 + rekPx * 0.9);
+    gloed.style.height = gloedHoogte + 'px';
+    gloed.style.opacity = rekPx > 2 ? String(Math.min(1, rekPx / 40)) : '0';
+  }
+
+  function magnetischSnapTerug() {
+    const gloed = magnetischGloedInit();
+    document.body.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    document.body.style.transform = '';
+    gloed.style.transition = 'opacity 0.35s ease-out, height 0.35s ease-out';
+    gloed.style.opacity = '0';
+    gloed.style.height = '0px';
+    setTimeout(() => {
+      document.body.style.transition = '';
+    }, 460);
+  }
+
+  document.addEventListener('touchstart', (e) => {
+    if (window.scrollY <= 0 && e.touches.length === 1) {
+      magnetischStartY = e.touches[0].clientY;
+      magnetischActief = true;
+    } else {
+      magnetischStartY = null;
+      magnetischActief = false;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!magnetischActief || magnetischStartY === null) return;
+    // Alleen ingrijpen als de pagina nog steeds bovenaan staat (voorkomt conflicten met normaal
+    // scrollen zodra de gebruiker al voorbij de bovenkant is gescrolld tijdens deze aanraking).
+    if (window.scrollY > 0) { magnetischActief = false; magnetischPasToe(0); return; }
+    const deltaY = e.touches[0].clientY - magnetischStartY;
+    if (deltaY <= 0) { magnetischPasToe(0); return; } // omhoog/normaal scrollen: geen effect
+    // Elastische demping: hoe verder getrokken, hoe meer weerstand (kwadratisch afvlakkend),
+    // met een zacht plafond op MAGNETISCHE_MAX_REK_PX zodat het nooit oneindig doorrekt.
+    const gedempt = Math.min(MAGNETISCHE_MAX_REK_PX, deltaY * MAGNETISCHE_WEERSTANDSFACTOR - (deltaY * deltaY) / 2400);
+    magnetischPasToe(Math.max(0, gedempt));
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (magnetischActief) {
+      magnetischSnapTerug();
+    }
+    magnetischStartY = null;
+    magnetischActief = false;
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', () => {
+    if (magnetischActief) magnetischSnapTerug();
+    magnetischStartY = null;
+    magnetischActief = false;
+  }, { passive: true });
+})();
 
 </script>
 </body>
