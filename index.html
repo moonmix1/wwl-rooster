@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 16:45 — bevestigd dat de CSS-regel werkt (groen-test slaagde); terug naar wit, dat eerder gewoon optisch niet opviel t.o.v. de bestaande lichte gloed -->
+<!-- upload-poging: 6 aug 2026, 16:55 — echte oorzaak van crème i.p.v. wit gevonden dankzij screenshot: de inset box-shadow-gloed (bedoeld voor paars) vermengde optisch met wit tot crème. Box-shadow verwijderd voor pure witte kleur -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -353,7 +353,6 @@
   }
   .pr-actuele-week-badge::after {
     content: ''; position: absolute; inset: 6px; border-radius: 2px; background: #ffffff !important; z-index: 0;
-    box-shadow: inset 0 0 10px 2px rgba(255,255,255,0.9);
   }
   /* Bij een niet-actuele week (verleden/toekomst) neemt de "Uren deze week"-badge dezelfde
      kleuren over als het afzetlint rondom het rooster zelf, zodat badge en weekrand visueel
