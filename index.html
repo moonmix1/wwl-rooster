@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 20:45 — gloed op ACTUELE WEEK-badge simpel gefixt: 1 woord "inset" toegevoegd aan de box-shadow, i.p.v. het hele element opnieuw op te bouwen -->
+<!-- upload-poging: 6 aug 2026, 20:55 — debug-blokje volledig verwijderd; "Uren per week"-badge krijgt nu dezelfde inset box-shadow-gloed als "ACTUELE WEEK" (was er nog niet aan toegevoegd) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -322,6 +322,7 @@
      geen gelaagde ::before/::after meer (die problemen gaven), simpele directe opbouw. */
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
     background: #0f0613; border: 6px solid #3b82f6; border-radius: 8px; position: relative;
+    box-shadow: inset 0 0 16px 4px rgba(125,211,252,0.6);
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
     padding: 10px 12px; }
@@ -5947,14 +5948,6 @@ initSupabase();
   const MAGNETISCH_SNAP_AFSTAND_PX = 100; // teruggebracht naar een gangbare, beproefde waarde (was 250)
   let magnetischScrollTimer = null;
 
-  // TIJDELIJK DEBUG-BLOKJE: toont live de scroll-status en gevonden badges, om te bepalen waar
-  // het vastloopt (scroll-event zelf, badge-detectie, of de scrollBy-actie).
-  const debugEl = document.createElement('div');
-  debugEl.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:0.55rem;font-family:monospace;padding:6px;z-index:99999;max-height:120px;overflow-y:auto;white-space:pre-wrap;border-top:2px solid #0f0;';
-  debugEl.textContent = 'MAGNETISCH-DEBUG: wachten op scroll...';
-  document.body.appendChild(debugEl);
-  let magnetischScrollTeller = 0;
-
   function magnetischVindDichtstbijzijndeBadge() {
     // Verzamelt alle mogelijke "badge"-achtige ankerpunten: de Uren-titel, de Actuele-week-badge,
     // en de week-labels (Vorige/Volgende week etc.) — wat er ook op dit moment zichtbaar/aanwezig is.
@@ -5967,17 +5960,14 @@ initSupabase();
       .filter(el => el.offsetParent !== null && el.getBoundingClientRect().height > 5);
     let beste = null;
     let besteAfstand = Infinity;
-    const alleAfstanden = [];
     for (const el of kandidaten) {
       const rect = el.getBoundingClientRect();
       const afstand = Math.abs(rect.top);
-      alleAfstanden.push(`${el.id || el.className.split(' ')[0]}:${afstand.toFixed(0)}px(h${rect.height.toFixed(0)})`);
       if (afstand < MAGNETISCH_SNAP_AFSTAND_PX && afstand < besteAfstand) {
         besteAfstand = afstand;
         beste = el;
       }
     }
-    debugEl.textContent = `MAGNETISCH-DEBUG: scrollY=${window.scrollY} teller=${magnetischScrollTeller} kandidaten=${kandidaten.length}\nafstanden: ${alleAfstanden.join(', ')}\ngekozen: ${beste ? (beste.id || beste.className.split(' ')[0]) + ' @ ' + besteAfstand.toFixed(0) + 'px' : 'GEEN'}`;
     return beste;
   }
 
@@ -5991,7 +5981,6 @@ initSupabase();
   }
 
   window.addEventListener('scroll', () => {
-    magnetischScrollTeller++;
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
     magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150); // teruggebracht naar een gangbare, beproefde waarde (was 60ms)
   }, { passive: true });
