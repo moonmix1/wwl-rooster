@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 20:25 — verder versterkt: aantrekkingsbereik 150px->250px, reactietijd 80ms->60ms -->
+<!-- upload-poging: 6 aug 2026, 20:45 — gloed op ACTUELE WEEK-badge simpel gefixt: 1 woord "inset" toegevoegd aan de box-shadow, i.p.v. het hele element opnieuw op te bouwen -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -333,7 +333,7 @@
      witte achtergrond, een normale 6px donkerblauwe rand, lichtblauwe tekst. */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
     background: #0f0613; border: 6px solid #3b82f6; border-radius: 8px; position: relative;
-    box-shadow: 0 0 16px 4px rgba(125,211,252,0.6);
+    box-shadow: inset 0 0 16px 4px rgba(125,211,252,0.6);
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
     padding: 10px 12px; }
@@ -5944,7 +5944,7 @@ initSupabase();
 // in beeld staat. Werkt via een korte debounce op het scroll-event: pas nadat er 150ms niet meer
 // gescrolld is, wordt bepaald of snappen nodig is (voorkomt dat het "vecht" met actief scrollen).
 (function() {
-  const MAGNETISCH_SNAP_AFSTAND_PX = 250; // krachtiger: was 150, nu nog groter aantrekkingsbereik
+  const MAGNETISCH_SNAP_AFSTAND_PX = 100; // teruggebracht naar een gangbare, beproefde waarde (was 250)
   let magnetischScrollTimer = null;
 
   // TIJDELIJK DEBUG-BLOKJE: toont live de scroll-status en gevonden badges, om te bepalen waar
@@ -5993,7 +5993,7 @@ initSupabase();
   window.addEventListener('scroll', () => {
     magnetischScrollTeller++;
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
-    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 60); // krachtiger: was 80ms, nu nog sneller
+    magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150); // teruggebracht naar een gangbare, beproefde waarde (was 60ms)
   }, { passive: true });
 })();
 
