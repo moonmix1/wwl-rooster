@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 23:00 — rand-kleur exact gelijk aan "vrijwilliger"-vakjes gemaakt (#083b6c, .pr-cel-vw) -->
+<!-- upload-poging: 6 aug 2026, 23:15 — in/uitklap-cyclus omgebouwd van rondgaand (1-2-3-1-2-3) naar heen-en-weer (1-2-3-2-1-2-3-2-1), via een dataset-attribuut dat de richting per kolom onthoudt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -4951,17 +4951,35 @@ const PR_DIENST_UREN = 8;
 function prToggleKaartenKolom(kolomId) {
   const el = document.getElementById(kolomId);
   if (!el) return;
-  // 3-staten-cyclus: ingeklapt -> uitgeklapt (met veer/lichte scheefheid) -> volledig recht -> weer
-  // terug naar ingeklapt. Elke tik gaat één stap verder in deze vaste volgorde.
+  // Heen-en-weer-cyclus (1-2-3-2-1-2-3-2-1...) i.p.v. rondgaand (1-2-3-1-2-3...): bij staat 3
+  // (volledig recht) keert de richting om, en gaat de volgende tik terug naar staat 2 in plaats
+  // van meteen naar staat 1. De richting wordt per kolom onthouden via een data-attribuut, zodat
+  // elke kolom zijn eigen, onafhankelijke heen-en-weer-positie behoudt.
+  const richting = el.dataset.prRichting || 'vooruit';
   if (el.classList.contains('pr-kaarten-kolom-ingeklapt')) {
+    // Bij staat 1 kan de richting alleen maar "vooruit" zijn (er is geen staat 0 om vanuit
+    // achteruit terug te keren) — dus altijd naar staat 2, en zet de richting expliciet vooruit.
     el.classList.remove('pr-kaarten-kolom-ingeklapt');
     el.classList.add('pr-kaarten-kolom-uitgeklapt');
+    el.dataset.prRichting = 'vooruit';
   } else if (el.classList.contains('pr-kaarten-kolom-uitgeklapt')) {
-    el.classList.remove('pr-kaarten-kolom-uitgeklapt');
-    el.classList.add('pr-kaarten-kolom-volledig-recht');
+    if (richting === 'vooruit') {
+      el.classList.remove('pr-kaarten-kolom-uitgeklapt');
+      el.classList.add('pr-kaarten-kolom-volledig-recht');
+      // Bij het bereiken van staat 3 keert de richting automatisch om, zodat de eerstvolgende
+      // tik vanuit staat 3 weer teruggaat naar staat 2.
+      el.dataset.prRichting = 'achteruit';
+    } else {
+      el.classList.remove('pr-kaarten-kolom-uitgeklapt');
+      el.classList.add('pr-kaarten-kolom-ingeklapt');
+      el.dataset.prRichting = 'vooruit';
+    }
   } else {
+    // Staat 3 (volledig recht): kan alleen bereikt zijn via "vooruit", dus hier gaat het altijd
+    // terug naar staat 2, met de richting al op "achteruit" gezet in de vorige stap hierboven.
     el.classList.remove('pr-kaarten-kolom-volledig-recht');
-    el.classList.add('pr-kaarten-kolom-ingeklapt');
+    el.classList.add('pr-kaarten-kolom-uitgeklapt');
+    el.dataset.prRichting = 'achteruit';
   }
   // Geen aparte correctie-aanroep nodig: de marges van de laatste harmonica-kaartjes (de "veer")
   // liggen al vast vanaf het renderen zelf, als simpele, begrensde waarden — geen DOM-meting of
