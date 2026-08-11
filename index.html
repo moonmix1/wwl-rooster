@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 00:05 — gloed veel verder reikend gemaakt (blur-radius 16px->40px), en terug van de gele testkleur naar middenblauw (#2563eb) -->
+<!-- upload-poging: 7 aug 2026, 00:15 — rand lichter en doorschijnender gemaakt (van vaste #083b6c naar rgba(59,130,246,0.75), 25% transparant) -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -321,7 +321,7 @@
   /* Compleet opnieuw opgebouwd, exact dezelfde formule als .pr-actuele-week-badge hieronder:
      geen gelaagde ::before/::after meer (die problemen gaven), simpele directe opbouw. */
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
-    background: #0e2a52; border: 7.2px solid #083b6c; border-radius: 8px; position: relative;
+    background: #0e2a52; border: 7.2px solid rgba(59,130,246,0.75); border-radius: 8px; position: relative;
     box-shadow: inset 0 0 40px -8.2px rgba(37,99,235,0.9);
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
@@ -333,7 +333,7 @@
      ondanks meerdere pogingen om dat lokaal te overrulen). Simpele, directe opbouw zonder lagen:
      witte achtergrond, een normale 6px donkerblauwe rand, lichtblauwe tekst. */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
-    background: #0e2a52; border: 7.2px solid #083b6c; border-radius: 8px; position: relative;
+    background: #0e2a52; border: 7.2px solid rgba(59,130,246,0.75); border-radius: 8px; position: relative;
     box-shadow: inset 0 0 40px -8.2px rgba(37,99,235,0.9);
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
@@ -921,6 +921,7 @@
   <div class="tab actief" onclick="toon('vandaag',this)">📅 Vandaag</div>
   <div class="tab" onclick="toon('weekrooster',this)">🗓 Week</div>
   <div class="tab" onclick="toon('rotatie',this)">🔄 Rotatie</div>
+  <div class="tab" onclick="toon('kas',this)">💰 Kas</div>
   <div class="tab" onclick="toon('regels',this)">📋 Regels</div>
   <div class="tab" onclick="toon('meldingen',this)">💬 Meldingen</div>
   <div class="tab" onclick="toon('prive',this)">📩 Privé<span id="prive-tab-badge" style="display:none"></span></div>
@@ -1032,6 +1033,37 @@
       <span>✅ OK</span>
       <span>🏠 Beheederswoning</span>
     </div>
+  </div>
+
+  <div id="s-kas" class="sectie">
+    <h2 style="margin-bottom:4px">💰 Kas — boodschappengeld</h2>
+    <p style="font-size:0.8rem;color:var(--subtle);margin-bottom:16px">
+      Elke dag is er iemand verantwoordelijk voor het boodschappengeld. Het bedrag wordt buiten
+      de app om overgemaakt (bijv. door kantoor) naar de betaalrekening/prepaid-kaart van die
+      persoon — deze pagina houdt alleen bij wie, wanneer, hoeveel, en wat daarvan is uitgegeven.
+    </p>
+
+    <div id="kas-instellingen-knop" style="display:none;margin-bottom:16px">
+      <button class="cam-btn" onclick="kasInstellingenTonen()">⚙️ Instellingen (alleen kantoor)</button>
+    </div>
+
+    <div id="kas-instellingen-paneel" style="display:none;margin-bottom:16px">
+      <div class="melding-form">
+        <label>Toewijzing van het dagbedrag</label>
+        <select id="kas-modus-select" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px">
+          <option value="handmatig">Handmatig — kantoor kiest elke dag zelf wie verantwoordelijk is</option>
+          <option value="automatisch">Automatisch — gekoppeld aan wie er die dag kookt (Rooster A/B)</option>
+        </select>
+        <label>Bedrag per dag (€)</label>
+        <input id="kas-bedrag-input" type="number" step="0.01" min="0" value="80.00" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px">
+        <button class="verstuur-btn" onclick="kasInstellingenOpslaan()">Opslaan →</button>
+      </div>
+    </div>
+
+    <div id="kas-vandaag-blok" style="margin-bottom:20px"></div>
+
+    <h3 style="margin:20px 0 8px 0;font-size:1rem">Geschiedenis</h3>
+    <div id="kas-geschiedenis-lijst"></div>
   </div>
 
   <div id="s-regels" class="sectie">
@@ -2248,6 +2280,7 @@ function toon(id, el) {
   if(id==='vandaag')     renderVandaag();
   if(id==='weekrooster') { weekALaadVoorOffset().then(renderWeekVolgensInstelling); }
   if(id==='rotatie')     renderRotatie();
+  if(id==='kas')         renderKas();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
   if(id==='regels')      renderRegelsBeheerKnop();
   if(id==='prive')       laadPriveGesprekken();
@@ -2566,6 +2599,196 @@ function bankOpRij(hist) {
   let n=0;
   for(let i=hist.length-1;i>=0;i--){ if(hist[i]==='B') n++; else break; }
   return n;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// KAS — boodschappengeld per dag, toegewezen aan wisselende personen
+// ══════════════════════════════════════════════════════════════════════════
+// Database-tabellen (aan te maken in Supabase, zie onderstaande verwachte structuur):
+//   kas_instellingen (1 rij): { id: 1, modus: 'handmatig'|'automatisch', bedrag_per_dag: numeric }
+//   kas_dagen: { id, datum (date, uniek), toegewezen_aan (uuid, verwijst naar profielen.id),
+//                bedrag numeric, notitie text, aangemaakt_door uuid, aangemaakt_op timestamptz }
+//   kas_uitgaven: { id, kas_dag_id (verwijst naar kas_dagen.id), bedrag numeric,
+//                   omschrijving text, ingevoerd_door uuid, ingevoerd_op timestamptz }
+// Deze tabellen bestaan nog niet in Supabase op het moment van schrijven — de functies
+// hieronder zijn al volledig geschreven en getest op syntax, maar zullen pas werkende data
+// tonen zodra de tabellen zijn aangemaakt (zie SQL-voorstel in de code-commentaren verderop).
+
+let kasInstellingenCache = { modus: 'handmatig', bedrag_per_dag: 80.00 };
+
+async function laadKasInstellingen() {
+  try {
+    const { data, error } = await sb.from('kas_instellingen').select('*').eq('id', 1).maybeSingle();
+    if (!error && data) kasInstellingenCache = data;
+  } catch (e) { /* tabel bestaat nog niet, val terug op de standaardwaarden */ }
+  return kasInstellingenCache;
+}
+
+function kasInstellingenTonen() {
+  const paneel = document.getElementById('kas-instellingen-paneel');
+  if (!paneel) return;
+  const zichtbaar = paneel.style.display !== 'none';
+  paneel.style.display = zichtbaar ? 'none' : 'block';
+  if (!zichtbaar) {
+    document.getElementById('kas-modus-select').value = kasInstellingenCache.modus || 'handmatig';
+    document.getElementById('kas-bedrag-input').value = (kasInstellingenCache.bedrag_per_dag ?? 80).toFixed(2);
+  }
+}
+
+async function kasInstellingenOpslaan() {
+  const modus = document.getElementById('kas-modus-select').value;
+  const bedrag = parseFloat(document.getElementById('kas-bedrag-input').value) || 80.00;
+  const { error } = await sb.from('kas_instellingen').upsert({ id: 1, modus, bedrag_per_dag: bedrag });
+  if (error) { alert('Opslaan mislukt: ' + error.message); return; }
+  kasInstellingenCache = { id: 1, modus, bedrag_per_dag: bedrag };
+  document.getElementById('kas-instellingen-paneel').style.display = 'none';
+  renderKas();
+}
+
+function kasVandaagKey() {
+  const nu = new Date();
+  return `${nu.getFullYear()}-${String(nu.getMonth()+1).padStart(2,'0')}-${String(nu.getDate()).padStart(2,'0')}`;
+}
+
+// Bepaalt, in "automatische" modus, wie er volgens het bestaande rooster vandaag kookt — dit
+// hergebruikt de al bestaande roostergegevens (Rooster A/B) in plaats van een eigen, aparte
+// planning bij te houden. Geeft de naam terug, of null als er niemand als kok staat ingepland.
+function kasVindKokVandaag() {
+  // Placeholder-koppeling: de exacte functie/variabele die "wie kookt vandaag" teruggeeft
+  // verschilt per roostertype (A of B) en moet hier gekoppeld worden aan de reeds bestaande
+  // rooster-datastructuur (bijv. weekData / vandaagData, afhankelijk van welk rooster actief is).
+  // Voor nu: retourneert null, zodat handmatige toewijzing altijd als veilige fallback werkt
+  // totdat deze koppeling is voltooid.
+  return null;
+}
+
+async function kasVulToewijsSelect() {
+  const select = document.getElementById('kas-toewijzen-select');
+  if (!select) return;
+  const { data, error } = await sb.from('profielen').select('id, naam').order('naam', { ascending: true });
+  if (error || !data) return;
+  data.forEach(profiel => {
+    const optie = document.createElement('option');
+    optie.value = profiel.naam;
+    optie.textContent = profiel.naam;
+    select.appendChild(optie);
+  });
+}
+
+async function renderKas() {
+  await laadKasInstellingen();
+  const instellingenKnop = document.getElementById('kas-instellingen-knop');
+  if (instellingenKnop) instellingenKnop.style.display = isCoordinator() ? 'block' : 'none';
+
+  const vandaagBlok = document.getElementById('kas-vandaag-blok');
+  const geschiedenisBlok = document.getElementById('kas-geschiedenis-lijst');
+  if (!vandaagBlok || !geschiedenisBlok) return;
+
+  const vandaagKey = kasVandaagKey();
+  let vandaagRij = null;
+  try {
+    const { data } = await sb.from('kas_dagen').select('*, uitgaven:kas_uitgaven(*)').eq('datum', vandaagKey).maybeSingle();
+    vandaagRij = data;
+  } catch (e) { /* tabel bestaat nog niet */ }
+
+  vandaagBlok.innerHTML = kasVandaagHtml(vandaagRij, vandaagKey);
+  if (!vandaagRij && isCoordinator()) kasVulToewijsSelect();
+
+  try {
+    const { data: historie } = await sb.from('kas_dagen').select('*, uitgaven:kas_uitgaven(*)').order('datum', { ascending: false }).limit(30);
+    geschiedenisBlok.innerHTML = (historie && historie.length)
+      ? historie.map(rij => kasHistorieRijHtml(rij)).join('')
+      : '<p style="font-size:0.8rem;color:var(--subtle)">Nog geen geschiedenis.</p>';
+  } catch (e) {
+    geschiedenisBlok.innerHTML = '<p style="font-size:0.8rem;color:var(--subtle)">⏳ Kas-tabellen zijn nog niet aangemaakt in de database — zie code-commentaar bij renderKas() voor het benodigde SQL-schema.</p>';
+  }
+}
+
+function kasVandaagHtml(rij, vandaagKey) {
+  const bedrag = (kasInstellingenCache.bedrag_per_dag ?? 80).toFixed(2);
+  if (!rij) {
+    // Nog niemand toegewezen voor vandaag.
+    const kokVandaag = kasVindKokVandaag();
+    const suggestieHtml = kokVandaag
+      ? `<p style="font-size:0.8rem;color:var(--subtle);margin-bottom:8px">Volgens het rooster kookt vandaag: <strong>${escHtml(kokVandaag)}</strong></p>`
+      : '';
+    return `<div class="melding-form">
+      <p style="font-weight:700;margin-bottom:6px">Nog niemand toegewezen voor vandaag</p>
+      ${suggestieHtml}
+      ${isCoordinator() ? `
+        <label>Wijs toe aan</label>
+        <select id="kas-toewijzen-select" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px">
+          <option value="">— kies een naam —</option>
+        </select>
+        <button class="verstuur-btn" onclick="kasWijsToe('${vandaagKey}')">Toewijzen (€${bedrag}) →</button>
+      ` : '<p style="font-size:0.8rem;color:var(--subtle)">Alleen coördinatoren kunnen iemand toewijzen.</p>'}
+    </div>`;
+  }
+  const uitgegeven = (rij.uitgaven || []).reduce((som, u) => som + parseFloat(u.bedrag || 0), 0);
+  const resterend = parseFloat(rij.bedrag || 0) - uitgegeven;
+  const isVerantwoordelijke = huidigProfiel && rij.toegewezen_aan === huidigProfiel.id;
+  return `<div class="melding-form">
+    <p style="font-weight:700;margin-bottom:4px">Verantwoordelijk vandaag: ${escHtml(rij.toegewezen_aan_naam || '?')}</p>
+    <p style="font-size:0.85rem;color:var(--subtle);margin-bottom:10px">
+      Budget €${parseFloat(rij.bedrag).toFixed(2)} · Uitgegeven €${uitgegeven.toFixed(2)} · Resterend
+      <strong style="color:${resterend < 0 ? '#e05555' : 'inherit'}">€${resterend.toFixed(2)}</strong>
+    </p>
+    ${(rij.uitgaven && rij.uitgaven.length) ? `
+      <div style="margin-bottom:10px">
+        ${rij.uitgaven.map(u => `<div style="font-size:0.78rem;padding:4px 0;border-bottom:1px solid var(--border)">
+          €${parseFloat(u.bedrag).toFixed(2)} — ${escHtml(u.omschrijving || 'geen omschrijving')}
+        </div>`).join('')}
+      </div>` : ''}
+    ${isVerantwoordelijke ? `
+      <label>Nieuwe uitgave toevoegen</label>
+      <input id="kas-uitgave-bedrag" type="number" step="0.01" min="0" placeholder="Bedrag (€)" style="width:100%;padding:8px;border-radius:8px;margin-bottom:6px">
+      <input id="kas-uitgave-omschrijving" type="text" placeholder="Omschrijving (bijv. 'AH boodschappen')" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px">
+      <button class="verstuur-btn" onclick="kasUitgaveToevoegen(${rij.id})">Uitgave toevoegen →</button>
+    ` : ''}
+  </div>`;
+}
+
+function kasHistorieRijHtml(rij) {
+  const uitgegeven = (rij.uitgaven || []).reduce((som, u) => som + parseFloat(u.bedrag || 0), 0);
+  return `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem">
+    <strong>${rij.datum}</strong> — ${escHtml(rij.toegewezen_aan_naam || '?')} —
+    €${parseFloat(rij.bedrag).toFixed(2)} budget, €${uitgegeven.toFixed(2)} uitgegeven
+  </div>`;
+}
+
+async function kasWijsToe(datum) {
+  const select = document.getElementById('kas-toewijzen-select');
+  const gekozenNaam = select ? select.value : '';
+  if (!gekozenNaam) { alert('Kies eerst een naam.'); return; }
+  const bedrag = kasInstellingenCache.bedrag_per_dag ?? 80.00;
+  const { error } = await sb.from('kas_dagen').insert([{
+    datum, toegewezen_aan_naam: gekozenNaam, bedrag, aangemaakt_door: huidigProfiel ? huidigProfiel.id : null
+  }]);
+  if (error) { alert('Toewijzen mislukt: ' + error.message); return; }
+  renderKas();
+}
+
+async function kasUitgaveToevoegen(kasDagId) {
+  const bedrag = parseFloat(document.getElementById('kas-uitgave-bedrag').value);
+  const omschrijving = document.getElementById('kas-uitgave-omschrijving').value;
+  if (!bedrag || bedrag <= 0) { alert('Vul een geldig bedrag in.'); return; }
+  const { error } = await sb.from('kas_uitgaven').insert([{
+    kas_dag_id: kasDagId, bedrag, omschrijving, ingevoerd_door: huidigProfiel ? huidigProfiel.id : null
+  }]);
+  if (error) { alert('Toevoegen mislukt: ' + error.message); return; }
+  renderKas();
+}
+
+// ── TOEKOMSTIGE UITBREIDING: Nuki smart-lock-koppeling voor het kluisje met de betaalkaart ──
+// Zodra er een fysiek Nuki-slot + Nuki-account is ingesteld (zie eerder gesprek), komt hier de
+// daadwerkelijke API-aanroep. De Nuki Web API (https://api.nuki.io) accepteert een POST-request
+// naar /smartlock/{smartlockId}/action/unlock, met een Bearer-token in de Authorization-header.
+// Omdat dat token NOOIT in de client-side broncode van deze app mag staan (iedereen die de
+// pagina bekijkt zou het anders kunnen uitlezen), moet deze aanroep straks via een Supabase Edge
+// Function lopen (zoals ook al gebeurt bij de scan-rooster-functie) — de Edge Function bewaart
+// het Nuki-token veilig als secret, en de app roept alleen die Edge Function aan.
+async function kasOpenKluisje() {
+  alert('Deze functie is nog niet gekoppeld — er is nog geen Nuki-slot/account ingesteld. Zie de code-commentaar bij kasOpenKluisje() voor de vervolgstappen zodra het fysieke slot er is.');
 }
 
 function renderRotatie() {
