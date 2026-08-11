@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 6 aug 2026, 23:15 — in/uitklap-cyclus omgebouwd van rondgaand (1-2-3-1-2-3) naar heen-en-weer (1-2-3-2-1-2-3-2-1), via een dataset-attribuut dat de richting per kolom onthoudt -->
+<!-- upload-poging: 6 aug 2026, 23:30 — achtergrond lichter (#2d3f5c -> #4a5f7a); gloed omgezet naar inset met negatieve spread (-8.2px = border 7.2px + 1px), zodat die exact 1px vanaf de buitenste rand van de badge naar binnen schijnt; hoeken volgen automatisch mee via border-radius -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -321,8 +321,8 @@
   /* Compleet opnieuw opgebouwd, exact dezelfde formule als .pr-actuele-week-badge hieronder:
      geen gelaagde ::before/::after meer (die problemen gaven), simpele directe opbouw. */
   .pr-uren-titel { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
-    background: #2d3f5c; border: 7.2px solid #083b6c; border-radius: 8px; position: relative;
-    box-shadow: 0 0 16px 1px rgba(37,99,235,0.7);
+    background: #4a5f7a; border: 7.2px solid #083b6c; border-radius: 8px; position: relative;
+    box-shadow: inset 0 0 16px -8.2px rgba(37,99,235,0.9);
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
     padding: 10px 12px; }
@@ -333,8 +333,8 @@
      ondanks meerdere pogingen om dat lokaal te overrulen). Simpele, directe opbouw zonder lagen:
      witte achtergrond, een normale 6px donkerblauwe rand, lichtblauwe tekst. */
   .pr-actuele-week-badge { font-size: 1.15rem; font-weight: 900; color: #7dd3fc; text-transform: uppercase;
-    background: #2d3f5c; border: 7.2px solid #083b6c; border-radius: 8px; position: relative;
-    box-shadow: 0 0 16px 1px rgba(37,99,235,0.7);
+    background: #4a5f7a; border: 7.2px solid #083b6c; border-radius: 8px; position: relative;
+    box-shadow: inset 0 0 16px -8.2px rgba(37,99,235,0.9);
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
     padding: 10px 12px; }
