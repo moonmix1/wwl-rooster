@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 05:55 — nieuw: bij "volledig recht"-staat (3e tik) verschijnen rechts oranje-witte balkjes op exact dezelfde hoogtes als de linker balkjes, via meting (getBoundingClientRect) i.p.v. wiskundige voorspelling. Balkjes worden weer verwijderd zodra de kolom een andere staat aanneemt -->
+<!-- upload-poging: 7 aug 2026, 06:10 — gespiegelde balkjes herbouwd: kaartjes krijgen nu ECHTE, in-flow margin-top (i.p.v. transform-verschuiving) om ruimte te maken, zodat het balkje niet meer dwars door het kaartje heen valt. Cumulatieve ruimte van eerdere balkjes wordt meegenomen bij het bepalen van de doelhoogte voor volgende balkjes -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5248,34 +5248,85 @@ function prToggleKaartenKolom(kolomId) {
 
 // Voegt, UITSLUITEND in de "volledig recht"-staat, oranje-witte balkjes toe aan de rechterkolom
 // op exact dezelfde hoogtes waar de linkerkolom zijn eigen scheidingsbalkjes heeft staan. Werkt
-// via meten (getBoundingClientRect), niet via een wiskundige voorspelling vooraf — dat bleek bij
-// eerdere pogingen betrouwbaarder. Als er geen linker balkjes gevonden worden, of de posities
-// niet logisch meetbaar zijn, gebeurt er simpelweg niets (geen crash, geen halve/foute balkjes).
+// via meten (getBoundingClientRect), niet via een wiskundige voorspelling vooraf.
+//
+// BELANGRIJK VERSCHIL MET DE EERSTE POGING: toen werden balkjes puur decoratief bovenop de
+// bestaande layout geplakt (position:absolute zonder de layout te beïnvloeden) — daardoor liepen
+// de kaartjes er gewoon dwars doorheen, want niets vertelde ze dat ze plaats moesten maken. Nu
+// wordt voor elk balkje het kaartje gezocht waar het balkje anders doorheen zou vallen, en krijgt
+// dát kaartje (en alles wat er in de HTML-volgorde na komt, via de normale document-flow) een
+// ECHTE extra margin-top — dat is dezelfde techniek die de "veer"-marges elders al gebruiken, dus
+// consistent met de rest van het systeem, in plaats van transform-manipulatie die kan schuren met
+// de bestaande CSS-transities op diezelfde kaartjes.
 function prVoegGespiegeldeBalkjesToe(kolomEl) {
   try {
     if (!kolomEl.classList.contains('pr-kaarten-kolom-volledig-recht')) return; // ondertussen alweer van staat gewisseld
     prVerwijderGespiegeldeBalkjes(kolomEl); // eerst opschonen, voor het geval dit al eerder is gebeurd
     const linkerKolomEl = kolomEl.closest('.pr-uren-lijst-wrap')?.querySelector('.pr-uren-lijst-kolom');
     if (!linkerKolomEl) return;
-    const linkerBalkjes = linkerKolomEl.querySelectorAll(':scope > div > div'); // de gestreepte balkjes zelf hebben geen aparte klasse, dus breed zoeken en filteren op stijl hieronder
-    const kolomTopRect = kolomEl.getBoundingClientRect();
-    const gevondenHoogtes = new Set();
     // Zoek specifiek naar elementen met de karakteristieke, gestreepte achtergrond van een balkje
-    // (repeating-linear-gradient met de oranje/witte kleuren) — dat is betrouwbaarder dan op een
-    // klasse te filteren, aangezien deze balkjes als losse, ongekwalificeerde <div>'s in de HTML
-    // staan (gebouwd via een losse `balkjeHtml`/`eindBalkjeHtml`-string, geen eigen CSS-klasse).
+    // (repeating-linear-gradient met de oranje/witte kleuren) — betrouwbaarder dan op een klasse
+    // te filteren, aangezien deze balkjes als losse, ongekwalificeerde <div>'s in de HTML staan.
     const alleLinkerDivs = linkerKolomEl.querySelectorAll('div');
+    const linkerKolomRect = linkerKolomEl.getBoundingClientRect();
+    const gevondenRelatieveHoogtes = [];
     alleLinkerDivs.forEach(div => {
       const stijl = div.getAttribute('style') || '';
       if (!stijl.includes('repeating-linear-gradient') || !stijl.includes('E85E00')) return;
       const rect = div.getBoundingClientRect();
-      const relatieveTop = Math.round(rect.top - kolomTopRect.top);
-      if (gevondenHoogtes.has(relatieveTop)) return; // voorkom dubbele balkjes op (vrijwel) dezelfde hoogte
-      gevondenHoogtes.add(relatieveTop);
+      gevondenRelatieveHoogtes.push(rect.top - linkerKolomRect.top);
+    });
+    gevondenRelatieveHoogtes.sort((a, b) => a - b);
+
+    const kolomTopRect = kolomEl.getBoundingClientRect();
+    const BALKJE_RUIMTE_PX = 16; // 8px balkje-hoogte + lucht erboven/eronder — moet ruimte maken die minstens het balkje zelf herbergt
+    let totaalReedsToegevoegdeRuimte = 0; // houdt bij hoeveel eerdere balkjes al ruimte hebben opgeëist, zodat latere metingen daarmee rekening houden
+    let vorigeHoogte = -Infinity;
+
+    gevondenRelatieveHoogtes.forEach(relatieveHoogteLinks => {
+      if (relatieveHoogteLinks - vorigeHoogte < 4) return; // te dicht bij het vorige balkje, waarschijnlijk hetzelfde dubbel gemeten
+      vorigeHoogte = relatieveHoogteLinks;
+
+      // De doel-hoogte in de RECHTERKOLOM (die inmiddels al door eerdere balkjes lager kan zijn
+      // dan zijn oorspronkelijke, ongeduwde positie) is de linker-hoogte plus de ruimte die eerdere
+      // gespiegelde balkjes al hebben opgeëist.
+      const doelHoogteRechts = relatieveHoogteLinks + totaalReedsToegevoegdeRuimte;
+
+      // Zoek het kaartje in de rechterkolom dat nu op (ongeveer) deze hoogte begint of overlapt.
+      const kaartjes = Array.from(kolomEl.querySelectorAll('.pr-kaart'));
+      let doelKaart = null;
+      for (const kaart of kaartjes) {
+        const kaartRect = kaart.getBoundingClientRect();
+        const kaartTopRelatief = kaartRect.top - kolomTopRect.top;
+        const kaartBottomRelatief = kaartRect.bottom - kolomTopRect.top;
+        if (doelHoogteRechts >= kaartTopRelatief - 2 && doelHoogteRechts <= kaartBottomRelatief + 2) {
+          doelKaart = kaart;
+          break;
+        }
+      }
+      if (!doelKaart) return; // geen passend kaartje gevonden op deze hoogte, dan geen balkje (voorkomt een balkje "in het luchtledige")
+
+      // Echte, in-flow ruimte maken: extra margin-top op het gevonden kaartje. Dat kaartje was
+      // ooit gerenderd met zijn eigen --pr-kaart-overlap-uit CSS-variabele (de "veer"-marge) —
+      // die blijft intact, deze extra marge komt daar gewoon bovenop via een los style-attribuut
+      // met hogere specificiteit dan de custom-property-gebaseerde CSS-regel.
+      const huidigeInlineMarginTop = parseFloat(doelKaart.style.marginTop) || 0;
+      doelKaart.style.marginTop = (huidigeInlineMarginTop + BALKJE_RUIMTE_PX) + 'px';
+      doelKaart.style.transition = 'none'; // geen animatie op deze correctie, anders "springt" de layout zichtbaar na de 1.6s-vertraging
+      doelKaart.dataset.prGespiegeldGeduwd = 'true';
+
+      // Het balkje zelf: geplaatst op de top-rand van het (nu verschoven) doelKaart, dus opnieuw
+      // meten na de margin-aanpassing hierboven.
+      const kolomTopRectNu = kolomEl.getBoundingClientRect();
+      const doelKaartRectNu = doelKaart.getBoundingClientRect();
+      const balkjeTopPositie = Math.round(doelKaartRectNu.top - kolomTopRectNu.top) - 12;
+
       const nieuwBalkje = document.createElement('div');
       nieuwBalkje.className = 'pr-gespiegeld-balkje';
-      nieuwBalkje.style.cssText = `position:absolute;left:0;right:0;top:${relatieveTop}px;height:8px;border-radius:4px;margin:0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75);pointer-events:none;z-index:1000;`;
+      nieuwBalkje.style.cssText = `position:absolute;left:0;right:0;top:${balkjeTopPositie}px;height:8px;border-radius:4px;margin:0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75);pointer-events:none;z-index:1000;`;
       kolomEl.appendChild(nieuwBalkje);
+
+      totaalReedsToegevoegdeRuimte += BALKJE_RUIMTE_PX;
     });
   } catch (e) {
     // Bij enige onverwachte fout: geen gespiegelde balkjes tonen, maar de rest van de app moet
@@ -5286,6 +5337,12 @@ function prVoegGespiegeldeBalkjesToe(kolomEl) {
 
 function prVerwijderGespiegeldeBalkjes(kolomEl) {
   kolomEl.querySelectorAll('.pr-gespiegeld-balkje').forEach(el => el.remove());
+  // Ook de eerder toegevoegde, extra margin-top weer ongedaan maken op kaartjes die "geduwd" waren.
+  kolomEl.querySelectorAll('[data-pr-gespiegeld-geduwd="true"]').forEach(kaart => {
+    kaart.style.marginTop = '';
+    kaart.style.transition = '';
+    delete kaart.dataset.prGespiegeldGeduwd;
+  });
 }
 
 // Onthoudt per kolom een lopende timer, zodat een tweede klik die op tijd binnenkomt de eerste
