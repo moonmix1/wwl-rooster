@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 02:50 — achtergrond nog iets donkerder rood (#8e1414 -> #781111); titel + tekst nu middelgeel (#d4b83f, consistent met de bestaande "gast vd week"-labelkleur elders in de app) -->
+<!-- upload-poging: 7 aug 2026, 03:35 — "Concierge" (en andere lange, enkele woorden) in "Uren per week"-kaartjes: naamMetKrimpendeWoorden had geen lengte-gebaseerde verkleining, waardoor het woord werd afgekapt (ellipsis) i.p.v. kleiner te passen. Nu 20% kleiner bij 9 letters, oplopend bij langere woorden -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -3557,7 +3557,13 @@ function escHtml(s) {
 function naamMetKrimpendeWoorden(naam, basisRem) {
   const woorden = String(naam || '').split(' ');
   return woorden.map((w, i) => {
-    const factor = i === 0 ? 1 : 0.7;
+    const positieFactor = i === 0 ? 1 : 0.7;
+    // Extra verkleining bij een lang, enkel woord (zoals "Concierge", 9 letters) — zonder dit
+    // bleef zo'n woord op volle grootte staan en werd het afgekapt door de ellipsis-CSS
+    // (text-overflow: ellipsis) in plaats van gewoon volledig, kleiner te passen.
+    const lengte = w.length;
+    const lengteFactor = lengte >= 10 ? 0.72 : (lengte === 9 ? 0.8 : (lengte === 8 ? 0.88 : 1));
+    const factor = positieFactor * lengteFactor;
     return `<span style="font-size:${(basisRem * factor).toFixed(3)}rem">${escHtml(w)}</span>`;
   }).join(' ');
 }
@@ -4877,6 +4883,12 @@ async function prVerwerkScanFoto(event) {
 
   const geselecteerdeDinsdag = prDinsdagVanWeek(prWeekOffset);
   const geselecteerdeWeekKey = prDatumKey(new Date(geselecteerdeDinsdag.getTime() - 6 * 86400000));
+  // De ACTUELE week (offset 0) — los van welke week toevallig op het scherm stond op het moment
+  // van scannen. Dit is de fallback wanneer de AI géén datum op het gescande rooster herkent:
+  // in dat geval gaan we ervan uit dat het over de huidige week gaat, niet over de week die de
+  // gebruiker toevallig had opengestaan (die kan namelijk een andere, niet-actuele week zijn).
+  const actueleDinsdag = prDinsdagVanWeek(0);
+  const actueleWeekKey = prDatumKey(new Date(actueleDinsdag.getTime() - 6 * 86400000));
 
   try {
     const { data, error } = await sb.functions.invoke('scan-rooster', {
@@ -4886,7 +4898,7 @@ async function prVerwerkScanFoto(event) {
     if (error) { prZetScanStatus('⚠️ Fout bij scannen: ' + error.message, '#f87171'); return; }
     if (!data || !data.succes) { prZetScanStatus('⚠️ Fout: ' + (data?.error || 'onbekende fout'), '#f87171'); return; }
 
-    const weekKey = data.datumHerkend && data.weekStart ? data.weekStart : geselecteerdeWeekKey;
+    const weekKey = data.datumHerkend && data.weekStart ? data.weekStart : actueleWeekKey;
 
     // FIX: eerst navigeren naar de juiste week, DAARNA pas vullen+renderen — anders rendert
     // prVerwerkHerkendRooster() nog de oude/verkeerde week op het scherm.
@@ -4904,7 +4916,7 @@ async function prVerwerkScanFoto(event) {
     if (data.datumHerkend) {
       prZetScanStatus('✅ Rooster automatisch ingevuld voor de week van ' + weekKey + ' (datum herkend van de foto zelf). Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
     } else {
-      prZetScanStatus('✅ Rooster automatisch ingevuld voor de geselecteerde week (' + weekKey + ') — kon geen datum op de foto zelf vinden. Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
+      prZetScanStatus('✅ Rooster automatisch ingevuld voor de actuele week (' + weekKey + ') — kon geen datum op de foto zelf vinden, dus is uitgegaan van de huidige week. Controleer de vakjes hieronder en corrigeer waar nodig.', '#4ade80');
     }
   } catch (e) {
     prZetScanStatus('⚠️ Onverwachte fout: ' + e.message, '#f87171');
