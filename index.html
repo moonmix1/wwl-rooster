@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 05:45 — VOLLEDIG TERUGGEDRAAID: het "uren"-label bij 0-uur-badges verwijderd (HTML + CSS), aangezien renderUrenRij door beide kolommen samen wordt gebruikt en de wijziging onbedoeld ook de linkerkolom raakte -->
+<!-- upload-poging: 7 aug 2026, 05:55 — nieuw: bij "volledig recht"-staat (3e tik) verschijnen rechts oranje-witte balkjes op exact dezelfde hoogtes als de linker balkjes, via meting (getBoundingClientRect) i.p.v. wiskundige voorspelling. Balkjes worden weer verwijderd zodra de kolom een andere staat aanneemt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5215,6 +5215,7 @@ function prToggleKaartenKolom(kolomId) {
     el.classList.remove('pr-kaarten-kolom-ingeklapt');
     el.classList.add('pr-kaarten-kolom-uitgeklapt');
     el.dataset.prRichting = 'vooruit';
+    prVerwijderGespiegeldeBalkjes(el);
   } else if (el.classList.contains('pr-kaarten-kolom-uitgeklapt')) {
     if (richting === 'vooruit') {
       el.classList.remove('pr-kaarten-kolom-uitgeklapt');
@@ -5222,10 +5223,15 @@ function prToggleKaartenKolom(kolomId) {
       // Bij het bereiken van staat 3 keert de richting automatisch om, zodat de eerstvolgende
       // tik vanuit staat 3 weer teruggaat naar staat 2.
       el.dataset.prRichting = 'achteruit';
+      // Alleen in staat 3 (volledig recht): voeg op de exacte hoogtes van de linker balkjes ook
+      // rechts balkjes toe. Gebeurt na een korte vertraging (na de 1.5s-animatie), zodat er
+      // gemeten wordt op de uiteindelijke, tot rust gekomen posities, niet halverwege de beweging.
+      setTimeout(() => prVoegGespiegeldeBalkjesToe(el), 1600);
     } else {
       el.classList.remove('pr-kaarten-kolom-uitgeklapt');
       el.classList.add('pr-kaarten-kolom-ingeklapt');
       el.dataset.prRichting = 'vooruit';
+      prVerwijderGespiegeldeBalkjes(el);
     }
   } else {
     // Staat 3 (volledig recht): kan alleen bereikt zijn via "vooruit", dus hier gaat het altijd
@@ -5233,10 +5239,53 @@ function prToggleKaartenKolom(kolomId) {
     el.classList.remove('pr-kaarten-kolom-volledig-recht');
     el.classList.add('pr-kaarten-kolom-uitgeklapt');
     el.dataset.prRichting = 'achteruit';
+    prVerwijderGespiegeldeBalkjes(el);
   }
   // Geen aparte correctie-aanroep nodig: de marges van de laatste harmonica-kaartjes (de "veer")
   // liggen al vast vanaf het renderen zelf, als simpele, begrensde waarden — geen DOM-meting of
   // correctie-na-afloop meer nodig.
+}
+
+// Voegt, UITSLUITEND in de "volledig recht"-staat, oranje-witte balkjes toe aan de rechterkolom
+// op exact dezelfde hoogtes waar de linkerkolom zijn eigen scheidingsbalkjes heeft staan. Werkt
+// via meten (getBoundingClientRect), niet via een wiskundige voorspelling vooraf — dat bleek bij
+// eerdere pogingen betrouwbaarder. Als er geen linker balkjes gevonden worden, of de posities
+// niet logisch meetbaar zijn, gebeurt er simpelweg niets (geen crash, geen halve/foute balkjes).
+function prVoegGespiegeldeBalkjesToe(kolomEl) {
+  try {
+    if (!kolomEl.classList.contains('pr-kaarten-kolom-volledig-recht')) return; // ondertussen alweer van staat gewisseld
+    prVerwijderGespiegeldeBalkjes(kolomEl); // eerst opschonen, voor het geval dit al eerder is gebeurd
+    const linkerKolomEl = kolomEl.closest('.pr-uren-lijst-wrap')?.querySelector('.pr-uren-lijst-kolom');
+    if (!linkerKolomEl) return;
+    const linkerBalkjes = linkerKolomEl.querySelectorAll(':scope > div > div'); // de gestreepte balkjes zelf hebben geen aparte klasse, dus breed zoeken en filteren op stijl hieronder
+    const kolomTopRect = kolomEl.getBoundingClientRect();
+    const gevondenHoogtes = new Set();
+    // Zoek specifiek naar elementen met de karakteristieke, gestreepte achtergrond van een balkje
+    // (repeating-linear-gradient met de oranje/witte kleuren) — dat is betrouwbaarder dan op een
+    // klasse te filteren, aangezien deze balkjes als losse, ongekwalificeerde <div>'s in de HTML
+    // staan (gebouwd via een losse `balkjeHtml`/`eindBalkjeHtml`-string, geen eigen CSS-klasse).
+    const alleLinkerDivs = linkerKolomEl.querySelectorAll('div');
+    alleLinkerDivs.forEach(div => {
+      const stijl = div.getAttribute('style') || '';
+      if (!stijl.includes('repeating-linear-gradient') || !stijl.includes('E85E00')) return;
+      const rect = div.getBoundingClientRect();
+      const relatieveTop = Math.round(rect.top - kolomTopRect.top);
+      if (gevondenHoogtes.has(relatieveTop)) return; // voorkom dubbele balkjes op (vrijwel) dezelfde hoogte
+      gevondenHoogtes.add(relatieveTop);
+      const nieuwBalkje = document.createElement('div');
+      nieuwBalkje.className = 'pr-gespiegeld-balkje';
+      nieuwBalkje.style.cssText = `position:absolute;left:0;right:0;top:${relatieveTop}px;height:8px;border-radius:4px;margin:0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75);pointer-events:none;z-index:1000;`;
+      kolomEl.appendChild(nieuwBalkje);
+    });
+  } catch (e) {
+    // Bij enige onverwachte fout: geen gespiegelde balkjes tonen, maar de rest van de app moet
+    // gewoon blijven werken — dit is een puur decoratieve toevoeging, geen kernfunctionaliteit.
+    console.warn('Gespiegelde balkjes konden niet worden toegevoegd:', e);
+  }
+}
+
+function prVerwijderGespiegeldeBalkjes(kolomEl) {
+  kolomEl.querySelectorAll('.pr-gespiegeld-balkje').forEach(el => el.remove());
 }
 
 // Onthoudt per kolom een lopende timer, zodat een tweede klik die op tijd binnenkomt de eerste
