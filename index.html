@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 06:10 — gespiegelde balkjes herbouwd: kaartjes krijgen nu ECHTE, in-flow margin-top (i.p.v. transform-verschuiving) om ruimte te maken, zodat het balkje niet meer dwars door het kaartje heen valt. Cumulatieve ruimte van eerdere balkjes wordt meegenomen bij het bepalen van de doelhoogte voor volgende balkjes -->
+<!-- upload-poging: 7 aug 2026, 06:20 — precisie-correctie: geen vaste, cumulatief optellende BALKJE_RUIMTE_PX-aanname meer per balkje, maar per balkje het exacte, actueel gemeten verschil tussen huidige en gewenste kaartje-positie herberekenen — voorkomt dat kleine afwijkingen zich opstapelen naarmate er meer balkjes bijkomen, wat de eerdere, licht-afwijkende verticale positionering veroorzaakte -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5278,55 +5278,56 @@ function prVoegGespiegeldeBalkjesToe(kolomEl) {
     });
     gevondenRelatieveHoogtes.sort((a, b) => a - b);
 
-    const kolomTopRect = kolomEl.getBoundingClientRect();
-    const BALKJE_RUIMTE_PX = 16; // 8px balkje-hoogte + lucht erboven/eronder — moet ruimte maken die minstens het balkje zelf herbergt
-    let totaalReedsToegevoegdeRuimte = 0; // houdt bij hoeveel eerdere balkjes al ruimte hebben opgeëist, zodat latere metingen daarmee rekening houden
-    let vorigeHoogte = -Infinity;
+    // BELANGRIJKE CORRECTIE t.o.v. de vorige poging: in plaats van een VASTE aanname
+    // (BALKJE_RUIMTE_PX opgeteld per balkje) te gebruiken, die cumulatief steeds verder kon
+    // afwijken van de werkelijkheid naarmate er meer balkjes bijkwamen, wordt nu bij elk balkje
+    // het EXACTE, actueel gemeten verschil herberekend tussen waar het doelkaartje al staat en
+    // waar het zou moeten staan — telkens na de vorige aanpassing. Dat voorkomt dat kleine
+    // afwijkingen zich opstapelen: elke stap corrigeert opnieuw tegen de daadwerkelijke,
+    // actuele meting, in plaats van tegen een opgetelde schatting.
+    const BALKJE_PLUS_LUCHT_PX = 16; // 8px balkje-hoogte + lucht erboven/eronder
+    gevondenRelatieveHoogtes.forEach((doelHoogteLinks, index) => {
+      if (index > 0 && doelHoogteLinks - gevondenRelatieveHoogtes[index - 1] < 4) return; // te dicht bij het vorige, waarschijnlijk dubbel gemeten
 
-    gevondenRelatieveHoogtes.forEach(relatieveHoogteLinks => {
-      if (relatieveHoogteLinks - vorigeHoogte < 4) return; // te dicht bij het vorige balkje, waarschijnlijk hetzelfde dubbel gemeten
-      vorigeHoogte = relatieveHoogteLinks;
-
-      // De doel-hoogte in de RECHTERKOLOM (die inmiddels al door eerdere balkjes lager kan zijn
-      // dan zijn oorspronkelijke, ongeduwde positie) is de linker-hoogte plus de ruimte die eerdere
-      // gespiegelde balkjes al hebben opgeëist.
-      const doelHoogteRechts = relatieveHoogteLinks + totaalReedsToegevoegdeRuimte;
-
-      // Zoek het kaartje in de rechterkolom dat nu op (ongeveer) deze hoogte begint of overlapt.
+      const kolomTopRectNu = kolomEl.getBoundingClientRect(); // steeds opnieuw meten: kan verschoven zijn door een eerdere correctie
       const kaartjes = Array.from(kolomEl.querySelectorAll('.pr-kaart'));
       let doelKaart = null;
+      let doelKaartHuidigeTopRelatief = null;
       for (const kaart of kaartjes) {
         const kaartRect = kaart.getBoundingClientRect();
-        const kaartTopRelatief = kaartRect.top - kolomTopRect.top;
-        const kaartBottomRelatief = kaartRect.bottom - kolomTopRect.top;
-        if (doelHoogteRechts >= kaartTopRelatief - 2 && doelHoogteRechts <= kaartBottomRelatief + 2) {
+        const kaartTopRelatief = kaartRect.top - kolomTopRectNu.top;
+        const kaartBottomRelatief = kaartRect.bottom - kolomTopRectNu.top;
+        // Zoek het kaartje dat het dichtst bij (of net voorbij) de gewenste linker-hoogte begint —
+        // dat is het kaartje dat "in de weg zit" en dus moet verschuiven.
+        if (kaartBottomRelatief >= doelHoogteLinks - 2) {
           doelKaart = kaart;
+          doelKaartHuidigeTopRelatief = kaartTopRelatief;
           break;
         }
       }
-      if (!doelKaart) return; // geen passend kaartje gevonden op deze hoogte, dan geen balkje (voorkomt een balkje "in het luchtledige")
+      if (!doelKaart) return; // geen passend kaartje gevonden, dan geen balkje
 
-      // Echte, in-flow ruimte maken: extra margin-top op het gevonden kaartje. Dat kaartje was
-      // ooit gerenderd met zijn eigen --pr-kaart-overlap-uit CSS-variabele (de "veer"-marge) —
-      // die blijft intact, deze extra marge komt daar gewoon bovenop via een los style-attribuut
-      // met hogere specificiteit dan de custom-property-gebaseerde CSS-regel.
-      const huidigeInlineMarginTop = parseFloat(doelKaart.style.marginTop) || 0;
-      doelKaart.style.marginTop = (huidigeInlineMarginTop + BALKJE_RUIMTE_PX) + 'px';
-      doelKaart.style.transition = 'none'; // geen animatie op deze correctie, anders "springt" de layout zichtbaar na de 1.6s-vertraging
-      doelKaart.dataset.prGespiegeldGeduwd = 'true';
+      // Exact, gemeten verschil: hoeveel moet dit kaartje nog verder naar beneden t.o.v. waar het
+      // nu al staat, om zijn top-rand op de juiste plek (16px onder de linker-balkje-hoogte) te
+      // krijgen?
+      const gewensteTopRelatief = doelHoogteLinks + BALKJE_PLUS_LUCHT_PX;
+      const nogBenodigdVerschil = gewensteTopRelatief - doelKaartHuidigeTopRelatief;
+      if (nogBenodigdVerschil > 0.5) {
+        const huidigeInlineMarginTop = parseFloat(doelKaart.style.marginTop) || 0;
+        doelKaart.style.marginTop = (huidigeInlineMarginTop + nogBenodigdVerschil) + 'px';
+        doelKaart.style.transition = 'none'; // geen animatie op deze correctie, anders "springt" de layout zichtbaar
+        doelKaart.dataset.prGespiegeldGeduwd = 'true';
+      }
 
-      // Het balkje zelf: geplaatst op de top-rand van het (nu verschoven) doelKaart, dus opnieuw
-      // meten na de margin-aanpassing hierboven.
-      const kolomTopRectNu = kolomEl.getBoundingClientRect();
-      const doelKaartRectNu = doelKaart.getBoundingClientRect();
-      const balkjeTopPositie = Math.round(doelKaartRectNu.top - kolomTopRectNu.top) - 12;
+      // Het balkje zelf: geplaatst vlak boven de (nu gecorrigeerde) top-rand van doelKaart.
+      const kolomTopRectNaCorrectie = kolomEl.getBoundingClientRect();
+      const doelKaartRectNaCorrectie = doelKaart.getBoundingClientRect();
+      const balkjeTopPositie = Math.round(doelKaartRectNaCorrectie.top - kolomTopRectNaCorrectie.top) - 12;
 
       const nieuwBalkje = document.createElement('div');
       nieuwBalkje.className = 'pr-gespiegeld-balkje';
       nieuwBalkje.style.cssText = `position:absolute;left:0;right:0;top:${balkjeTopPositie}px;height:8px;border-radius:4px;margin:0 4px;background:repeating-linear-gradient(45deg, #E85E00 0px, #E85E00 6px, #ffffff 6px, #ffffff 12px);box-shadow:inset 0 0 3px rgba(0,0,0,0.35);filter:brightness(0.75);pointer-events:none;z-index:1000;`;
       kolomEl.appendChild(nieuwBalkje);
-
-      totaalReedsToegevoegdeRuimte += BALKJE_RUIMTE_PX;
     });
   } catch (e) {
     // Bij enige onverwachte fout: geen gespiegelde balkjes tonen, maar de rest van de app moet
