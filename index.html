@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 03:35 — "Concierge" (en andere lange, enkele woorden) in "Uren per week"-kaartjes: naamMetKrimpendeWoorden had geen lengte-gebaseerde verkleining, waardoor het woord werd afgekapt (ellipsis) i.p.v. kleiner te passen. Nu 20% kleiner bij 9 letters, oplopend bij langere woorden -->
+<!-- upload-poging: 7 aug 2026, 03:50 — TERUGGEDRAAID: naamMetKrimpendeWoorden (Uren per week-kaartjes) terug naar origineel, was per ongeluk gewijzigd en dat was niet de bedoeling. ECHTE FIX voor Rooster B: .pr-cel hoogte 78px->88px (en 68px->78px op klein scherm), zodat "Concierge" en andere lange namen een 2e regel krijgen i.p.v. afgekapt te worden door de eerder al bestaande overflow:hidden -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -148,7 +148,7 @@
   .pr-pin { font-size: 1.1rem; }
   .pr-dag-datum { font-size: 0.65rem; color: #888; display: block; }
   .pr-dag-label.pr-vandaag { color: #fff; }
-  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; height: 78px; position: relative;
+  .pr-cel { display: flex; flex-direction: column; gap: 2px; cursor: pointer; height: 88px; position: relative;
     margin: -4px -8px; padding: 4px 8px; border-radius: 4px; overflow: hidden; text-align: center; }
   .pr-cel, .pr-cel * {
     -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important;
@@ -849,7 +849,7 @@
     .content { padding: 10px 20px; }
     .pr-tabel td, .pr-tabel th { padding: 4px 8px; }
     .pr-dag-cel { min-height: 44px; }
-    .pr-cel { height: 68px; }
+    .pr-cel { height: 78px; }
     .pr-naam { font-size: 0.72rem; }
     .pr-naam-regel-naam, .pr-naam-regel-top { font-size: 0.9em; }
     .pr-cel-label, .pr-status-label { font-size: 0.4rem; }
@@ -3557,13 +3557,7 @@ function escHtml(s) {
 function naamMetKrimpendeWoorden(naam, basisRem) {
   const woorden = String(naam || '').split(' ');
   return woorden.map((w, i) => {
-    const positieFactor = i === 0 ? 1 : 0.7;
-    // Extra verkleining bij een lang, enkel woord (zoals "Concierge", 9 letters) — zonder dit
-    // bleef zo'n woord op volle grootte staan en werd het afgekapt door de ellipsis-CSS
-    // (text-overflow: ellipsis) in plaats van gewoon volledig, kleiner te passen.
-    const lengte = w.length;
-    const lengteFactor = lengte >= 10 ? 0.72 : (lengte === 9 ? 0.8 : (lengte === 8 ? 0.88 : 1));
-    const factor = positieFactor * lengteFactor;
+    const factor = i === 0 ? 1 : 0.7;
     return `<span style="font-size:${(basisRem * factor).toFixed(3)}rem">${escHtml(w)}</span>`;
   }).join(' ');
 }
