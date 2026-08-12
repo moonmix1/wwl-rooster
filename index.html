@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 04:30 — echte oorzaak bevestigd via debug-meting: het bestaande 18%-verkleiningsprotocol voor 9-letterwoorden werkte wél, maar was onvoldoende voor specifiek "Concierge" om op 1 regel te passen. Verhoogd naar 30% verkleining (factor 0.82->0.70). Debug-blokje + attribuut weer volledig verwijderd -->
+<!-- upload-poging: 7 aug 2026, 04:40 — 0.70-wijziging bevestigd aanwezig in bestand, maar "niks veranderd" gemeld; DEBUG V2 toegevoegd die specifiek de daadwerkelijk toegepaste (inline + computed) font-size van het binnenste span toont, om te zien of de 0.70-factor echt wordt gebruikt -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -5070,7 +5070,7 @@ async function renderPapierRooster(voorafGeladenData) {
     return `<span class="pr-naam-regel">
       ${kokExtra}
       <span class="pr-naam-regel-top">
-        <span class="pr-naam-regel-naam">${naamMetKrimpendeWoordenEm(naam)}</span>
+        <span class="pr-naam-regel-naam" data-debug-lengte="${naam.length}" data-debug-ruwe-naam="${escHtml(naam)}">${naamMetKrimpendeWoordenEm(naam)}</span>
       </span>
       <span class="pr-cel-label-rij">
         <span class="pr-cel-label">${inwerkVoor}${statusLabelTekst(status)}${inwerkNa}</span>
@@ -6242,6 +6242,39 @@ initSupabase();
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
     magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150); // teruggebracht naar een gangbare, beproefde waarde (was 60ms)
   }, { passive: true });
+})();
+
+// ── TIJDELIJK, PUUR INFORMATIEF DEBUG-BLOKJE V2 ──
+// Toont voor elk element met data-debug-lengte: de rauwe naam, de gemeten .length, en de
+// DAADWERKELIJK toegepaste (computed) font-size van het binnenste <span> dat
+// naamMetKrimpendeWoordenEm heeft gegenereerd — dat bevestigt of de 0.70-factor voor
+// 9-letterwoorden ook echt wordt toegepast, of dat er iets anders misgaat.
+(function() {
+  const debugEl = document.createElement('div');
+  debugEl.id = 'pr-concierge-debug-v2';
+  debugEl.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:0.55rem;font-family:monospace;padding:6px;z-index:99999;max-height:150px;overflow-y:auto;white-space:pre-wrap;border-top:2px solid #0f0;';
+  debugEl.textContent = 'DEBUG-V2: wachten op rendering...';
+  document.body.appendChild(debugEl);
+
+  function meetEnToon() {
+    const elementen = document.querySelectorAll('[data-debug-lengte]');
+    if (!elementen.length) {
+      debugEl.textContent = 'DEBUG-V2: geen elementen gevonden op dit moment.';
+      return;
+    }
+    const regels = [];
+    elementen.forEach(el => {
+      const ruweNaam = el.dataset.debugRuweNaam;
+      const gemetenLengte = el.dataset.debugLengte;
+      const binnensteSpan = el.querySelector('span');
+      const computedFontSize = binnensteSpan ? getComputedStyle(binnensteSpan).fontSize : '(geen binnenste span)';
+      const inlineFontSize = binnensteSpan ? binnensteSpan.style.fontSize : '(geen inline style)';
+      regels.push(`naam="${ruweNaam}" lengte=${gemetenLengte} | inline-font-size=${inlineFontSize} computed-font-size=${computedFontSize}`);
+    });
+    debugEl.textContent = 'DEBUG-V2:\n' + regels.join('\n');
+  }
+
+  setInterval(meetEnToon, 1000);
 })();
 
 </script>
