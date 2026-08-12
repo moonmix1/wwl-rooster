@@ -2239,8 +2239,13 @@ async function laadMeldingen() {
   if (error || !data) return;
   renderMeldingenData(data);
 
-  // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
-  const alleIds = data.map(m => m.id);
+  // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen. Alleen voor
+  // meldingen waarvan de volledige foto nog NIET in de sessie-cache zit — dat voorkomt dat
+  // dezelfde foto's telkens opnieuw (en onnodig) worden gedownload bij elke keer dat deze
+  // functie draait (bijv. bij inloggen, tabblad wisselen, of na het plaatsen/verwijderen van een
+  // bericht), wat eerder een aanzienlijk deel van het egress-verbruik veroorzaakte.
+  const nogNietInCache = data.filter(m => !(meldingenCache[m.id] && meldingenCache[m.id].media_vol));
+  const alleIds = nogNietInCache.map(m => m.id);
   if (alleIds.length) {
     const {data: fotoData} = await sb.from('meldingen').select('id, media_vol').in('id', alleIds).not('media_vol', 'is', null);
     (fotoData || []).forEach(rij => {
@@ -4045,8 +4050,11 @@ async function laadExtraItems(categorie) {
   (data || []).forEach(item => { extraItemsCache[item.id] = { ...(extraItemsCache[item.id]||{}), ...item }; });
   el.innerHTML = (data && data.length) ? data.map(item => extraItemKaartHTML(item, categorie)).join('') : '<p style="font-size:0.8rem;color:var(--subtle)">Nog niets geplaatst.</p>';
 
-  // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen
-  const alleIds = (data || []).map(item => item.id);
+  // Fase 2: op de achtergrond — de volledige, scherpe foto's ophalen en inwisselen. Alleen voor
+  // items waarvan de volledige foto nog niet in de sessie-cache zit (zelfde optimalisatie als bij
+  // laadMeldingen, om onnodig herhaald downloaden van dezelfde foto's te voorkomen).
+  const nogNietInCache = (data || []).filter(item => !(extraItemsCache[item.id] && extraItemsCache[item.id].media_vol));
+  const alleIds = nogNietInCache.map(item => item.id);
   if (alleIds.length) {
     const {data: fotoData} = await sb.from('extra_items').select('id, media_vol').in('id', alleIds).not('media_vol', 'is', null);
     (fotoData || []).forEach(rij => {
