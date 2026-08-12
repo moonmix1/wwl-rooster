@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 04:55 — echte oorzaak (via debug-meting) bevestigd: het naam-veld voor Concierge bevat in de database een per-ongeluk-getypt emoji + "aanwezig" (23 tekens totaal i.p.v. 9), wat de tekstverkleiningsfunctie in de war stuurde. Structurele fix: nieuw, los conciërge-icoontje (net als bij kok) toegevoegd, zodat toekomstige gevallen niet meer afhankelijk zijn van een schoon naamveld. Het BESTAANDE, vervuilde naamveld moet nog apart via de app zelf gecorrigeerd worden naar puur "Concierge" -->
+<!-- upload-poging: 7 aug 2026, 05:15 — conciërge-icoontje nu op top:2px (was 16px), dus vrijwel helemaal bovenaan de cel, i.p.v. een kleine correctie -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -167,7 +167,7 @@
   .pr-eenmans-wrap .pr-naam-regel-top { position: static; }
   .pr-eenmans-wrap .pr-cel-label-rij { position: static; margin-top: 6px; }
   .pr-eenmans-wrap .pr-kok-label { top: 18px; }
-  .pr-eenmans-wrap .pr-concierge-label { top: 18px; }
+  .pr-eenmans-wrap .pr-concierge-label { top: 2px; }
   /* Specifiek voor het ZWEVENDE kok-kaartje (binnen de onderwaterscène): het icoon zit hier in
      een kleiner, eigen kaartje i.p.v. de volle, gecentreerde cel — daardoor moet de top-offset
      opnieuw afgestemd worden, zodat de bovenkant van de koksmuts precies in de bovenrand van dit
