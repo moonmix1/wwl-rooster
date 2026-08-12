@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 05:35 — klein, zwart "uren"-label toegevoegd onder het cijfer bij 0-uur-badges, 30 graden schuin omhoog. Binnen de badge geplaatst (bottom:2px) i.p.v. eronder, omdat de badge overflow:hidden heeft en het label anders werd afgesneden -->
+<!-- upload-poging: 7 aug 2026, 05:45 — VOLLEDIG TERUGGEDRAAID: het "uren"-label bij 0-uur-badges verwijderd (HTML + CSS), aangezien renderUrenRij door beide kolommen samen wordt gebruikt en de wijziging onbedoeld ook de linkerkolom raakte -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -413,14 +413,6 @@
   .pr-uren-uur { position: absolute; top: 32px; right: 34px; transform: translate(50%, -50%); width: 52px; height: 52px; min-width: 16px; min-height: 16px; overflow: hidden; background: #111; color: #f5d800;
     border-radius: 3px; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center;
     justify-content: center; }
-  /* Klein, zwart "uren"-label dat onder het cijfer verschijnt zodra iemand op 0 uur staat —
-     lichtjes schuin (30 graden) omhoog geschreven, als subtiele visuele aanduiding. */
-  .pr-uren-nul-label {
-    position: absolute; bottom: 2px; left: 50%;
-    transform: translateX(-50%) rotate(-30deg);
-    font-size: 0.5rem; font-weight: 700; color: #000000;
-    white-space: nowrap; pointer-events: none;
-  }
   .pr-uren-status-plek { grid-column: 2; text-align: center; }
   .pr-uren-status-select { font-size: 0.6rem; background: transparent; border: none; color: inherit;
     opacity: 0.85; padding: 0 12px 0 0; -webkit-appearance: none; appearance: none; text-align: center;
@@ -5536,15 +5528,11 @@ function renderPrUrenKolom(weekKey, weekData, statusMap, beheer) {
     const rijDblKlik = !isRechterkolom
       ? `event.stopPropagation();prOpenUrenStatusKeuze('${weekKey}','${naamVeilig}','${status}')`
       : '';
-    const isNulUrenLabel = uren[naam] === 0;
-    const nulUrenLabelHtml = isNulUrenLabel
-      ? `<span class="pr-uren-nul-label">uren</span>`
-      : '';
     return `${urenGrensHtml}<div class="pr-uren-rij ${klasse}${isNulUur ? ' pr-uren-rij-nuluur' : ''}" style="padding-right:${paddingRechts}px" ${rijDblKlik ? `ondblclick="${rijDblKlik}"` : ''}>
       <div class="pr-uren-rij-top">
         <span class="pr-uren-nr">${idx + 1}</span>
         <span class="pr-uren-naam"><span class="pr-uren-naam-tekst">${naamMetKrimpendeWoorden(naam, 0.82)}</span></span>
-        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem;font-weight:${badgeGewicht};color:${badgeKleur};background:${badgeAchtergrond};position:relative">${uren[naam]}${nulUrenLabelHtml}</span>
+        <span class="pr-uren-uur" style="width:${badgeGrootte}px;height:${badgeGrootte}px;min-width:${badgeGrootte}px;min-height:${badgeGrootte}px;font-size:${badgeFontSize}rem;font-weight:${badgeGewicht};color:${badgeKleur};background:${badgeAchtergrond}">${uren[naam]}</span>
       </div>
       ${statusVeld}
     </div>`;
