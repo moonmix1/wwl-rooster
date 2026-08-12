@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 04:15 — PUUR ONDERZOEK, GEEN FUNCTIONELE WIJZIGING: tijdelijk debug-blokje toegevoegd dat de daadwerkelijke, gerenderde breedte/hoogte van "Concierge"-achtige namen meet t.o.v. hun cel, om de exacte oorzaak van de afkapping te vinden zonder te gokken -->
+<!-- upload-poging: 7 aug 2026, 04:30 — echte oorzaak bevestigd via debug-meting: het bestaande 18%-verkleiningsprotocol voor 9-letterwoorden werkte wél, maar was onvoldoende voor specifiek "Concierge" om op 1 regel te passen. Verhoogd naar 30% verkleining (factor 0.82->0.70). Debug-blokje + attribuut weer volledig verwijderd -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -3575,8 +3575,9 @@ function naamMetKrimpendeWoordenEm(naam) {
       const regel2 = w.slice(regel1Lengte);
       return `<span style="font-size:${basisFactor.toFixed(3)}em;vertical-align:baseline;display:block;line-height:1.05">${escHtml(regel1)}<br>${escHtml(regel2)}</span>`;
     }
-    // 8 letters: 12% kleiner. 9 letters: 18% kleiner. Respijt vóór een 2e regel nodig is.
-    const lengteFactor = lengte === 9 ? 0.82 : (lengte === 8 ? 0.88 : 1);
+    // 8 letters: 12% kleiner. 9 letters: 30% kleiner (was 18%, bleek voor "Concierge" niet
+    // genoeg respijt te geven om nog echt op 1 regel te passen, brak alsnog naar 2 regels af).
+    const lengteFactor = lengte === 9 ? 0.70 : (lengte === 8 ? 0.88 : 1);
     const factor = basisFactor * lengteFactor;
     return `<span style="font-size:${factor.toFixed(3)}em;vertical-align:baseline">${escHtml(w)}</span>`;
   }).join(' ');
@@ -5144,7 +5145,7 @@ async function renderPapierRooster(voorafGeladenData) {
             </div>`;
           } else {
             cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
-              <span class="pr-naam" data-debug-naam="${escHtml(info.naam1)}" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
+              <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
             </div>`;
           }
         } else {
@@ -6241,44 +6242,6 @@ initSupabase();
     if (magnetischScrollTimer) clearTimeout(magnetischScrollTimer);
     magnetischScrollTimer = setTimeout(magnetischProbeerSnappen, 150); // teruggebracht naar een gangbare, beproefde waarde (was 60ms)
   }, { passive: true });
-})();
-
-// ── TIJDELIJK, PUUR INFORMATIEF DEBUG-BLOKJE (verandert NIETS aan de weergave zelf) ──
-// Meet de daadwerkelijke, gerenderde breedte van "Concierge" (en vergelijkbare namen met
-// data-debug-naam) t.o.v. de beschikbare ruimte in hun cel, om te achterhalen waarom de tekst
-// afbreekt ondanks dat theoretische berekeningen lieten zien dat het zou moeten passen.
-(function() {
-  const debugEl = document.createElement('div');
-  debugEl.id = 'pr-concierge-debug';
-  debugEl.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:0.55rem;font-family:monospace;padding:6px;z-index:99999;max-height:150px;overflow-y:auto;white-space:pre-wrap;border-top:2px solid #0f0;';
-  debugEl.textContent = 'CONCIERGE-DEBUG: wachten op rendering...';
-  document.body.appendChild(debugEl);
-
-  function meetEnToon() {
-    const elementen = document.querySelectorAll('[data-debug-naam]');
-    if (!elementen.length) {
-      debugEl.textContent = 'CONCIERGE-DEBUG: geen elementen met data-debug-naam gevonden op dit moment (mogelijk andere week/tabblad open).';
-      return;
-    }
-    const regels = [];
-    elementen.forEach(el => {
-      const naam = el.dataset.debugNaam;
-      const eigenRect = el.getBoundingClientRect();
-      const ouderCel = el.closest('.pr-cel');
-      const ouderRect = ouderCel ? ouderCel.getBoundingClientRect() : null;
-      const stijl = getComputedStyle(el);
-      regels.push(
-        `naam="${naam}" | span-breedte=${eigenRect.width.toFixed(1)}px span-hoogte=${eigenRect.height.toFixed(1)}px | ` +
-        `cel-breedte=${ouderRect ? ouderRect.width.toFixed(1) : '?'}px cel-hoogte=${ouderRect ? ouderRect.height.toFixed(1) : '?'}px | ` +
-        `font-size=${stijl.fontSize} scrollWidth=${el.scrollWidth}px clientWidth=${el.clientWidth}px ` +
-        `${el.scrollWidth > el.clientWidth ? '⚠️OVERFLOW' : 'OK'}`
-      );
-    });
-    debugEl.textContent = 'CONCIERGE-DEBUG:\n' + regels.join('\n');
-  }
-
-  // Meet elke seconde opnieuw, aangezien het rooster dynamisch wordt herladen/herrenderd.
-  setInterval(meetEnToon, 1000);
 })();
 
 </script>
