@@ -1064,7 +1064,7 @@
 
     <div id="kas-vandaag-blok" style="margin-bottom:20px"></div>
 
-    <h3 style="margin:20px 0 8px 0;font-size:1rem">Geschiedenis</h3>
+    <h3 style="margin:20px 0 8px 0;font-size:1rem;color:#facc15">Geschiedenis</h3>
     <div id="kas-geschiedenis-lijst"></div>
   </div>
 
@@ -2758,8 +2758,8 @@ function kasVandaagHtml(rij, vandaagKey) {
 function kasHistorieRijHtml(rij) {
   const uitgegeven = (rij.uitgaven || []).reduce((som, u) => som + parseFloat(u.bedrag || 0), 0);
   return `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem">
-    <strong>${rij.datum}</strong> — ${escHtml(rij.toegewezen_aan_naam || '?')} —
-    €${parseFloat(rij.bedrag).toFixed(2)} budget, €${uitgegeven.toFixed(2)} uitgegeven
+    <strong style="color:#4ade80">${rij.datum}</strong><span style="color:#16a34a"> — ${escHtml(rij.toegewezen_aan_naam || '?')} —
+    €${parseFloat(rij.bedrag).toFixed(2)} budget</span><span style="color:#1e3a8a;font-weight:700"> → </span><span style="color:#ef4444">€${uitgegeven.toFixed(2)} uitgegeven</span>
   </div>`;
 }
 
