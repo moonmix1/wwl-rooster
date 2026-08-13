@@ -2736,7 +2736,7 @@ function kasVandaagHtml(rij, vandaagKey) {
   const isVerantwoordelijke = huidigProfiel && rij.toegewezen_aan === huidigProfiel.id;
   const vandaagLeesbaar = new Date(vandaagKey + 'T00:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return `<div class="melding-form">
-    <p style="font-weight:700;margin-bottom:4px">Verantwoordelijk vandaag, ${vandaagLeesbaar}: ${escHtml(rij.toegewezen_aan_naam || '?')}</p>
+    <p style="font-weight:700;margin-bottom:4px">Verantwoordelijk vandaag,<br>${vandaagLeesbaar}: ${escHtml(rij.toegewezen_aan_naam || '?')}</p>
     <p style="font-size:0.85rem;color:var(--subtle);margin-bottom:10px">
       Budget €${parseFloat(rij.bedrag).toFixed(2)} · Uitgegeven €${uitgegeven.toFixed(2)} · Resterend
       <strong style="color:${resterend < 0 ? '#e05555' : 'inherit'}">€${resterend.toFixed(2)}</strong>
