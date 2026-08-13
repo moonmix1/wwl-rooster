@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- upload-poging: 7 aug 2026, 06:20 — precisie-correctie: geen vaste, cumulatief optellende BALKJE_RUIMTE_PX-aanname meer per balkje, maar per balkje het exacte, actueel gemeten verschil tussen huidige en gewenste kaartje-positie herberekenen — voorkomt dat kleine afwijkingen zich opstapelen naarmate er meer balkjes bijkomen, wat de eerdere, licht-afwijkende verticale positionering veroorzaakte -->
+<!-- upload-poging: 7 aug 2026, 06:35 — Kas-badge: rood iets donkerder (#781111->#660e0e), gele rand 4px toegevoegd (zelfde geel als tekst); beide blauwe badges (Uren per week + Actuele week) 1 slagje donkerder gemaakt via filter:brightness(0.85), verdonkert het geheel gelijkmatig incl. rand/gloed -->
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -330,7 +330,7 @@
     box-shadow: inset 0 0 40px -8.2px rgba(37,99,235,0.9);
     letter-spacing: 0.08em; margin-bottom: 10px; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
-    padding: 10px 12px; }
+    padding: 10px 12px; filter: brightness(0.85); }
   /* Exacte kopie van .pr-uren-titel hierboven, hergebruikt voor de "ACTUELE WEEK"-badge naast de
      rooster-tabel — beide badges moeten er identiek uitzien (zelfde VLC-rand, gloed, kleuren). */
   /* Compleet opnieuw opgebouwd (na herhaalde problemen met de gelaagde ::before/::after-opzet
@@ -342,7 +342,7 @@
     box-shadow: inset 0 0 40px -8.2px rgba(37,99,235,0.9);
     letter-spacing: 0.08em; text-align: center; display: block; line-height: 1.25;
     min-width: 220px; min-height: 62px; box-sizing: border-box;
-    padding: 10px 12px; }
+    padding: 10px 12px; filter: brightness(0.85); }
   /* Bij een niet-actuele week (verleden/toekomst) neemt de "Uren deze week"-badge dezelfde
      kleuren over als het afzetlint rondom het rooster zelf, zodat badge en weekrand visueel
      bij elkaar horen en meteen duidelijk is dat je niet in de actuele week zit. De gele
@@ -1041,7 +1041,7 @@
   </div>
 
   <div id="s-kas" class="sectie">
-    <div style="background:#781111;border-radius:8px;padding:12px 14px;margin-bottom:16px">
+    <div style="background:#660e0e;border-radius:8px;padding:12px 14px;margin-bottom:16px;border:4px solid #d4b83f">
       <h2 style="margin-bottom:4px;color:#d4b83f">💰 Kas — boodschappengeld</h2>
       <br>
       <p style="font-size:1rem;color:#d4b83f;font-weight:700">
