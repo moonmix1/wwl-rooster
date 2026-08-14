@@ -2736,7 +2736,7 @@ function kasVandaagHtml(rij, vandaagKey) {
   const isVerantwoordelijke = huidigProfiel && rij.toegewezen_aan === huidigProfiel.id;
   const vandaagLeesbaar = new Date(vandaagKey + 'T00:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return `<div class="melding-form">
-    <p style="font-weight:700;margin-bottom:2px">Verantwoordelijk vandaag,<br>${vandaagLeesbaar}:</p>
+    <p style="font-weight:700;margin-bottom:2px">Verantwoordelijk vandaag,<br><span style="color:#a855f7">${vandaagLeesbaar}</span>:</p>
     <p style="font-weight:700;color:#eab308;margin-bottom:6px">${escHtml(rij.toegewezen_aan_naam || '?')}</p>
     <p style="font-size:0.85rem;margin-bottom:2px">
       <span style="color:#16a34a">Budget €${parseFloat(rij.bedrag).toFixed(2)}</span>
@@ -2761,12 +2761,24 @@ function kasVandaagHtml(rij, vandaagKey) {
   </div>`;
 }
 
+// Bouwt een bedrag op met verankerde, vaste-breedte blokken zodat het altijd exact
+// op dezelfde plek staat, ongeacht hoeveel cijfers het bedrag heeft (tot €999,99).
+// kleur = kleur van de cijfers/euroteken/komma; gaat NOOIT over €1000 of hoger.
+function kasBedragVerankerd(bedrag, kleur) {
+  const vast = parseFloat(bedrag).toFixed(2);
+  const [voorKomma, naKomma] = vast.split('.');
+  return `<span style="color:${kleur};font-weight:600;display:inline-block;width:10px">€</span>` +
+         `<span style="color:${kleur};font-weight:600;display:inline-block;width:25px;text-align:right">${voorKomma}</span>` +
+         `<span style="color:${kleur};font-weight:600;display:inline-block;width:7px;text-align:center">,</span>` +
+         `<span style="color:${kleur};font-weight:600;display:inline-block;width:18px;text-align:left">${naKomma}</span>`;
+}
+
 function kasHistorieRijHtml(rij) {
   const uitgegeven = (rij.uitgaven || []).reduce((som, u) => som + parseFloat(u.bedrag || 0), 0);
   return `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem;white-space:nowrap">
     <strong style="color:#a855f7;margin-right:6px">${rij.datum}</strong>
-    <span style="color:#eab308;font-weight:600;display:inline-block;width:58px;margin-right:4px">${escHtml(rij.toegewezen_aan_naam || '?')}</span>
-    <span style="color:#16a34a;font-weight:600;display:inline-block;width:48px;text-align:right">€${parseFloat(rij.bedrag).toFixed(2)}</span><span style="color:#16a34a;font-weight:600;margin-left:5px">budget</span><span style="color:#2563eb;font-weight:700;display:inline-block;width:16px;text-align:center;margin:0 3px"> → </span><span style="color:#f87171;display:inline-block;width:48px;text-align:right">€${uitgegeven.toFixed(2)}</span><span style="color:#f87171;margin-left:5px">uitgegeven</span>
+    <span style="color:#eab308;font-weight:600;display:inline-block;width:58px;margin-right:4px;text-align:center">${escHtml(rij.toegewezen_aan_naam || '?')}</span>
+    ${kasBedragVerankerd(rij.bedrag, '#16a34a')}<span style="color:#16a34a;font-weight:600;margin-left:5px">budget</span><span style="color:#2563eb;font-weight:700;display:inline-block;width:16px;text-align:center;margin:0 3px"> → </span>${kasBedragVerankerd(uitgegeven, '#f87171')}<span style="color:#f87171;margin-left:5px">uitgeg.</span>
   </div>`;
 }
 
