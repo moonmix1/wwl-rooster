@@ -2722,6 +2722,9 @@ async function renderKas() {
     badge.style.maxHeight = '300px';
     badge.style.marginBottom = '16px';
   }
+  const instellingenKnopReset = document.getElementById('kas-instellingen-knop');
+  if (instellingenKnopReset) instellingenKnopReset.style.marginTop = '0px';
+  if (vandaagBlok) vandaagBlok.style.marginTop = '0px';
   kasBadgePersInit();
 }
 
@@ -2733,12 +2736,18 @@ function kasBadgePersInit() {
   const badge = document.getElementById('kas-boodschappen-badge');
   const vandaagBlok = document.getElementById('kas-vandaag-blok');
   const geschiedenisBlok = document.getElementById('kas-geschiedenis-lijst');
+  const instellingenKnop = document.getElementById('kas-instellingen-knop');
   if (!badge || !vandaagBlok || !geschiedenisBlok) return;
 
   const persIn = () => {
     badge.classList.add('samengeperst');
     badge.style.maxHeight = '60px';
     badge.style.marginBottom = '2px';
+    // De rotatie van het verfrommelde effect laat de badge visueel hoger eindigen dan
+    // de layout-ruimte die hij inneemt; deze correctie trekt alles eronder omhoog zodat
+    // het er ook visueel strak tegenaan sluit, niet alleen in de onzichtbare layout.
+    if (instellingenKnop) instellingenKnop.style.marginTop = '-50px';
+    vandaagBlok.style.marginTop = '-50px';
     vandaagBlok.removeEventListener('click', persIn);
     geschiedenisBlok.removeEventListener('click', persIn);
   };
@@ -2815,8 +2824,7 @@ function kasBedragVerankerd(bedrag, kleur, visueleCorrectie) {
 function kasHistorieRijHtml(rij) {
   const uitgegeven = (rij.uitgaven || []).reduce((som, u) => som + parseFloat(u.bedrag || 0), 0);
   return `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem;white-space:nowrap">
-    <strong style="color:#a855f7;margin-right:4px">${rij.datum}</strong><span style="color:#2563eb;font-weight:700;margin-right:4px">|</span>
-    <span style="color:#eab308;font-weight:600;display:inline-block;width:58px;text-align:center">${escHtml(rij.toegewezen_aan_naam || '?')}</span><span style="color:#2563eb;font-weight:700">|</span>${kasBedragVerankerd(rij.bedrag, '#16a34a')}<span style="color:#16a34a;font-weight:600;margin-left:5px">budget</span><span style="color:#2563eb;font-weight:700">|</span>${kasBedragVerankerd(uitgegeven, '#f87171', -2)}<span style="color:#f87171;margin-left:5px">uitgeg.</span>
+    <strong style="color:#a855f7;margin-right:8px">${rij.datum}</strong><span style="color:#2563eb;font-weight:700">|</span><span style="color:#eab308;font-weight:600;display:inline-block;width:58px;text-align:center">${escHtml(rij.toegewezen_aan_naam || '?')}</span><span style="color:#2563eb;font-weight:700">|</span>${kasBedragVerankerd(rij.bedrag, '#16a34a')}<span style="color:#16a34a;font-weight:600;margin-left:5px">budget</span><span style="color:#2563eb;font-weight:700">|</span>${kasBedragVerankerd(uitgegeven, '#f87171', -5)}<span style="color:#f87171;margin-left:5px">uitgeg.</span>
   </div>`;
 }
 
