@@ -2841,9 +2841,9 @@ function kasHistorieRijHtml(rij) {
   // Dagnaam-lettergrootte schaalt mee met de lengte van het woord, zodat er geen extra
   // verticale ruimte vrijgemaakt hoeft te worden (past binnen de breedte van de datumkolom).
   const dagFontSize = dagNaam.length > 8 ? '0.55rem' : dagNaam.length > 6 ? '0.6rem' : '0.65rem';
-  return `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem;white-space:nowrap;display:flex;align-items:flex-end">
-    <span style="display:flex;flex-direction:column;align-items:center;margin-right:2px">
-      <strong style="color:#a855f7;line-height:1.15">${rij.datum}</strong><span style="color:#a855f7;font-size:${dagFontSize};font-weight:600;line-height:1;text-transform:capitalize">${dagNaam}</span>
+  return `<div style="padding:8px 0 20px 0;border-bottom:1px solid var(--border);font-size:0.82rem;white-space:nowrap;display:flex;align-items:flex-end;position:relative">
+    <span style="display:inline-block;position:relative;text-align:center;margin-right:2px">
+      <strong style="color:#a855f7;line-height:1.15;display:block">${rij.datum}</strong><span style="color:#a855f7;font-size:${dagFontSize};font-weight:600;line-height:1;text-transform:capitalize;position:absolute;top:100%;left:0;right:0">${dagNaam}</span>
     </span><span style="color:#2563eb;font-weight:700">|</span><span style="color:#eab308;font-weight:600;display:inline-block;width:58px;text-align:center">${escHtml(rij.toegewezen_aan_naam || '?')}</span><span style="color:#2563eb;font-weight:700">|</span>${kasBedragVerankerd(rij.bedrag, '#16a34a')}<span style="color:#16a34a;font-weight:600;margin-left:5px">budget</span><span style="color:#2563eb;font-weight:700">|</span>${kasBedragVerankerd(uitgegeven, '#f87171', -5)}<span style="color:#f87171;margin-left:5px">uitgeg.</span>
   </div>`;
 }
