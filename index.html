@@ -2824,8 +2824,8 @@ function kasBedragVerankerd(bedrag, kleur, visueleCorrectie) {
   const correctie = visueleCorrectie ? `margin-right:${visueleCorrectie}px` : '';
   return `<span style="color:${kleur};font-weight:600;display:inline-block;width:10px;${correctie}">€</span>` +
          `<span style="color:${kleur};font-weight:600;display:inline-block;width:28px;text-align:right">${negatief ? '-' : ''}${voorKomma}</span>` +
-         `<span style="color:${kleur};font-weight:600;display:inline-block;width:7px;text-align:center">,</span>` +
-         `<span style="color:${kleur};font-weight:600;display:inline-block;width:18px;text-align:left">${naKomma}</span>`;
+         `<span style="color:${kleur};font-weight:600;display:inline-block;width:4px;text-align:center">,</span>` +
+         `<span style="color:${kleur};font-weight:600;display:inline-block;width:15px;text-align:left">${naKomma}</span>`;
 }
 
 function kasDagNaamVoluit(datumStr) {
