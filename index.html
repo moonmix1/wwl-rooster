@@ -2771,7 +2771,7 @@ function kasVandaagHtml(rij, vandaagKey) {
       ${isCoordinator() ? `
         <label style="color:#16a34a;font-weight:600">Wijs bedrag toe aan</label>
         <select id="kas-toewijzen-select" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px;background:#052e16;color:#16a34a;border:4px solid #0a3d1f;box-shadow:inset 0 0 12px 3px rgba(22,163,74,0.5)">
-          <option value="" style="background:#052e16;color:#16a34a">— kies een persoon —</option>
+          <option value="" style="background:var(--surface);color:#16a34a">— kies een persoon —</option>
         </select>
         <button class="verstuur-btn" style="background:#052e16;color:#16a34a;border:4px solid #0a3d1f;box-shadow:inset 0 0 12px 3px rgba(22,163,74,0.5)" onclick="kasWijsToe('${vandaagKey}')">Toewijzen (€${bedrag}) →</button>
       ` : '<p style="font-size:0.8rem;color:var(--subtle)">Alleen coördinatoren kunnen iemand toewijzen.</p>'}
