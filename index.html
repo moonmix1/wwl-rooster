@@ -2683,7 +2683,6 @@ async function kasVulToewijsSelect() {
     const optie = document.createElement('option');
     optie.value = profiel.naam;
     optie.textContent = profiel.naam;
-    optie.style.background = '#052e16';
     optie.style.color = '#16a34a';
     select.appendChild(optie);
   });
@@ -2770,8 +2769,8 @@ function kasVandaagHtml(rij, vandaagKey) {
       ${suggestieHtml}
       ${isCoordinator() ? `
         <label style="color:#16a34a;font-weight:600">Wijs bedrag toe aan</label>
-        <select id="kas-toewijzen-select" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px;background:#052e16;color:#16a34a;border:4px solid #0a3d1f;box-shadow:inset 0 0 12px 3px rgba(22,163,74,0.5)">
-          <option value="" style="background:var(--surface);color:#16a34a">— kies een persoon —</option>
+        <select id="kas-toewijzen-select" style="width:100%;padding:8px;border-radius:8px;margin-bottom:8px;color:#16a34a">
+          <option value="" style="color:#16a34a">— kies een persoon —</option>
         </select>
         <button class="verstuur-btn" style="background:#052e16;color:#16a34a;border:4px solid #0a3d1f;box-shadow:inset 0 0 12px 3px rgba(22,163,74,0.5)" onclick="kasWijsToe('${vandaagKey}')">Toewijzen (€${bedrag}) →</button>
       ` : '<p style="font-size:0.8rem;color:var(--subtle)">Alleen coördinatoren kunnen iemand toewijzen.</p>'}
