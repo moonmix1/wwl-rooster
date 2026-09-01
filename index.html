@@ -2290,7 +2290,7 @@ function toon(id, el) {
   el.classList.add('actief');
   try { localStorage.setItem('wwl_laatste_tab', id); } catch(e) {}
   if(id==='vandaag')     renderVandaag();
-  if(id==='weekrooster') { weekALaadVoorOffset().then(renderWeekVolgensInstelling); }
+  if(id==='weekrooster') { weekAOffset = 0; weekALaadVoorOffset().then(renderWeekVolgensInstelling); }
   if(id==='rotatie')     renderRotatie();
   if(id==='kas')         renderKas();
   if(id==='meldingen')   { laadMeldingen(); laadPoll(); }
