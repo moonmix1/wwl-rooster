@@ -2379,17 +2379,19 @@ function renderVandaagMetMeldingen(meldingen) {
   if(d.kook)   kaarten.push({rol:'Kook',naam:d.kook.replace('★','').trim(),tijd:'14:00–17:00',cls:'kook'});
   if(bAv)  kaarten.push({rol:'Bank avond',naam:bAv,tijd:'16:00–22:00',cls:'bank'});
   if(d.corvee) kaarten.push({rol:'Corvee',naam:d.corvee,tijd:'18:00–22:00',cls:'corvee'});
-  document.getElementById('vandaag-kaarten').innerHTML = kaarten.map(k=>{
-    const kleur = naamMatchKleuren[k.naam];
-    const stijl = kleur ? ` style="box-shadow:0 0 0 3px ${kleur};"` : '';
-    return `
-    <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}"${stijl}>
-      <div class="rol">${k.rol}</div>
-      <div class="naam">${k.naam}</div>
-      ${ziek.includes(k.naam.toLowerCase())?'<div class="ziek-badge">⚠ Ziek gemeld</div>':''}
-      <div class="tijd">${k.tijd}</div>
-    </div>`;
-  }).join('');
+  document.getElementById('vandaag-kaarten').innerHTML = kaarten.length
+    ? kaarten.map(k=>{
+      const kleur = naamMatchKleuren[k.naam];
+      const stijl = kleur ? ` style="box-shadow:0 0 0 3px ${kleur};"` : '';
+      return `
+      <div class="kaart kaart-${k.cls} ${ziek.includes(k.naam.toLowerCase())?'ziek':''}"${stijl}>
+        <div class="rol">${k.rol}</div>
+        <div class="naam">${k.naam}</div>
+        ${ziek.includes(k.naam.toLowerCase())?'<div class="ziek-badge">⚠ Ziek gemeld</div>':''}
+        <div class="tijd">${k.tijd}</div>
+      </div>`;
+    }).join('')
+    : `<p style="font-size:0.85rem;color:var(--subtle)">Nog geen diensten toegewezen voor vandaag.</p>`;
 }
 
 function renderVandaag() {
