@@ -2459,7 +2459,7 @@ function renderWeek() {
       <td>${d.corvee?pill(d.corvee,'corvee',dagKey,'corvee',meervoudig,weekStartVoorRij):legePlek(dagKey,'corvee','—',weekStartVoorRij)}</td>
     </tr>`;
   };
-  const woensdagBasis = new Date(tuesday.getTime() + 86400000);
+  const woensdagBasis = new Date(tuesday.getTime() - 6 * 86400000);
   const alleRijen = WEEK_A_VOLGORDE.map((naam, idx) => maakRij(naam, idx, woensdagBasis, huidigRooster, weekStartHuidig)).join('');
   document.getElementById('week-body').innerHTML = alleRijen;
 }
