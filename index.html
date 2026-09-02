@@ -5215,8 +5215,7 @@ async function renderPapierRooster(voorafGeladenData) {
             // (zelfde klasse, padding, border-radius, line-height) — dus volledig paars/gloed,
             // net zo herkenbaar als in een gewone 2-mans-cel, en niet vermengd/doorschijnend met
             // de onderwaterscène erachter.
-            cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
-              ${onderwaterHtml}
+            cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px;height:42px;border-radius:3px;overflow:hidden;box-sizing:border-box">
               <span class="pr-kok-duik-reis">
                 <span class="pr-kok-zwevend-kaartje">
                   <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px 6px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative">
