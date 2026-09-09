@@ -2999,7 +2999,7 @@ function maakThumbnail(bronCanvas) {
 function fotoNemen(ns) {
   const video  = document.getElementById(idFor(ns,'cam-video'));
   const canvas = document.getElementById(idFor(ns,'cam-canvas'));
-  const MAX_BREEDTE = 900;
+  const MAX_BREEDTE = 1400;
   let breedte = video.videoWidth;
   let hoogte  = video.videoHeight;
   if (breedte > MAX_BREEDTE) {
@@ -3009,14 +3009,22 @@ function fotoNemen(ns) {
   canvas.width  = breedte;
   canvas.height = hoogte;
   canvas.getContext('2d').drawImage(video, 0, 0, breedte, hoogte);
-  const foto = canvas.toDataURL('image/jpeg', 0.60);
+  const foto = canvas.toDataURL('image/jpeg', 0.80);
   const fotoKlein = maakThumbnail(canvas);
   stopCamera(ns);
-  voegMediaToe(ns, { foto, foto_klein: fotoKlein, bestandsnaam: null });
+  (async () => {
+    try {
+      const blob = await (await fetch(foto)).blob();
+      const url = await uploadNaarStorage(new File([blob], 'camera.jpg', { type: 'image/jpeg' }), 'jpg');
+      voegMediaToe(ns, { foto: url, foto_klein: fotoKlein, bestandsnaam: null });
+    } catch (err) {
+      alert('Uploaden van de foto is mislukt: ' + err.message);
+    }
+  })();
 }
 
 function comprimeerAfbeelding(file, callback) {
-  const MAX_BREEDTE = 900;
+  const MAX_BREEDTE = 1400;
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new Image();
@@ -3029,12 +3037,25 @@ function comprimeerAfbeelding(file, callback) {
       const canvas = document.createElement('canvas');
       canvas.width = breedte; canvas.height = hoogte;
       canvas.getContext('2d').drawImage(img, 0, 0, breedte, hoogte);
-      callback(canvas.toDataURL('image/jpeg', 0.60), maakThumbnail(canvas));
+      callback(canvas.toDataURL('image/jpeg', 0.80), maakThumbnail(canvas));
     };
     img.onerror = () => callback(ev.target.result, null); // lukt comprimeren niet, gebruik origineel
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+async function uploadNaarStorage(file, extensieHint) {
+  const ext = (file.name && file.name.includes('.')) ? file.name.split('.').pop() : (extensieHint || 'bin');
+  const naam = `${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error } = await sb.storage.from('media').upload(naam, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type || undefined
+  });
+  if (error) { throw error; }
+  const { data } = sb.storage.from('media').getPublicUrl(naam);
+  return data.publicUrl;
 }
 
 function fotoUitBestand(e, ns) {
@@ -3046,17 +3067,27 @@ function fotoUitBestand(e, ns) {
     return;
   }
   if (file.type.startsWith('image/')) {
-    comprimeerAfbeelding(file, (dataUrl, thumbnail) => {
-      voegMediaToe(ns, { foto: dataUrl, foto_klein: thumbnail, bestandsnaam: null });
+    comprimeerAfbeelding(file, async (dataUrl, thumbnail) => {
       e.target.value = '';
+      try {
+        // Zet de gecomprimeerde afbeelding (dataUrl) om naar een bestand en upload die naar Storage.
+        const blob = await (await fetch(dataUrl)).blob();
+        const url = await uploadNaarStorage(new File([blob], file.name || 'foto.jpg', { type: 'image/jpeg' }), 'jpg');
+        voegMediaToe(ns, { foto: url, foto_klein: thumbnail, bestandsnaam: null });
+      } catch (err) {
+        alert('Uploaden van de foto is mislukt: ' + err.message);
+      }
     });
   } else {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      voegMediaToe(ns, { foto: ev.target.result, foto_klein: null, bestandsnaam: file.name });
+    (async () => {
+      try {
+        const url = await uploadNaarStorage(file);
+        voegMediaToe(ns, { foto: url, foto_klein: null, bestandsnaam: file.name });
+      } catch (err) {
+        alert('Uploaden van het bestand is mislukt: ' + err.message);
+      }
       e.target.value = '';
-    };
-    reader.readAsDataURL(file);
+    })();
   }
 }
 
