@@ -231,9 +231,9 @@
     animation: pr-kok-duiken 14s ease-in-out infinite;
   }
   @keyframes pr-kok-duiken {
-    0%   { transform: translateY(-38%); }
-    50%  { transform: translateY(38%); }
-    100% { transform: translateY(-38%); }
+    0%   { transform: translateY(-8%); }
+    50%  { transform: translateY(8%); }
+    100% { transform: translateY(-8%); }
   }
   /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
   .pr-kok-zwevend-kaartje {
@@ -5247,6 +5247,7 @@ async function renderPapierRooster(voorafGeladenData) {
             // net zo herkenbaar als in een gewone 2-mans-cel, en niet vermengd/doorschijnend met
             // de onderwaterscène erachter.
             cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px;height:42px;border-radius:3px;overflow:hidden;box-sizing:border-box">
+              ${onderwaterHtml}
               <span class="pr-kok-duik-reis">
                 <span class="pr-kok-zwevend-kaartje">
                   <div class="${statusKlasse(status1, info.label1)}" style="padding:4px 8px 6px 8px;line-height:1.15;border-radius:4px;overflow:hidden;position:relative">
