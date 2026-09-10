@@ -170,6 +170,7 @@
   .pr-cel-label-rij { position: absolute; left: 0; right: 0; top: 24px; display: flex; justify-content: center; align-items: center; overflow: visible; }
   .pr-eenmans-wrap { position: relative; display: flex; flex-direction: column; justify-content: center; height: 100%; }
   .pr-eenmans-wrap .pr-naam-regel-top { position: static; }
+  .pr-tweemans-wrap .pr-naam-regel-top { position: static; }
   .pr-eenmans-wrap .pr-cel-label-rij { position: static; margin-top: 6px; }
   .pr-tweemans-wrap .pr-cel-label-rij { position: static; margin-top: 6px; }
   .pr-eenmans-wrap .pr-kok-label { top: 18px; }
@@ -5239,7 +5240,7 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
             </div>`;
           } else {
             cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px">
-              <span class="pr-naam" style="display:block;">${naamTekst}</span>
+              <span class="pr-naam" style="${heeftExtra?'font-size:0.74rem;':''}display:block;">${naamTekst}</span>
             </div>`;
           }
         } else {
