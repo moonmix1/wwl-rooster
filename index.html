@@ -242,9 +242,7 @@
   }
   @keyframes pr-kok-zweven {
     0%   { transform: translateY(0) rotate(0deg); }
-    22%  { transform: translateY(-5px) rotate(-0.6deg); }
-    48%  { transform: translateY(2px) rotate(0.4deg); }
-    71%  { transform: translateY(-3px) rotate(-0.3deg); }
+    50%  { transform: translateY(-3px) rotate(0.3deg); }
     100% { transform: translateY(0) rotate(0deg); }
   }
   .pr-cel-label { display: inline-block; text-align: center; font-size: 0.44rem; font-weight: 700; opacity: 0.75; color: #ddd;
@@ -5245,7 +5243,7 @@ async function renderPapierRooster(voorafGeladenData) {
             // de onderwaterscène erachter.
             cellHtml = `<div class="pr-eenmans-wrap" style="padding:4px 8px;position:relative;margin:-4px -8px;height:70px;border-radius:3px;overflow:hidden;box-sizing:border-box">
               ${onderwaterHtml}
-              <span class="pr-kok-duik-reis" style="position:absolute;left:0;right:0;top:0;width:44%;height:48%;display:block;z-index:5">
+              <span class="pr-kok-duik-reis" style="position:absolute;left:0;right:0;top:0;height:48%;display:block;z-index:5">
                 <span class="pr-kok-zwevend-kaartje" style="display:block;height:100%">
                   <div class="${statusKlasse(status1, info.label1)}" style="height:100%;box-sizing:border-box;padding:2px 6px;border-radius:4px;overflow:hidden;position:relative;display:flex;align-items:center">
                     <span class="pr-naam" style="${heeftExtra?'font-size:0.6rem;':'font-size:0.64rem;'}display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${naamTekst}</span>
