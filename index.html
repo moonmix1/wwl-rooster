@@ -2468,6 +2468,19 @@ function renderWeek() {
   const woensdagBasis = new Date(tuesday.getTime() - 6 * 86400000);
   const alleRijen = WEEK_A_VOLGORDE.map((naam, idx) => maakRij(naam, idx, woensdagBasis, huidigRooster, weekStartHuidig)).join('');
   document.getElementById('week-body').innerHTML = alleRijen;
+  forceerVierkantePrCellen();
+}
+
+// Forceert elk .pr-cel-vak vierkant door de hoogte gelijk te zetten aan de gemeten
+// breedte. Dit is een vangnet naast de CSS aspect-ratio regel, voor toestellen/
+// browsers waar aspect-ratio in een tabel-cel-context niet correct wordt toegepast.
+function forceerVierkantePrCellen() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.pr-cel').forEach(cel => {
+      const breedte = cel.getBoundingClientRect().width;
+      if (breedte > 0) cel.style.height = breedte + 'px';
+    });
+  });
 }
 
 const ROOSTER_ROL_NAMEN = { bankOch:'Bank ochtend', bank:'Bank avond', kook:'Kook', corvee:'Corvee' };
