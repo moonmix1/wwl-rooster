@@ -250,8 +250,7 @@
     animation: pr-kok-waarschuwing-flits 14s steps(1, end) infinite;
   }
   .pr-kok-waarschuwing span {
-    color: #ff2d2d; font-weight: 900; font-size: 0.56rem; line-height: 1.1;
-    text-shadow: 0 0 6px #000, 0 0 3px #000; text-transform: uppercase;
+    display: none;
   }
   @keyframes pr-kok-waarschuwing-flits {
     0%     { opacity: 0; }
@@ -5274,7 +5273,13 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
               <div style="position:absolute;bottom:0;right:0;width:50%;height:50%;overflow:hidden;z-index:1">
                 <img src="data:image/jpeg;base64,${KOK_FOTO_4}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
               </div>
-              <div class="pr-kok-waarschuwing"><span>Eten brandt aan, mafkees!!!</span></div>
+              <div class="pr-kok-waarschuwing">
+                <svg viewBox="0 0 220 90" preserveAspectRatio="none" style="width:100%;height:100%">
+                  <path d="M6,10 Q6,4 12,4 L190,4 Q196,4 196,10 L196,60 Q196,66 190,66 L214,45 L196,50 L196,58 Q196,64 190,64 L12,64 Q6,64 6,58 Z" fill="#39e639"/>
+                  <text x="101" y="24" text-anchor="middle" fill="#fff700" font-weight="900" font-size="13" font-family="Arial, sans-serif">ETEN BRANDT AAN,</text>
+                  <text x="101" y="44" text-anchor="middle" fill="#fff700" font-weight="900" font-size="13" font-family="Arial, sans-serif">MAFKEES!!!</text>
+                </svg>
+              </div>
               <span class="pr-kok-duik-reis" style="position:absolute;left:0;right:0;top:0;height:48%;display:block;z-index:5">
                 <span class="pr-kok-zwevend-kaartje" style="display:block;height:100%">
                   <div class="${statusKlasse(status1, info.label1)}" style="height:100%;box-sizing:border-box;padding:2px 6px;border-radius:4px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center">
