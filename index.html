@@ -243,7 +243,7 @@
      (rond het einde van de cyclus) — dus geen losse tijdklok, maar gekoppeld aan de
      duik-beweging zelf. */
   .pr-kok-waarschuwing {
-    position: absolute; top: 0; left: 0; width: 100%; height: 50%; z-index: 10;
+    position: absolute; top: 0; left: 0; width: 100%; height: 50%; z-index: 3;
     display: flex; align-items: center; justify-content: center; text-align: center;
     overflow: hidden; box-sizing: border-box; padding: 2px;
     pointer-events: none; opacity: 0;
@@ -258,9 +258,7 @@
     0%     { opacity: 0; }
     49.9%  { opacity: 0; }
     50%    { opacity: 1; }
-    92%    { opacity: 1; }
-    92.1%  { opacity: 0; }
-    100%   { opacity: 0; }
+    100%   { opacity: 1; }
   }
   /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
   .pr-kok-zwevend-kaartje {
