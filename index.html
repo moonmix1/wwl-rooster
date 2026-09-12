@@ -230,13 +230,13 @@
      in de cel, de kleine wiebel geeft er de organische, niet-perfecte souplesse bovenop. */
   .pr-kok-duik-reis {
     position: relative; z-index: 1;
-    animation: pr-kok-duiken 22s linear infinite;
+    animation: pr-kok-duiken 28s linear infinite;
   }
   @keyframes pr-kok-duiken {
     0%     { transform: translateY(0%); }
-    31.8%  { transform: translateY(108%); }
+    25%    { transform: translateY(108%); }
     50%    { transform: translateY(108%); }
-    81.8%  { transform: translateY(0%); }
+    75%    { transform: translateY(0%); }
     100%   { transform: translateY(0%); }
   }
   /* Waarschuwingstekst die verschijnt zodra de kok precies op zijn laagste punt is
@@ -249,17 +249,17 @@
     display: flex; align-items: flex-start; justify-content: center; text-align: center;
     overflow: hidden; box-sizing: border-box; padding: 2px;
     pointer-events: none; opacity: 0;
-    animation: pr-kok-waarschuwing-flits 22s steps(1, end) infinite;
+    animation: pr-kok-waarschuwing-flits 28s steps(1, end) infinite;
   }
   .pr-kok-waarschuwing span {
     display: none;
   }
   @keyframes pr-kok-waarschuwing-flits {
     0%     { opacity: 0; }
-    24.9%  { opacity: 0; }
-    25%    { opacity: 1; }
-    81.7%  { opacity: 1; }
-    81.8%  { opacity: 0; }
+    19.5%  { opacity: 0; }
+    19.6%  { opacity: 1; }
+    74.9%  { opacity: 1; }
+    75%    { opacity: 0; }
     100%   { opacity: 0; }
   }
   /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
@@ -4028,37 +4028,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // daarom bij elke tick de CSS-animatie-tijd via getAnimations() i.p.v. te gokken
   // op een gedeelde globale starttijd (elke cel kan op een ander moment verschijnen,
   // bv. na scrollen of na het wisselen van weeknavigatie).
-  const KOK_CYCLUS_S = 22;
+  const KOK_CYCLUS_S = 28;
   setInterval(() => {
     document.querySelectorAll('.pr-kok-duik-reis-gestart').forEach(reis => {
       const kokId = reis.getAttribute('data-kok-id');
-      const img = document.getElementById('pr-kok-onderfoto-' + kokId);
-      if (!img) return;
+      const overlay = document.getElementById('pr-kok-onderfoto-overlay-' + kokId);
+      if (!overlay) return;
       const anims = reis.getAnimations ? reis.getAnimations() : [];
       const anim = anims.find(a => a.animationName === 'pr-kok-duiken');
       if (!anim) return;
       const tMs = anim.currentTime;
       if (typeof tMs !== 'number') return;
-      const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de huidige pr-kok-duiken-cyclus
-      // Voor de onderste 3 foto's gebruiken we een EIGEN cyclus die begint op het moment dat
-      // het kaartje beneden is (midden van de pauze onder, t=9s in de pr-kok-duiken-tijdlijn),
-      // niet op t=0/22 (kaartje boven). tFoto=0 => kaartje net beneden; tFoto loopt door de
-      // rest van de pauze onder, de hele stijging, de pauze boven, EN de daaropvolgende daling
-      // heen, tot het kaartje weer beneden is (tFoto=22s), waar de cyclus opnieuw begint.
-      const tFoto = (t - 9 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
+      const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de 28s pr-kok-duiken-cyclus:
+      // 0-7s dalen, 7-14s pauze onder, 14-21s stijgen, 21-28s pauze boven.
+      // Zolang de lift nog niet stilstaat boven (t<22s) blijft de basisfoto zichtbaar (overlay uit).
+      // Zodra de lift stilstaat boven: de overlay wisselt naar zwerver-zonder-tekst en faroed
+      // via de CSS-transition (2s) geleidelijk in, alsof hij door de basisfoto heen dringt.
+      // Vanaf t=24s wisselt de overlay meteen door naar zwerver-met-tekst (die blijft al zichtbaar,
+      // dus geen nieuwe fade nodig — enkel de bron wisselt).
       let welkeFoto;
-      if (tFoto < 0.65 * 13) {
+      if (t < 22) {
         welkeFoto = 'basis';
-      } else if (tFoto < 0.85 * 13) {
+      } else if (t < 24) {
         welkeFoto = 'zwerver-zonder';
       } else {
         welkeFoto = 'zwerver-met';
       }
-      const gewenst = welkeFoto === 'basis' ? img.dataset.basis
-        : welkeFoto === 'zwerver-zonder' ? img.dataset.zwerverZonder
-        : img.dataset.zwerverMet;
-      const nieuweSrc = 'data:image/jpeg;base64,' + gewenst;
-      if (img.src !== nieuweSrc) img.src = nieuweSrc;
+      const huidig = overlay.dataset.huidig;
+      if (welkeFoto !== huidig) {
+        overlay.dataset.huidig = welkeFoto;
+        if (welkeFoto === 'basis') {
+          overlay.style.opacity = '0';
+        } else {
+          const gewenst = welkeFoto === 'zwerver-zonder' ? overlay.dataset.zwerverZonder : overlay.dataset.zwerverMet;
+          overlay.src = 'data:image/jpeg;base64,' + gewenst;
+          overlay.style.opacity = '1';
+        }
+      }
     });
   }, 150);
 });
@@ -5316,8 +5322,10 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
                 <img src="data:image/jpeg;base64,${KOK_FOTO_5}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
               </div>
               <div style="position:absolute;top:50%;left:0;width:100%;height:50%;overflow:hidden;z-index:1">
-                <img id="pr-kok-onderfoto-${h}" data-basis="${KOK_FOTO_6}" data-zwerver-zonder="${KOK_FOTO_7}" data-zwerver-met="${KOK_FOTO_8}" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                <img id="pr-kok-onderfoto-${h}" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0">
+                <img id="pr-kok-onderfoto-overlay-${h}" data-basis="${KOK_FOTO_6}" data-zwerver-zonder="${KOK_FOTO_7}" data-zwerver-met="${KOK_FOTO_8}" data-huidig="basis" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;opacity:0;transition:opacity 2s linear">
               </div>
+              <div style="position:absolute;top:50%;left:0;width:100%;height:4px;transform:translateY(-50%);background:#888;z-index:2"></div>
               <div class="pr-kok-waarschuwing">
                 <svg viewBox="0 0 220 102" preserveAspectRatio="none" style="width:100%;height:100%">
                   <path d="M6,10 Q6,4 12,4 L190,4 Q196,4 196,10 L196,24 L222,58 L196,49 L196,70 Q196,76 190,76 L12,76 Q6,76 6,70 Z" fill="#e60000"/>
