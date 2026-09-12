@@ -4037,9 +4037,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de huidige cyclus
       // Stijgen (van onder naar boven) loopt van t=7s (0% boven) tot t=14s (100% boven).
       let welkeFoto;
-      if (t < 7 + 0.8 * 7) {
+      if (t < 7 + 0.65 * 7) {
         welkeFoto = 'basis';
-      } else if (t < 7 + 0.9 * 7) {
+      } else if (t < 7 + 0.85 * 7) {
         welkeFoto = 'zwerver-zonder';
       } else {
         welkeFoto = 'zwerver-met';
