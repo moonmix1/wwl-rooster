@@ -4034,12 +4034,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!anim) return;
       const tMs = anim.currentTime;
       if (typeof tMs !== 'number') return;
-      const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de huidige cyclus
-      // Stijgen (van onder naar boven) loopt van t=7s (0% boven) tot t=14s (100% boven).
+      const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de huidige pr-kok-duiken-cyclus
+      // Voor de onderste 3 foto's gebruiken we een EIGEN cyclus die begint op het moment dat
+      // het kaartje beneden is (t=7s in de pr-kok-duiken-tijdlijn), niet op t=0/14 (kaartje boven).
+      // tFoto=0 => kaartje net beneden; tFoto loopt door de hele stijging (7s) EN de daaropvolgende
+      // daling (7s) heen, tot het kaartje weer beneden is (tFoto=14s), waar de cyclus opnieuw begint.
+      const tFoto = (t - 7 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
       let welkeFoto;
-      if (t < 7 + 0.65 * 7) {
+      if (tFoto < 0.65 * 7) {
         welkeFoto = 'basis';
-      } else if (t < 7 + 0.85 * 7) {
+      } else if (tFoto < 0.85 * 7) {
         welkeFoto = 'zwerver-zonder';
       } else {
         welkeFoto = 'zwerver-met';
