@@ -4037,19 +4037,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof tMs !== 'number') return;
       const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de 38s pr-kok-duiken-cyclus:
       // 0-7s dalen, 7-19s pauze onder, 19-26s stijgen, 26-38s pauze boven.
-      // Zolang de lift nog niet stilstaat boven (t<27s) blijft de basisfoto zichtbaar.
-      // Zodra de lift stilstaat boven: de overlay wisselt naar zwerver-zonder-tekst en fade't
-      // via de CSS-transition (2s) geleidelijk in — dit is het ENIGE fade-moment.
-      // Vanaf t=29s wisselt de overlay abrupt (geen fade) door naar zwerver-met-tekst.
-      // Zwerver-met blijft daarna gewoon op opacity 1 staan (geen wegfade): hij verdwijnt
-      // pas visueel doordat de lift er op zijn volgende afdaling (hogere z-index) overheen
-      // schuift. Pas wanneer de lift die overlap weer helemaal voorbij is EN opnieuw stilstaat
-      // onder, zetten we de bron terug naar de basisfoto — op dat moment ligt de lift er nog
-      // steeds overheen, dus dat is nooit zichtbaar als wegfade.
+      // Zwerver-met (na de vorige cyclus) moet zichtbaar BLIJVEN tijdens de hele volgende
+      // daling (0-7s) — de lift bedekt de onderste foto pas als hij daar weer aankomt, dus
+      // pas vanaf t=7s (lift is beneden) mag de foto terug naar de basisfoto. Daarna blijft
+      // het basis tot de lift weer stilstaat boven (t=27s), waar de zwerver-zonder-fade start.
       let welkeFoto;
-      if (t < 27) {
+      if (t >= 7 && t < 27) {
         welkeFoto = 'basis';
-      } else if (t < 29) {
+      } else if (t >= 27 && t < 29) {
         welkeFoto = 'zwerver-zonder';
       } else {
         welkeFoto = 'zwerver-met';
