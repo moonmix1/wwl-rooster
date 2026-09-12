@@ -262,15 +262,11 @@
     68.4%  { opacity: 0; }
     100%   { opacity: 0; }
   }
-  /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
+  /* Het naamkaartje beweegt niet meer los (geen wiebel/dobber-effect) — alleen de grote
+     duik-beweging (pr-kok-duik-reis) bepaalt de positie, inclusief het stilstaan tijdens
+     de pauzes boven en onder. */
   .pr-kok-zwevend-kaartje {
     position: relative; z-index: 1;
-    animation: pr-kok-zweven 6.5s ease-in-out infinite;
-  }
-  @keyframes pr-kok-zweven {
-    0%   { transform: translateY(0) rotate(0deg); }
-    50%  { transform: translateY(-3px) rotate(0.3deg); }
-    100% { transform: translateY(0) rotate(0deg); }
   }
   .pr-cel-label { display: inline-block; text-align: center; font-size: 0.44rem; font-weight: 700; opacity: 1; color: #f0f0f0;
     text-transform: lowercase; white-space: nowrap; }
@@ -4041,11 +4037,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof tMs !== 'number') return;
       const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de 38s pr-kok-duiken-cyclus:
       // 0-7s dalen, 7-19s pauze onder, 19-26s stijgen, 26-38s pauze boven.
-      // Zolang de lift nog niet stilstaat boven (t<27s) blijft de basisfoto zichtbaar (overlay uit).
+      // Zolang de lift nog niet stilstaat boven (t<27s) blijft de basisfoto zichtbaar.
       // Zodra de lift stilstaat boven: de overlay wisselt naar zwerver-zonder-tekst en fade't
-      // via de CSS-transition (2s) geleidelijk in, alsof hij door de basisfoto heen dringt.
-      // Vanaf t=29s wisselt de overlay meteen door naar zwerver-met-tekst (die blijft al zichtbaar,
-      // dus geen nieuwe fade nodig — enkel de bron wisselt).
+      // via de CSS-transition (2s) geleidelijk in — dit is het ENIGE fade-moment.
+      // Vanaf t=29s wisselt de overlay abrupt (geen fade) door naar zwerver-met-tekst.
+      // Zwerver-met blijft daarna gewoon op opacity 1 staan (geen wegfade): hij verdwijnt
+      // pas visueel doordat de lift er op zijn volgende afdaling (hogere z-index) overheen
+      // schuift. Pas wanneer de lift die overlap weer helemaal voorbij is EN opnieuw stilstaat
+      // onder, zetten we de bron terug naar de basisfoto — op dat moment ligt de lift er nog
+      // steeds overheen, dus dat is nooit zichtbaar als wegfade.
       let welkeFoto;
       if (t < 27) {
         welkeFoto = 'basis';
@@ -4058,10 +4058,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (welkeFoto !== huidig) {
         overlay.dataset.huidig = welkeFoto;
         if (welkeFoto === 'basis') {
+          // Geen fade: de lift ligt op dit moment (net na een nieuwe cyclusstart, kaartje
+          // weer beneden) sowieso niet meer over dit gebied, dus de overlay mag gewoon
+          // direct (zonder transition) weer transparant/uit gezet worden.
+          overlay.style.transition = 'none';
           overlay.style.opacity = '0';
+        } else if (welkeFoto === 'zwerver-zonder') {
+          overlay.style.transition = 'opacity 2s linear';
+          overlay.src = 'data:image/jpeg;base64,' + overlay.dataset.zwerverZonder;
+          // Forceer een reflow zodat de browser de transition ook echt oppakt na de wissel.
+          void overlay.offsetWidth;
+          overlay.style.opacity = '1';
         } else {
-          const gewenst = welkeFoto === 'zwerver-zonder' ? overlay.dataset.zwerverZonder : overlay.dataset.zwerverMet;
-          overlay.src = 'data:image/jpeg;base64,' + gewenst;
+          // zwerver-met: abrupt wisselen, geen fade.
+          overlay.style.transition = 'none';
+          overlay.src = 'data:image/jpeg;base64,' + overlay.dataset.zwerverMet;
           overlay.style.opacity = '1';
         }
       }
@@ -5323,9 +5334,9 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
               </div>
               <div style="position:absolute;top:50%;left:0;width:100%;height:50%;overflow:hidden;z-index:1">
                 <img id="pr-kok-onderfoto-${h}" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0">
-                <img id="pr-kok-onderfoto-overlay-${h}" data-basis="${KOK_FOTO_6}" data-zwerver-zonder="${KOK_FOTO_7}" data-zwerver-met="${KOK_FOTO_8}" data-huidig="basis" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;opacity:0;transition:opacity 2s linear">
+                <img id="pr-kok-onderfoto-overlay-${h}" data-basis="${KOK_FOTO_6}" data-zwerver-zonder="${KOK_FOTO_7}" data-zwerver-met="${KOK_FOTO_8}" data-huidig="basis" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;opacity:0">
               </div>
-              <div style="position:absolute;top:50%;left:0;width:100%;height:17px;transform:translateY(calc(-50% + 5px));background:#888;z-index:2"></div>
+              <div style="position:absolute;top:50%;left:0;width:100%;height:17px;transform:translateY(calc(-50% + 2px));background:#888;z-index:2"></div>
               <div class="pr-kok-waarschuwing">
                 <svg viewBox="0 0 220 102" preserveAspectRatio="none" style="width:100%;height:100%">
                   <path d="M6,10 Q6,4 12,4 L190,4 Q196,4 196,10 L196,24 L222,58 L196,49 L196,70 Q196,76 190,76 L12,76 Q6,76 6,70 Z" fill="#e60000"/>
