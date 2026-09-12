@@ -230,12 +230,14 @@
      in de cel, de kleine wiebel geeft er de organische, niet-perfecte souplesse bovenop. */
   .pr-kok-duik-reis {
     position: relative; z-index: 1;
-    animation: pr-kok-duiken 14s ease-in-out infinite;
+    animation: pr-kok-duiken 22s linear infinite;
   }
   @keyframes pr-kok-duiken {
-    0%   { transform: translateY(0%); }
-    50%  { transform: translateY(108%); }
-    100% { transform: translateY(0%); }
+    0%     { transform: translateY(0%); }
+    31.8%  { transform: translateY(108%); }
+    50%    { transform: translateY(108%); }
+    81.8%  { transform: translateY(0%); }
+    100%   { transform: translateY(0%); }
   }
   /* Waarschuwingstekst die verschijnt zodra de kok precies op zijn laagste punt is
      (50% van de 14s-cyclus, exact synchroon met pr-kok-duiken hierboven), en zichtbaar
@@ -247,16 +249,18 @@
     display: flex; align-items: flex-start; justify-content: center; text-align: center;
     overflow: hidden; box-sizing: border-box; padding: 2px;
     pointer-events: none; opacity: 0;
-    animation: pr-kok-waarschuwing-flits 14s steps(1, end) infinite;
+    animation: pr-kok-waarschuwing-flits 22s steps(1, end) infinite;
   }
   .pr-kok-waarschuwing span {
     display: none;
   }
   @keyframes pr-kok-waarschuwing-flits {
     0%     { opacity: 0; }
-    39.2%  { opacity: 0; }
-    39.3%  { opacity: 1; }
-    100%   { opacity: 1; }
+    24.9%  { opacity: 0; }
+    25%    { opacity: 1; }
+    81.7%  { opacity: 1; }
+    81.8%  { opacity: 0; }
+    100%   { opacity: 0; }
   }
   /* Het naamkaartje zelf zweeft langzaam, licht organisch (niet perfect symmetrisch) op en neer. */
   .pr-kok-zwevend-kaartje {
@@ -4018,12 +4022,13 @@ function gpNaarPagina(index) {
 
 document.addEventListener('DOMContentLoaded', () => {
   // Wisselt de onderste foto van elke 1-mans-kok-cel op basis van waar de "lift"
-  // (het zwevende naamkaartje, .pr-kok-duik-reis) zich bevindt in zijn 14s-cyclus.
+  // (het zwevende naamkaartje, .pr-kok-duik-reis) zich bevindt in zijn 22s-cyclus
+  // (7s dalen, 4s pauze onder, 7s stijgen, 4s pauze boven).
   // De cel-animatie start pas zodra de browser 'm voor het eerst rendert; we lezen
   // daarom bij elke tick de CSS-animatie-tijd via getAnimations() i.p.v. te gokken
   // op een gedeelde globale starttijd (elke cel kan op een ander moment verschijnen,
   // bv. na scrollen of na het wisselen van weeknavigatie).
-  const KOK_CYCLUS_S = 14;
+  const KOK_CYCLUS_S = 22;
   setInterval(() => {
     document.querySelectorAll('.pr-kok-duik-reis-gestart').forEach(reis => {
       const kokId = reis.getAttribute('data-kok-id');
@@ -4036,14 +4041,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof tMs !== 'number') return;
       const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de huidige pr-kok-duiken-cyclus
       // Voor de onderste 3 foto's gebruiken we een EIGEN cyclus die begint op het moment dat
-      // het kaartje beneden is (t=7s in de pr-kok-duiken-tijdlijn), niet op t=0/14 (kaartje boven).
-      // tFoto=0 => kaartje net beneden; tFoto loopt door de hele stijging (7s) EN de daaropvolgende
-      // daling (7s) heen, tot het kaartje weer beneden is (tFoto=14s), waar de cyclus opnieuw begint.
-      const tFoto = (t - 7 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
+      // het kaartje beneden is (midden van de pauze onder, t=9s in de pr-kok-duiken-tijdlijn),
+      // niet op t=0/22 (kaartje boven). tFoto=0 => kaartje net beneden; tFoto loopt door de
+      // rest van de pauze onder, de hele stijging, de pauze boven, EN de daaropvolgende daling
+      // heen, tot het kaartje weer beneden is (tFoto=22s), waar de cyclus opnieuw begint.
+      const tFoto = (t - 9 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
       let welkeFoto;
-      if (tFoto < 0.65 * 7) {
+      if (tFoto < 0.65 * 13) {
         welkeFoto = 'basis';
-      } else if (tFoto < 0.85 * 7) {
+      } else if (tFoto < 0.85 * 13) {
         welkeFoto = 'zwerver-zonder';
       } else {
         welkeFoto = 'zwerver-met';
