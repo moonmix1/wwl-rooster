@@ -4068,7 +4068,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.pr-kok-duik-reis-gestart').forEach(reis => {
       const kokId = reis.getAttribute('data-kok-id');
       const overlay = document.getElementById('pr-kok-onderfoto-overlay-' + kokId);
-      if (!overlay) return;
+      const overlay2 = document.getElementById('pr-kok-onderfoto-overlay2-' + kokId);
+      if (!overlay || !overlay2) return;
       const anims = reis.getAnimations ? reis.getAnimations() : [];
       const anim = anims.find(a => a.animationName === 'pr-kok-duiken');
       if (!anim) return;
@@ -4093,28 +4094,35 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.dataset.huidig = welkeFoto;
         if (welkeFoto === 'basis') {
           // Geen fade: de lift ligt op dit moment (net na een nieuwe cyclusstart, kaartje
-          // weer beneden) sowieso niet meer over dit gebied, dus de overlay mag gewoon
-          // direct (zonder transition) weer transparant/uit gezet worden.
+          // weer beneden) sowieso niet meer over dit gebied, dus beide overlays mogen
+          // gewoon direct (zonder transition) weer transparant/uit gezet worden.
           overlay.style.transition = 'none';
           overlay.style.opacity = '0';
-        } else if (welkeFoto === 'zwerver-zonder') {
-          overlay.style.transition = 'opacity 2s linear';
-          overlay.src = 'data:image/jpeg;base64,' + overlay.dataset.zwerverZonder;
-          // Forceer een reflow zodat de browser de transition ook echt oppakt na de wissel.
-          void overlay.offsetWidth;
-          overlay.style.opacity = '1';
+          overlay2.style.transition = 'none';
+          overlay2.style.opacity = '0';
         } else {
-          // zwerver-met: 1 seconde infaden — eerst kort naar opacity 0 zonder transitie
-          // (dat is voor de gebruiker onzichtbaar, want het gebeurt in dezelfde executie
-          // vóór de volgende reflow), dan de nieuwe foto instellen en met een 1s-transitie
-          // weer naar opacity 1.
-          overlay.style.transition = 'none';
-          overlay.style.opacity = '0';
-          void overlay.offsetWidth;
-          overlay.src = 'data:image/jpeg;base64,' + overlay.dataset.zwerverMet;
-          void overlay.offsetWidth;
-          overlay.style.transition = 'opacity 1s linear';
-          overlay.style.opacity = '1';
+          // Voor beide zwerver-varianten gebruiken we de TWEEDE overlay-laag als de
+          // "nieuwe, infadende" laag, terwijl de EERSTE overlay (die de vorige foto toont
+          // op opacity 1) gewoon blijft staan tot de fade van de tweede laag voltooid is.
+          // Zo is er nooit een moment waarop alleen de onderliggende basisfoto zichtbaar
+          // is (de eerdere "flits"-bug) — er ligt altijd een volledig zichtbare laag klaar.
+          const duur = welkeFoto === 'zwerver-zonder' ? '2s' : '1s';
+          const bron = welkeFoto === 'zwerver-zonder' ? overlay.dataset.zwerverZonder : overlay.dataset.zwerverMet;
+          overlay2.style.transition = 'none';
+          overlay2.src = 'data:image/jpeg;base64,' + bron;
+          overlay2.style.opacity = '0';
+          void overlay2.offsetWidth;
+          overlay2.style.transition = 'opacity ' + duur + ' linear';
+          overlay2.style.opacity = '1';
+          // Zodra de fade van overlay2 voltooid is, "promoveren" we 'm naar de eerste
+          // overlay (die zelf naar dezelfde bron + opacity 1 gaat, zonder transitie —
+          // onzichtbaar voor de gebruiker, want overlay2 ligt er nog exact overheen) en
+          // zetten overlay2 weer klaar voor de volgende wissel.
+          setTimeout(() => {
+            overlay.style.transition = 'none';
+            overlay.src = 'data:image/jpeg;base64,' + bron;
+            overlay.style.opacity = '1';
+          }, welkeFoto === 'zwerver-zonder' ? 2000 : 1000);
         }
       }
     });
@@ -5376,6 +5384,7 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
               <div style="position:absolute;top:50%;left:0;width:100%;height:50%;overflow:hidden;z-index:1">
                 <img id="pr-kok-onderfoto-${h}" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0">
                 <img id="pr-kok-onderfoto-overlay-${h}" data-basis="${KOK_FOTO_6}" data-zwerver-zonder="${KOK_FOTO_7}" data-zwerver-met="${KOK_FOTO_8}" data-huidig="basis" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;opacity:0">
+                <img id="pr-kok-onderfoto-overlay2-${h}" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;opacity:0">
               </div>
               <div style="position:absolute;top:calc(50% - 6.5% + 2px);left:0;width:100%;height:calc(6.5% + 3px);background:#888;z-index:2"></div>
               <div class="pr-kok-waarschuwing">
