@@ -4104,9 +4104,16 @@ document.addEventListener('DOMContentLoaded', () => {
           void overlay.offsetWidth;
           overlay.style.opacity = '1';
         } else {
-          // zwerver-met: abrupt wisselen, geen fade.
+          // zwerver-met: halve seconde infaden (niet meer abrupt) — eerst kort naar
+          // opacity 0 zonder transitie (dat is voor de gebruiker onzichtbaar, want het
+          // gebeurt in dezelfde executie vóór de volgende reflow), dan de nieuwe foto
+          // instellen en met een 0.5s-transitie weer naar opacity 1.
           overlay.style.transition = 'none';
+          overlay.style.opacity = '0';
+          void overlay.offsetWidth;
           overlay.src = 'data:image/jpeg;base64,' + overlay.dataset.zwerverMet;
+          void overlay.offsetWidth;
+          overlay.style.transition = 'opacity 0.5s linear';
           overlay.style.opacity = '1';
         }
       }
