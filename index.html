@@ -4081,27 +4081,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const tMs = anim.currentTime;
       if (typeof tMs !== 'number') return;
       const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de 38s pr-kok-duiken-cyclus:
-      // 0-7s dalen, 7-19s pauze onder, 19-26s stijgen, 26-38s pauze boven.
-      // Volgorde in de onderste foto-cyclus: basis -> (tijdens het stijgen) de schreeuwende
-      // zwerver-man (eerst zonder, dan met tekst) -> pas DAARNA de Pink Panther-gif, die
-      // zichtbaar blijft tot de lift weer beneden aankomt (t=7 van de volgende cyclus).
-      // Zwerver-zonder start zodra de lift begint te stijgen (t=19s), zwerver-met 2s later
-      // (t=21s). Zodra de zwerver-man geweest is (t=24s) komt de Pink Panther aan de beurt:
-      // het eerste (statische) beeld van de gif staat dan meteen klaar en blijft 4s stilstaan
-      // (tot t=28s), waarna de animatie start. De gif zelf duurt 7,3s (t=28 tot t=35.3) en
-      // speelt maar ÉÉN keer af — daarna blijft het laatste beeld van de gif stilstaan
-      // (geen loop) tot de lift weer beneden aankomt.
-      const PP_GIF_DUUR = 7.3;
+      // 0-7s dalen, 7-19s pauze onder, 19-26s stijgen (7s), 26-38s pauze boven.
+      // Volgorde in de onderste foto-cyclus: basis (blijft ook nog een tijd zichtbaar tijdens
+      // het stijgen — je ziet dus eerst gewoon de kale deur, geen zwerver) -> pas laat in de
+      // stijging (rond 80-90%) de schreeuwende zwerver-man (eerst zonder, dan met tekst) ->
+      // pas DAARNA de Pink Panther-gif, die zichtbaar blijft tot de lift weer beneden aankomt.
+      // Om overzichtelijk met de cyclusgrens (de Pink Panther-fase loopt door tot ná t=38/0)
+      // om te gaan, rekenen we in u: een tijdas die op 0 begint zodra de lift beneden aankomt
+      // (t=7) en 38s duurt, dus u = (t - 7 + 38) % 38.
+      const u = (t - 7 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
+      // u=0..17.6  : basis (t=7..24.6 — inclusief het eerste deel van het stijgen, tot ~80%)
+      // u=17.6..18.6: zwerver-zonder (1s, rond 80-90% van de stijging)
+      // u=18.6..20.6: zwerver-met (2s, loopt door tot net na het einde van de stijging)
+      // u=20.6..24.6: pp-static (4s stilstaand eerste beeld)
+      // u=24.6..31.9: pp-gif (7,3s, speelt precies 1x af)
+      // u=31.9..38  : pp-gif-klaar (stilstaand laatste beeld, tot de lift weer beneden is)
       let welkeFoto;
-      if (t >= 7 && t < 19) {
+      if (u < 17.6) {
         welkeFoto = 'basis';
-      } else if (t >= 19 && t < 21) {
+      } else if (u < 18.6) {
         welkeFoto = 'zwerver-zonder';
-      } else if (t >= 21 && t < 24) {
+      } else if (u < 20.6) {
         welkeFoto = 'zwerver-met';
-      } else if (t >= 24 && t < 28) {
+      } else if (u < 24.6) {
         welkeFoto = 'pp-static';
-      } else if (t >= 28 && t < 28 + PP_GIF_DUUR) {
+      } else if (u < 31.9) {
         welkeFoto = 'pp-gif';
       } else {
         welkeFoto = 'pp-gif-klaar';
