@@ -4122,14 +4122,14 @@ document.addEventListener('DOMContentLoaded', () => {
       let welkeFoto;
       if (!pantherCyclus) {
         // Zwerver-cyclus, met 2 zichtbare wisselmomenten tijdens de 7s klim (u=12..19):
-        // u=0..16: de lege deur (fotoBasis) — al vanaf u=0 "onder het kaartje" ingesteld,
-        //   wordt vanaf u=12 geleidelijk zichtbaar naarmate het kaartje wegschuift (4s
-        //   zichtbaar deel: u=12..16 — was 3s, met 1s verlengd op verzoek).
-        // u=16..19: wisselmoment 1, in de laatste fase van de klim — de zwerver
-        //   verschijnt (nog geen tekst), 3s zichtbaar tot de lift boven aankomt.
+        // u=0..17: de lege deur (fotoBasis) — al vanaf u=0 "onder het kaartje" ingesteld,
+        //   wordt vanaf u=12 geleidelijk zichtbaar naarmate het kaartje wegschuift (5s
+        //   zichtbaar deel: u=12..17 — twee keer met 1s verlengd op verzoek, was 3s).
+        // u=17..19: wisselmoment 1, helemaal aan het eind van de klim — de zwerver
+        //   verschijnt (nog geen tekst), 2s zichtbaar tot de lift boven aankomt.
         // u=19..38: wisselmoment 2, rond het moment dat de lift boven aankomt — de tekst
         //   verschijnt, blijft daarna zichtbaar tot en met het dalen.
-        if (u < 16) {
+        if (u < 17) {
           welkeFoto = 'zwerver-deur';
         } else if (u < 19) {
           welkeFoto = 'zwerver-zonder';
