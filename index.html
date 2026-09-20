@@ -4100,15 +4100,21 @@ document.addEventListener('DOMContentLoaded', () => {
       // hele lift-cyclus: cyclus 0 = zwerver, cyclus 1 = Pink Panther, cyclus 2 = zwerver,
       // enz. — precies zoals de zwerver-animatie werkte vóórdat de Panther werd
       // toegevoegd, nu simpelweg om en om met een volle cyclus voor de Panther ertussen.
-      const cyclusNr = Math.floor(tTotaal / KOK_CYCLUS_S);
-      const pantherCyclus = (cyclusNr % 2 === 1);
+      // BELANGRIJK: de cyclus-telling voor zwerver/panther-afwisseling moet gebaseerd zijn
+      // op dezelfde tijdas als u (die begint te lopen zodra de lift beneden aankomt, t=7),
+      // niet op de ruwe tTotaal/cyclus-grens (t=38/0). Anders wisselt de pariteit soms
+      // midden in de actiefase van u (rond u=31, dus tijdens het dalen), waardoor een net
+      // begonnen zwerver-cyclus plotseling "omslaat" naar het panter-eindbeeld, of een
+      // panter-cyclus zijn pp-static/pp-gif-fases nooit haalt.
+      const cyclusNr = Math.floor((tTotaal - 7) / KOK_CYCLUS_S);
+      const pantherCyclus = (((cyclusNr % 2) + 2) % 2 === 1);
       let welkeFoto;
       if (u < 18) {
         welkeFoto = 'basis';
       } else if (!pantherCyclus) {
         // Zwerver-cyclus: exact zoals vóór de Panther-toevoeging, nu met de volle 20s
         // (u=18..38) voor zichzelf in plaats van gedeeld met de Panther-fase.
-        if (u < 19) {
+        if (u < 20) {
           welkeFoto = 'zwerver-zonder';
         } else {
           welkeFoto = 'zwerver-met';
