@@ -4082,30 +4082,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof tMs !== 'number') return;
       const t = (tMs / 1000) % KOK_CYCLUS_S; // seconden binnen de 38s pr-kok-duiken-cyclus:
       // 0-7s dalen, 7-19s pauze onder, 19-26s stijgen (7s), 26-38s pauze boven.
-      // Volgorde in de onderste foto-cyclus: basis -> (tijdens de pauze onder, na de rode
-      // waarschuwingsballon) de schreeuwende zwerver-man (eerst zonder, dan met tekst) ->
-      // zwerver-met blijft vervolgens gewoon zichtbaar tijdens de HELE klim naar boven (geen
-      // wissel tijdens de beweging zelf) -> pas zodra de lift boven is aangekomen en heel even
-      // (~1-2s) stilstaat, is het wisselmoment naar de Pink Panther: eerst het statische eerste
-      // beeld (blijft 4s stilstaan), dan de animatie (speelt precies 1x af), die vervolgens
-      // zichtbaar blijft tot de lift weer beneden aankomt. Omdat de Pink Panther-fase over de
-      // cyclusgrens (t=38/0) heen kan lopen, rekenen we in u: een tijdas die op 0 begint zodra
-      // de lift beneden aankomt (t=7) en 38s duurt: u = (t - 7 + 38) % 38.
+      // Volgorde in de onderste foto-cyclus: basis blijft lang staan (rode ballon-fase +
+      // het grootste deel van het stijgen) -> pas heel laat in de klim (vlak voor de top)
+      // verschijnt de schreeuwende zwerver-man (eerst zonder, dan met tekst) -> die blijft
+      // nog even zichtbaar terwijl de lift boven is aangekomen en kort (~1-2s) stilstaat —
+      // dát is het wisselmoment naar de Pink Panther: eerst het statische eerste beeld
+      // (blijft in totaal 4s stilstaan), dan de animatie (speelt precies 1x af), die
+      // vervolgens zichtbaar blijft tot de lift weer beneden aankomt. Omdat de Pink
+      // Panther-fase over de cyclusgrens (t=38/0) heen kan lopen, rekenen we in u: een
+      // tijdas die op 0 begint zodra de lift beneden aankomt (t=7) en 38s duurt:
+      // u = (t - 7 + 38) % 38.
       const u = (t - 7 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
-      // u=0..2   (t=7..9)  : basis (rode ballon fase)
-      // u=2..3   (t=9..10) : zwerver-zonder
-      // u=3..19  (t=10..26): zwerver-met — blijft staan tot en met de hele klim naar boven
-      // u=19..21 (t=26..28): lift wacht boven (~2s) — wisselmoment naar Pink Panther: statisch
-      // u=21..25 (t=28..32): pp-static blijft in totaal 4s stilstaan (19..25 = 6s incl. de
-      //                       eerste 2s wacht-boven, dus de gif start op u=25 = t=32)
-      // u=25..32.3          : pp-gif (7,3s, speelt precies 1x af)
-      // u=32.3..38           : pp-gif-klaar (stilstaand laatste beeld tot lift weer beneden is)
+      // u=0..18   (t=7..25)  : basis — incl. bijna de hele klim, lift is bijna boven
+      // u=18..18.5(t=25..25.5): zwerver-zonder — vlak voor de top bereikt wordt (t=26)
+      // u=18.5..21(t=25.5..28): zwerver-met — laatste stukje klim + de korte stilstand boven
+      // u=21..25  (t=28..32) : pp-static, blijft in totaal 4s stilstaan
+      // u=25..32.3            : pp-gif (7,3s, speelt precies 1x af)
+      // u=32.3..38             : pp-gif-klaar (stilstaand laatste beeld tot lift weer beneden is)
       let welkeFoto;
-      if (u < 2) {
+      if (u < 18) {
         welkeFoto = 'basis';
-      } else if (u < 3) {
+      } else if (u < 18.5) {
         welkeFoto = 'zwerver-zonder';
-      } else if (u < 19) {
+      } else if (u < 21) {
         welkeFoto = 'zwerver-met';
       } else if (u < 25) {
         welkeFoto = 'pp-static';
