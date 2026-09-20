@@ -4093,39 +4093,45 @@ document.addEventListener('DOMContentLoaded', () => {
       // u: een tijdas die op 0 begint zodra de lift beneden aankomt (t=7) en 38s duurt:
       // u = (t - 7 + 38) % 38.
       const u = (t - 7 + KOK_CYCLUS_S) % KOK_CYCLUS_S;
-      // u=0..18  (t=7..25): basis — incl. bijna de hele klim, lift is bijna boven.
-      // u=18..38 (t=25..38/0, 20s): de "actie"-fase — vlak voor de top tot en met het
-      // dalen erna. Op verzoek van gebruiker gaan de schreeuwende zwerver-man en de Pink
-      // Panther niet meer om de beurt in dezelfde lift-beweging, maar om de beurt per
-      // hele lift-cyclus: cyclus 0 = zwerver, cyclus 1 = Pink Panther, cyclus 2 = zwerver,
-      // enz. — precies zoals de zwerver-animatie werkte vóórdat de Panther werd
-      // toegevoegd, nu simpelweg om en om met een volle cyclus voor de Panther ertussen.
-      // BELANGRIJK: de cyclus-telling voor zwerver/panther-afwisseling moet gebaseerd zijn
-      // op dezelfde tijdas als u (die begint te lopen zodra de lift beneden aankomt, t=7),
-      // niet op de ruwe tTotaal/cyclus-grens (t=38/0). Anders wisselt de pariteit soms
-      // midden in de actiefase van u (rond u=31, dus tijdens het dalen), waardoor een net
-      // begonnen zwerver-cyclus plotseling "omslaat" naar het panter-eindbeeld, of een
-      // panter-cyclus zijn pp-static/pp-gif-fases nooit haalt.
+      // BELANGRIJK ONTWERP-INZICHT: het zwevende naamkaartje (.pr-kok-duik-reis) duikt
+      // tijdens de pauze onder (u=0..12, t=7..19) helemaal naar beneden (translateY 108%
+      // van zijn eigen 48%-hoogte) en overlapt daarmee bijna de volledige onderste
+      // foto-helft — dus alles wat je op dat moment aan de foto's verandert, is voor de
+      // gebruiker onzichtbaar. Dát is het unieke wisselmoment: de keuze welke cyclus dit
+      // wordt (zwerver of Pink Panther) én het meteen klaarzetten van het eerste beeld van
+      // die cyclus gebeurt precies op u=0 (lift net beneden aangekomen, kaartje dekt de
+      // foto af) — niet pas later. Zodra de lift begint te stijgen (u=12) en het kaartje
+      // wegschuift, is dat eerste beeld al stabiel aanwezig: geen wissel/knip zichtbaar
+      // tijdens de zichtbare beweging, alleen een "onthulling" van wat al klaarstond.
+      // cyclus 0 = zwerver, cyclus 1 = Pink Panther, cyclus 2 = zwerver, enz. — de
+      // cyclus-telling is gebaseerd op dezelfde tijdas als u (start bij t=7), zodat de
+      // pariteit altijd exact op u=0 wisselt en nooit midden in een fase.
       const cyclusNr = Math.floor((tTotaal - 7) / KOK_CYCLUS_S);
       const pantherCyclus = (((cyclusNr % 2) + 2) % 2 === 1);
+      // u=0..12 (t=7..19, pauze onder): het eerste beeld van deze cyclus staat al klaar,
+      // maar is onzichtbaar (kaartje eroverheen). u=12..38 (26s): dat beeld wordt
+      // "onthuld" zodra het kaartje wegschuift (klim) en blijft/verandert verder zichtbaar
+      // tijdens klim + pauze boven + het dalen erna, tot de volgende pauze onder.
       let welkeFoto;
-      if (u < 18) {
-        welkeFoto = 'basis';
-      } else if (!pantherCyclus) {
-        // Zwerver-cyclus: exact zoals vóór de Panther-toevoeging, nu met de volle 20s
-        // (u=18..38) voor zichzelf in plaats van gedeeld met de Panther-fase.
-        if (u < 20) {
+      if (!pantherCyclus) {
+        // Zwerver-cyclus: het eerste beeld (zonder zwerver, alleen de deur) staat al
+        // klaar vanaf u=0, wordt zichtbaar vanaf u=12 (lift stijgt) en blijft in totaal
+        // 2s zichtbaar (u=12..14) voordat "met tekst" verschijnt, dat de rest van de
+        // cyclus zichtbaar blijft.
+        if (u < 14) {
           welkeFoto = 'zwerver-zonder';
         } else {
           welkeFoto = 'zwerver-met';
         }
       } else {
-        // Panther-cyclus: eerst het statische eerste beeld (blijft in totaal 4s
-        // stilstaan), dan de animatie (speelt precies 1x af, 7,3s), die vervolgens
-        // zichtbaar blijft (stilstaand laatste beeld) tot de lift weer beneden aankomt.
-        if (u < 22) {
+        // Panther-cyclus: het statische eerste beeld staat al klaar vanaf u=0, wordt
+        // zichtbaar vanaf u=12 en blijft in totaal 4s zichtbaar (u=12..16) — exact het
+        // moment dat de lift begint te stijgen tot en met dat stilstaande beeld — daarna
+        // speelt de animatie precies 1x af (7,3s), die vervolgens zichtbaar blijft
+        // (stilstaand laatste beeld) tot de lift weer beneden aankomt.
+        if (u < 16) {
           welkeFoto = 'pp-static';
-        } else if (u < 29.3) {
+        } else if (u < 23.3) {
           welkeFoto = 'pp-gif';
         } else {
           welkeFoto = 'pp-gif-klaar';
