@@ -4108,27 +4108,41 @@ document.addEventListener('DOMContentLoaded', () => {
       // pariteit altijd exact op u=0 wisselt en nooit midden in een fase.
       const cyclusNr = Math.floor((tTotaal - 7) / KOK_CYCLUS_S);
       const pantherCyclus = (((cyclusNr % 2) + 2) % 2 === 1);
-      // u=0..12 (t=7..19, pauze onder): het eerste beeld van deze cyclus staat al klaar,
-      // maar is onzichtbaar (kaartje eroverheen). u=12..38 (26s): dat beeld wordt
-      // "onthuld" zodra het kaartje wegschuift (klim) en blijft/verandert verder zichtbaar
-      // tijdens klim + pauze boven + het dalen erna, tot de volgende pauze onder.
+      // u=0..12 (t=7..19, pauze onder): kaartje ligt over de foto's heen, hierin wordt
+      // bepaald welke cyclus dit wordt (zwerver of panter) en worden alle lagen gereset
+      // zodat straks vanaf de klim de LEGE deur (fotoBasis, de onderste laag, altijd
+      // opacity 1) als eerste zichtbaar wordt — geen actie nodig, dat gebeurt vanzelf
+      // zodra het kaartje wegschuift. u=12..19 (t=19..26, klim, 7s): het kaartje schuift
+      // geleidelijk weg — dít is voor de zwerver-cyclus juist de bedoelde plek voor de
+      // twee zichtbare wisselmomenten (leeg -> zwerver zonder tekst -> zwerver met tekst),
+      // precies zoals je een figuur geleidelijk tevoorschijn ziet komen terwijl de lift
+      // opstijgt. u=19..31 (pauze boven, 12s) en u=31..38 (dalen, 7s): het laatst
+      // ingestelde beeld blijft gewoon staan, geen nieuwe wissels meer, tot de volgende
+      // pauze onder (u=0) alles opnieuw bepaalt.
       let welkeFoto;
       if (!pantherCyclus) {
-        // Zwerver-cyclus: het eerste beeld (zonder zwerver, alleen de deur) staat al
-        // klaar vanaf u=0, wordt zichtbaar vanaf u=12 (lift stijgt) en blijft in totaal
-        // 2s zichtbaar (u=12..14) voordat "met tekst" verschijnt, dat de rest van de
-        // cyclus zichtbaar blijft.
-        if (u < 14) {
+        // Zwerver-cyclus, met 2 zichtbare wisselmomenten tijdens de 7s klim (u=12..19):
+        // u=0..15: de lege deur (fotoBasis) — al vanaf u=0 "onder het kaartje" ingesteld,
+        //   wordt vanaf u=12 geleidelijk zichtbaar naarmate het kaartje wegschuift (3s
+        //   zichtbaar deel: u=12..15).
+        // u=15..19: wisselmoment 1, midden in de klim — de zwerver verschijnt (nog geen
+        //   tekst), 4s zichtbaar tot de lift boven aankomt.
+        // u=19..38: wisselmoment 2, rond het moment dat de lift boven aankomt — de tekst
+        //   verschijnt, blijft daarna zichtbaar tot en met het dalen.
+        if (u < 15) {
+          welkeFoto = 'zwerver-deur';
+        } else if (u < 19) {
           welkeFoto = 'zwerver-zonder';
         } else {
           welkeFoto = 'zwerver-met';
         }
       } else {
-        // Panther-cyclus: het statische eerste beeld staat al klaar vanaf u=0, wordt
-        // zichtbaar vanaf u=12 en blijft in totaal 4s zichtbaar (u=12..16) — exact het
-        // moment dat de lift begint te stijgen tot en met dat stilstaande beeld — daarna
-        // speelt de animatie precies 1x af (7,3s), die vervolgens zichtbaar blijft
-        // (stilstaand laatste beeld) tot de lift weer beneden aankomt.
+        // Panther-cyclus (ongewijzigd t.o.v. de eerder bevestigd goede versie): het
+        // statische eerste beeld staat al klaar vanaf u=0 (onzichtbaar), wordt
+        // geleidelijk zichtbaar tijdens de klim vanaf u=12, en blijft in totaal 4s
+        // zichtbaar (tot u=16) — dan speelt de animatie precies 1x af (7,3s, tot
+        // u=23,3), waarna het stilstaande laatste beeld zichtbaar blijft tot de lift
+        // weer beneden aankomt.
         if (u < 16) {
           welkeFoto = 'pp-static';
         } else if (u < 23.3) {
@@ -4151,7 +4165,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // latere foto als er ooit een tick/fase wordt overgeslagen (bv. tabblad even op
         // de achtergrond, of een trage paint), want opacity wordt alleen aangepast op
         // het moment dat welkeFoto wisselt — niet continu herbevestigd.
-        if (welkeFoto === 'basis') {
+        if (welkeFoto === 'zwerver-deur') {
+          // De lege deur, zonder zwerver — dit is gewoon fotoBasis (de onderste laag,
+          // altijd opacity 1), met alle andere lagen uit. Geen aparte fade nodig: deze
+          // staat al "klaar" sinds u=0 (verborgen onder het kaartje) en wordt simpelweg
+          // steeds duidelijker zichtbaar naarmate het kaartje tijdens de klim wegschuift.
           fotoBasis.style.transition = 'none';
           fotoBasis.style.opacity = '1';
           fotoZonder.style.transition = 'none';
