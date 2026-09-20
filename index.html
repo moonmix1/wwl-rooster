@@ -4121,19 +4121,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // pauze onder (u=0) alles opnieuw bepaalt.
       let welkeFoto;
       if (!pantherCyclus) {
-        // Zwerver-cyclus, met 2 zichtbare wisselmomenten tijdens de 7s klim (u=12..19):
-        // u=0..18: de lege deur (fotoBasis) — al vanaf u=0 "onder het kaartje" ingesteld,
-        //   wordt vanaf u=12 geleidelijk zichtbaar naarmate het kaartje wegschuift (6s
-        //   zichtbaar deel: u=12..18). Dit is het MAXIMUM: nog 1s ruimte laten staan
-        //   voor wisselmoment 1 (zwerver-zonder), anders zou die fase geen moment meer
-        //   zichtbaar zijn vóórdat de lift boven aankomt.
-        // u=18..19: wisselmoment 1, helemaal aan het eind van de klim — de zwerver
-        //   verschijnt (nog geen tekst), 1s zichtbaar tot de lift boven aankomt.
-        // u=19..38: wisselmoment 2, rond het moment dat de lift boven aankomt — de tekst
-        //   verschijnt, blijft daarna zichtbaar tot en met het dalen.
-        if (u < 18) {
-          welkeFoto = 'zwerver-deur';
-        } else if (u < 19) {
+        // Zwerver-cyclus: de lege-deur-tussenstap is verwijderd. Zodra het kaartje
+        // wegschuift tijdens de klim is de zwerver (zonder tekst) meteen zichtbaar,
+        // gevolgd door één wisselmoment naar zwerver-met-tekst.
+        if (u < 19) {
           welkeFoto = 'zwerver-zonder';
         } else {
           welkeFoto = 'zwerver-met';
@@ -4167,25 +4158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // latere foto als er ooit een tick/fase wordt overgeslagen (bv. tabblad even op
         // de achtergrond, of een trage paint), want opacity wordt alleen aangepast op
         // het moment dat welkeFoto wisselt — niet continu herbevestigd.
-        if (welkeFoto === 'zwerver-deur') {
-          // De lege deur, zonder zwerver — dit is gewoon fotoBasis (de onderste laag,
-          // altijd opacity 1), met alle andere lagen uit. Geen aparte fade nodig: deze
-          // staat al "klaar" sinds u=0 (verborgen onder het kaartje) en wordt simpelweg
-          // steeds duidelijker zichtbaar naarmate het kaartje tijdens de klim wegschuift.
-          fotoBasis.style.transition = 'none';
-          fotoBasis.style.opacity = '1';
-          fotoZonder.style.transition = 'none';
-          fotoZonder.style.opacity = '0';
-          fotoMet.style.transition = 'none';
-          fotoMet.style.opacity = '0';
-          fotoPpStatic.style.transition = 'none';
-          fotoPpStatic.style.opacity = '0';
-          fotoPpGif.style.transition = 'none';
-          fotoPpGif.style.opacity = '0';
-          fotoPpGif.removeAttribute('src');
-          fotoPpLaatste.style.transition = 'none';
-          fotoPpLaatste.style.opacity = '0';
-        } else if (welkeFoto === 'zwerver-zonder') {
+        if (welkeFoto === 'zwerver-zonder') {
           fotoBasis.style.transition = 'none';
           fotoBasis.style.opacity = '1';
           fotoMet.style.transition = 'none';
