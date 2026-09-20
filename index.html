@@ -4121,6 +4121,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // een net-gewisselde src eerst kort in de verkeerde positie/grootte toont vóór
         // object-fit is toegepast (de eerdere "sprong"). Alleen de gif krijgt zijn src pas
         // op het moment dat hij moet gaan spelen, zodat 'ie niet allang onzichtbaar loopt.
+        // Alle 6 lagen worden in ELKE tak expliciet gezet (nooit impliciet aan een
+        // eerdere tak overgelaten) — anders kan een laag die in een eerdere fase aan
+        // ging (bv. fotoZonder tijdens zwerver-zonder) blijven "doorschijnen" onder een
+        // latere foto als er ooit een tick/fase wordt overgeslagen (bv. tabblad even op
+        // de achtergrond, of een trage paint), want opacity wordt alleen aangepast op
+        // het moment dat welkeFoto wisselt — niet continu herbevestigd.
         if (welkeFoto === 'basis') {
           fotoBasis.style.transition = 'none';
           fotoBasis.style.opacity = '1';
@@ -4135,7 +4141,37 @@ document.addEventListener('DOMContentLoaded', () => {
           fotoPpGif.removeAttribute('src');
           fotoPpLaatste.style.transition = 'none';
           fotoPpLaatste.style.opacity = '0';
+        } else if (welkeFoto === 'zwerver-zonder') {
+          fotoBasis.style.transition = 'none';
+          fotoBasis.style.opacity = '1';
+          fotoMet.style.transition = 'none';
+          fotoMet.style.opacity = '0';
+          fotoPpStatic.style.transition = 'none';
+          fotoPpStatic.style.opacity = '0';
+          fotoPpGif.style.transition = 'none';
+          fotoPpGif.style.opacity = '0';
+          fotoPpGif.removeAttribute('src');
+          fotoPpLaatste.style.transition = 'none';
+          fotoPpLaatste.style.opacity = '0';
+          fotoZonder.style.transition = 'opacity 2s linear';
+          fotoZonder.style.opacity = '1';
+        } else if (welkeFoto === 'zwerver-met') {
+          fotoBasis.style.transition = 'none';
+          fotoBasis.style.opacity = '1';
+          fotoZonder.style.transition = 'none';
+          fotoZonder.style.opacity = '1';
+          fotoPpStatic.style.transition = 'none';
+          fotoPpStatic.style.opacity = '0';
+          fotoPpGif.style.transition = 'none';
+          fotoPpGif.style.opacity = '0';
+          fotoPpGif.removeAttribute('src');
+          fotoPpLaatste.style.transition = 'none';
+          fotoPpLaatste.style.opacity = '0';
+          fotoMet.style.transition = 'opacity 1s linear';
+          fotoMet.style.opacity = '1';
         } else if (welkeFoto === 'pp-static') {
+          fotoBasis.style.transition = 'none';
+          fotoBasis.style.opacity = '1';
           fotoZonder.style.transition = 'none';
           fotoZonder.style.opacity = '0';
           fotoMet.style.transition = 'none';
@@ -4151,34 +4187,35 @@ document.addEventListener('DOMContentLoaded', () => {
           // Src wordt hier vers gezet (nooit hergebruikt) zodat de gif-animatie altijd
           // gegarandeerd bij frame 1 begint — een <img> met een al eerder geladen gif-src
           // zou anders soms gewoon doorspelen/herhalen i.p.v. opnieuw te starten.
-          fotoPpGif.setAttribute('src', fotoPpGif.getAttribute('data-gif-src'));
-          fotoPpGif.style.transition = 'none';
-          fotoPpGif.style.opacity = '1';
+          fotoBasis.style.transition = 'none';
+          fotoBasis.style.opacity = '1';
+          fotoZonder.style.transition = 'none';
+          fotoZonder.style.opacity = '0';
+          fotoMet.style.transition = 'none';
+          fotoMet.style.opacity = '0';
           fotoPpStatic.style.transition = 'none';
           fotoPpStatic.style.opacity = '0';
           fotoPpLaatste.style.transition = 'none';
           fotoPpLaatste.style.opacity = '0';
-        } else if (welkeFoto === 'pp-gif-klaar') {
-          // De gif heeft zijn ene afspeelbeurt erop zitten — vervang 'm door het stilstaande
-          // laatste beeld, zodat hij niet als loop opnieuw begint.
+          fotoPpGif.setAttribute('src', fotoPpGif.getAttribute('data-gif-src'));
+          fotoPpGif.style.transition = 'none';
+          fotoPpGif.style.opacity = '1';
+        } else {
+          // pp-gif-klaar: de gif heeft zijn ene afspeelbeurt erop zitten — vervang 'm door
+          // het stilstaande laatste beeld, zodat hij niet als loop opnieuw begint.
+          fotoBasis.style.transition = 'none';
+          fotoBasis.style.opacity = '1';
+          fotoZonder.style.transition = 'none';
+          fotoZonder.style.opacity = '0';
+          fotoMet.style.transition = 'none';
+          fotoMet.style.opacity = '0';
+          fotoPpStatic.style.transition = 'none';
+          fotoPpStatic.style.opacity = '0';
           fotoPpGif.style.transition = 'none';
           fotoPpGif.style.opacity = '0';
           fotoPpGif.removeAttribute('src');
           fotoPpLaatste.style.transition = 'none';
           fotoPpLaatste.style.opacity = '1';
-        } else if (welkeFoto === 'zwerver-zonder') {
-          fotoPpGif.style.transition = 'none';
-          fotoPpGif.style.opacity = '0';
-          fotoPpGif.removeAttribute('src');
-          fotoPpLaatste.style.transition = 'none';
-          fotoPpLaatste.style.opacity = '0';
-          fotoPpStatic.style.transition = 'none';
-          fotoPpStatic.style.opacity = '0';
-          fotoZonder.style.transition = 'opacity 2s linear';
-          fotoZonder.style.opacity = '1';
-        } else {
-          fotoMet.style.transition = 'opacity 1s linear';
-          fotoMet.style.opacity = '1';
         }
       }
     });
