@@ -4121,15 +4121,19 @@ document.addEventListener('DOMContentLoaded', () => {
           if (kokVideo.dataset.actief !== '1') {
             kokVideo.dataset.actief = '1';
             kokVideo.currentTime = 0;
-            kokVideo.style.transition = 'none';
-            kokVideo.style.opacity = '1';
             const speelAf = kokVideo.play();
             if (speelAf && speelAf.catch) speelAf.catch(() => {});
+            // Korte fade i.p.v. harde opacity-sprong: voorkomt het merkbare "flitsje"
+            // op het wisselmoment, ook al staan foto en video nu vrijwel identiek
+            // gepositioneerd — een instant opacity-switch blijft een fractie van een
+            // seconde zichtbaar als knip.
+            kokVideo.style.transition = 'opacity 0.3s linear';
+            kokVideo.style.opacity = '1';
           }
         } else {
           if (kokVideo.dataset.actief !== '0') {
             kokVideo.dataset.actief = '0';
-            kokVideo.style.transition = 'none';
+            kokVideo.style.transition = 'opacity 0.3s linear';
             kokVideo.style.opacity = '0';
             kokVideo.pause();
           }
