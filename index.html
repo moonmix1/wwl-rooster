@@ -4123,8 +4123,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!pantherCyclus) {
         // Zwerver-cyclus: de lege-deur-tussenstap is verwijderd. Zodra het kaartje
         // wegschuift tijdens de klim is de zwerver (zonder tekst) meteen zichtbaar,
-        // gevolgd door één wisselmoment naar zwerver-met-tekst.
-        if (u < 19) {
+        // gevolgd door één wisselmoment naar zwerver-met-tekst. Deze cyclus loopt
+        // volledig onafhankelijk van de panther-cyclus (die bij de volgende
+        // panther-beurt gewoon weer vanaf u=0 met zijn eigen tijden begint), dus beide
+        // zwerver-fases mogen ruim de tijd nemen zonder de panter ooit te hinderen.
+        if (u < 28) {
           welkeFoto = 'zwerver-zonder';
         } else {
           welkeFoto = 'zwerver-met';
