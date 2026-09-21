@@ -4133,15 +4133,15 @@ document.addEventListener('DOMContentLoaded', () => {
           welkeFoto = 'zwerver-met';
         }
       } else {
-        // Panther-cyclus (ongewijzigd t.o.v. de eerder bevestigd goede versie): het
-        // statische eerste beeld staat al klaar vanaf u=0 (onzichtbaar), wordt
-        // geleidelijk zichtbaar tijdens de klim vanaf u=12, en blijft in totaal 4s
-        // zichtbaar (tot u=16) — dan speelt de animatie precies 1x af (7,3s, tot
-        // u=23,3), waarna het stilstaande laatste beeld zichtbaar blijft tot de lift
-        // weer beneden aankomt.
-        if (u < 16) {
+        // Panther-cyclus: het statische eerste beeld staat al klaar vanaf u=0
+        // (onzichtbaar), wordt geleidelijk zichtbaar tijdens de klim vanaf u=12, en
+        // blijft nu 3s langer staan dan voorheen (tot u=19, in plaats van u=16) —
+        // de gif begint dus 3s later met afspelen. Daarna speelt de animatie precies
+        // 1x af (7,25s, tot u=26,25), waarna het stilstaande laatste beeld zichtbaar
+        // blijft tot de lift weer beneden aankomt.
+        if (u < 19) {
           welkeFoto = 'pp-static';
-        } else if (u < 23.3) {
+        } else if (u < 26.25) {
           welkeFoto = 'pp-gif';
         } else {
           welkeFoto = 'pp-gif-klaar';
