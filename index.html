@@ -4127,7 +4127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // volledig onafhankelijk van de panther-cyclus (die bij de volgende
         // panther-beurt gewoon weer vanaf u=0 met zijn eigen tijden begint), dus beide
         // zwerver-fases mogen ruim de tijd nemen zonder de panter ooit te hinderen.
-        if (u < 28) {
+        if (u < 23) {
           welkeFoto = 'zwerver-zonder';
         } else {
           welkeFoto = 'zwerver-met';
@@ -4135,13 +4135,13 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         // Panther-cyclus: het statische eerste beeld staat al klaar vanaf u=0
         // (onzichtbaar), wordt geleidelijk zichtbaar tijdens de klim vanaf u=12, en
-        // blijft nu 3s langer staan dan voorheen (tot u=19, in plaats van u=16) —
-        // de gif begint dus 3s later met afspelen. Daarna speelt de animatie precies
-        // 1x af (7,25s, tot u=26,25), waarna het stilstaande laatste beeld zichtbaar
-        // blijft tot de lift weer beneden aankomt.
-        if (u < 19) {
+        // blijft nu in totaal 5s langer staan dan de oorspronkelijke versie (tot
+        // u=21, in plaats van u=16) — de gif begint dus 5s later met afspelen.
+        // Daarna speelt de animatie precies 1x af (7,25s, tot u=28,25), waarna het
+        // stilstaande laatste beeld zichtbaar blijft tot de lift weer beneden aankomt.
+        if (u < 21) {
           welkeFoto = 'pp-static';
-        } else if (u < 26.25) {
+        } else if (u < 28.25) {
           welkeFoto = 'pp-gif';
         } else {
           welkeFoto = 'pp-gif-klaar';
