@@ -4117,7 +4117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // geknipt op 17s (u=2..19) en het laatste frame daarvan staat al stabiel (opgeruimde
       // keuken, geen pasje/man meer) — dus geen probleem als 'ie precies op tijd eindigt.
       if (kokVideo) {
-        if (pantherCyclus && u >= 2 && u < 19) {
+        if (!pantherCyclus && u >= 2 && u < 19) {
           if (kokVideo.dataset.actief !== '1') {
             kokVideo.dataset.actief = '1';
             kokVideo.currentTime = 0;
