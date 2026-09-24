@@ -919,6 +919,10 @@
   @media (hover: hover) and (pointer: fine) {
     .pr-nav-btn { display: inline-flex !important; align-items: center; }
   }
+  /* Balk in het kok-vak op desktop 1px hoger dan op mobiel (daar precies goed, hier nog een kiertje) */
+  @media (hover: hover) and (pointer: fine) {
+    .pr-eenmans-wrap .pr-kok-balk { top: calc(48% + 0.49px) !important; }
+  }
   /* ── GROOT SCHERM: rooster compacter zodat het past zonder scrollen ── */
   @media (min-width: 1100px) and (min-height: 700px) {
     .content { padding: 10px 20px; }
@@ -5546,7 +5550,7 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
                 <img id="pr-kok-foto-pp-gif-${h}" data-gif-src="data:image/gif;base64,${KOK_FOTO_PP_GIF}" alt="" style="width:100%;height:100%;object-fit:contain;background:#0a3d5c;display:block;position:absolute;top:0;left:0;opacity:0">
                 <img id="pr-kok-foto-pp-laatste-${h}" src="data:image/jpeg;base64,${KOK_FOTO_PP_LAATSTE}" alt="" style="width:100%;height:100%;object-fit:contain;background:#0a3d5c;display:block;position:absolute;top:0;left:0;opacity:0">
               </div>
-              <div style="position:absolute;top:calc(48% + 1.49px);left:0;width:100%;height:calc(3.31% + 1.51px);background:#888;z-index:2"></div>
+              <div class="pr-kok-balk" style="position:absolute;top:calc(48% + 1.49px);left:0;width:100%;height:calc(3.31% + 1.51px);background:#888;z-index:2"></div>
               <span class="pr-kok-duik-reis pr-kok-duik-reis-gestart" data-kok-id="${h}" style="position:absolute;left:0;right:0;top:0;height:48%;display:block;z-index:5">
                 <span class="pr-kok-zwevend-kaartje" style="display:block;height:100%">
                   <div class="${statusKlasse(status1, info.label1)}" style="height:100%;box-sizing:border-box;padding:2px 6px;border-radius:4px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center">
