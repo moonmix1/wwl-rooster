@@ -4341,6 +4341,27 @@ document.addEventListener('DOMContentLoaded', () => {
             fotoPpLaatste.style.opacity = '1';
           }
         }
+      } else {
+        // Video-cyclus (plaaggeest of wc): onder hoeft niks te laten zien — het kaartje
+        // bedekt het toch het grootste deel van de tijd. Geen overgehouden panter- of
+        // zwerver-beeld: gewoon leeg/neutraal (kale deur), één keer gezet bij het begin
+        // van deze cyclus.
+        if (fotoBasis.dataset.huidig !== 'leeg') {
+          fotoBasis.dataset.huidig = 'leeg';
+          fotoBasis.style.transition = 'none';
+          fotoBasis.style.opacity = '1';
+          fotoZonder.style.transition = 'none';
+          fotoZonder.style.opacity = '0';
+          fotoMet.style.transition = 'none';
+          fotoMet.style.opacity = '0';
+          fotoPpStatic.style.transition = 'none';
+          fotoPpStatic.style.opacity = '0';
+          fotoPpGif.style.transition = 'none';
+          fotoPpGif.style.opacity = '0';
+          fotoPpGif.removeAttribute('src');
+          fotoPpLaatste.style.transition = 'none';
+          fotoPpLaatste.style.opacity = '0';
+        }
       }
     });
   }, 150);
