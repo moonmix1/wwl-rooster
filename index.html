@@ -4175,13 +4175,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-      // wc hoort bij de zwerver-duik (!pantherCyclus). Klaarzetten zodra het (iets
-      // vervroegde) "aan de beurt"-moment aanbreekt; pas echt afspelen 1s nadat de
-      // lift daadwerkelijk beneden is (u>=1 van de echte zwerver-duik).
-      stuurVideo(kokVideoWc, !topWantsPanther, !pantherCyclus && u < 19, 1);
-      // plaaggeest hoort bij de panter-duik (pantherCyclus); zelfde principe, mag
-      // (net als voorheen) direct beginnen met afspelen zodra de lift beneden is.
-      stuurVideo(kokVideoPg, topWantsPanther, pantherCyclus && u < 19, 0);
+      // wc hoort bij de zwerver-duik. Klaarzetten zodra het (iets vervroegde) "aan
+      // de beurt"-moment aanbreekt; pas echt afspelen 1s nadat de lift daadwerkelijk
+      // beneden is (u>=1 van de echte zwerver-duik).
+      stuurVideo(kokVideoWc, topWantsPanther, pantherCyclus && u < 19, 1);
+      // plaaggeest hoort bij de panter-duik; zelfde principe, mag (net als voorheen)
+      // direct beginnen met afspelen zodra de lift beneden is.
+      stuurVideo(kokVideoPg, !topWantsPanther, !pantherCyclus && u < 19, 0);
       // u=0..12 (t=7..19, pauze onder): kaartje ligt over de foto's heen, hierin wordt
       // bepaald welke cyclus dit wordt (zwerver of panter) en worden alle lagen gereset
       // zodat straks vanaf de klim de LEGE deur (fotoBasis, de onderste laag, altijd
