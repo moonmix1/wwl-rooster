@@ -4144,18 +4144,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // BELANGRIJK: het kaartje bedekt het BOVENSTE vak (waar de video staat) precies
       // wanneer het BOVEN geparkeerd staat (de pauze boven, u=19..31) — niet wanneer
       // het beneden is. Beneden (u=0..19) is het bovenste vak juist vrij/zichtbaar.
-      // Het omwisselen welke video aan de beurt is, moet dus ergens MIDDEN in die
-      // pauze-boven gebeuren (bv. u=25) — ver van de zichtbare u=0-grens, die voor de
-      // ONDERSTE foto's wél het veilige wisselmoment is (daar is het net andersom).
-      // "topWantsPanther" is daarom een iets vroeger kantelende versie van
-      // pantherCyclus: voor u<25 gewoon de huidige waarde, voor u>=25 alvast de
-      // waarde die zo dadelijk (bij de volgende u=0) toch gaat gelden. Zo is er maar
-      // 1 omslagmoment (bij u=25, verstopt achter het kaartje) en NOOIT een gat.
-      // topWants is nu 3-waardig (0=wc, 1=man-met-borden, 2=plaaggeest) i.p.v. een
-      // boolean, maar met exact hetzelfde principe: voor u<25 de huidige duik, voor
-      // u>=25 (midden in de pauze boven, verstopt achter het kaartje) alvast de
-      // waarde van de eerstvolgende duik.
-      const topWants = u < 25 ? cyclusIdx : (cyclusIdx + 1) % 3;
+      // BELANGRIJKE CORRECTIE t.o.v. een eerdere versie: het boven-vak vroeg (tijdens
+      // de pauze boven, u=25) al laten omschakelen naar de VOLGENDE duik léék een
+      // onzichtbare wissel, maar het bovenvak wordt daarna, tijdens het dalen
+      // (u=31..38), juist weer zichtbaar — en op dát moment is de ONDERSTE helft nog
+      // gewoon de HUIDIGE duik (die wisselt pas op u=0 van de volgende duik). Dat gaf
+      // dus 7 seconden lang de verkeerde combinatie te zien (bijv. zwerver onder +
+      // de video van de VOLGENDE duik boven). Daarom nu simpel en synchroon: boven
+      // wisselt op exact hetzelfde moment als onder (u=0), zodat ze altijd bij
+      // dezelfde duik horen. Dat geeft op dat moment wel een harde knip op de video
+      // (i.p.v. verstopt achter het kaartje), maar wel altijd de juiste koppeling.
+      const topWants = cyclusIdx;
       function stuurVideo(video, ditIsAanDeBeurt, eigenDuikWerkelijkBezig, speelVertragingU) {
         if (!video) return;
         if (ditIsAanDeBeurt) {
