@@ -4082,6 +4082,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const fotoPpStatic = document.getElementById('pr-kok-foto-pp-static-' + kokId);
       const fotoPpGif = document.getElementById('pr-kok-foto-pp-gif-' + kokId);
       const fotoPpLaatste = document.getElementById('pr-kok-foto-pp-laatste-' + kokId);
+      const fotoKeuken = document.getElementById('pr-kok-foto-keuken-' + kokId);
       const kokVideoPlaaggeest = document.getElementById('pr-kok-video-' + kokId);
       const kokVideoWc = document.getElementById('pr-kok-video-wc-' + kokId);
       if (!fotoBasis || !fotoZonder || !fotoMet || !fotoPpStatic || !fotoPpGif || !fotoPpLaatste) return;
@@ -4124,6 +4125,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // op zijn laatste beeld staan — geen reset, geen wissel).
       const magBijwerken = (((cyclusNr % 2) + 2) % 2 === 0);
       const pantherCyclus = (((Math.floor(cyclusNr / 2) % 2) + 2) % 2 === 0);
+      // Keukenfoto (met blauw kaartje) hoort alleen bij het panter+plaaggeest-paar —
+      // zodra zwerver of wc aan de beurt komt, moet 'ie helemaal weg zijn (niet blijven
+      // hangen), niet pas als er een video overheen komt.
+      if (fotoKeuken) {
+        const keukenZichtbaar = pantherCyclus ? '1' : '0';
+        if (fotoKeuken.dataset.zichtbaar !== keukenZichtbaar) {
+          fotoKeuken.dataset.zichtbaar = keukenZichtbaar;
+          fotoKeuken.style.transition = 'opacity 0.6s linear';
+          fotoKeuken.style.opacity = keukenZichtbaar;
+        }
+      }
       // Video boven de deur-scène (bovenste helft van de cel, waar anders alleen de
       // statische keukenfoto met het blauwe betaalkaartje staat — die foto blijft de hele
       // tijd de ONDERSTE laag, permanent aanwezig, en schemert door zodra geen van beide
@@ -4342,14 +4354,14 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } else {
-        // Video-cyclus (plaaggeest of wc): onder hoeft niks te laten zien — het kaartje
-        // bedekt het toch het grootste deel van de tijd. Geen overgehouden panter- of
-        // zwerver-beeld: gewoon leeg/neutraal (kale deur), één keer gezet bij het begin
-        // van deze cyclus.
+        // Video-cyclus (plaaggeest of wc): onder helemaal niks — geen kale-deur-foto,
+        // geen overgehouden panter/zwerver-beeld. Volledig transparant (de donkere
+        // wrapper-achtergrond schemert door), één keer gezet bij het begin van deze
+        // cyclus.
         if (fotoBasis.dataset.huidig !== 'leeg') {
           fotoBasis.dataset.huidig = 'leeg';
           fotoBasis.style.transition = 'none';
-          fotoBasis.style.opacity = '1';
+          fotoBasis.style.opacity = '0';
           fotoZonder.style.transition = 'none';
           fotoZonder.style.opacity = '0';
           fotoMet.style.transition = 'none';
@@ -5624,7 +5636,7 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
             // lopen met de foto's.
             cellHtml = `<div class="pr-eenmans-wrap" style="position:relative;margin:-4px -8px;height:calc(100% + 8px);width:calc(100% + 16px);border-radius:3px;overflow:hidden;box-sizing:border-box;background:#12202e">
               <div style="position:absolute;top:0;left:0;width:100%;height:50%;overflow:hidden;z-index:1">
-                <img src="data:image/jpeg;base64,${KOK_FOTO_5}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0">
+                <img id="pr-kok-foto-keuken-${h}" src="data:image/jpeg;base64,${KOK_FOTO_5}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:1">
                 <video id="pr-kok-video-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0">
                   <source src="data:video/webm;base64,${KOK_FOTO_5_VIDEO_WEBM}" type="video/webm">
                   <source src="data:video/mp4;base64,${KOK_FOTO_5_VIDEO}" type="video/mp4">
