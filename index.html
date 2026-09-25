@@ -915,6 +915,10 @@
     outline-offset: 0;
     border-radius: 10px;
   }
+  /* ── DESKTOP (muis, geen touch): blader-knoppen tonen; op mobiel/touch blijft alles zoals het was (swipen) ── */
+  @media (hover: hover) and (pointer: fine) {
+    .pr-nav-btn { display: inline-flex !important; align-items: center; }
+  }
   /* ── GROOT SCHERM: rooster compacter zodat het past zonder scrollen ── */
   @media (min-width: 1100px) and (min-height: 700px) {
     .content { padding: 10px 20px; }
