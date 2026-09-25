@@ -4069,6 +4069,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // op een gedeelde globale starttijd (elke cel kan op een ander moment verschijnen,
   // bv. na scrollen of na het wisselen van weeknavigatie).
   const KOK_CYCLUS_S = 38;
+  // Zichtbaarheids-poort: als er meerdere 1-mans-kok-cellen tegelijk in de DOM staan
+  // (bv. meerdere koks in dezelfde week), moest de browser voorheen ALTIJD alle
+  // video's van ALLE cellen tegelijk laden/afspelen, ook die (ver) buiten beeld —
+  // dat kan op een telefoon/laptop tot merkbare haperingen leiden (een video die
+  // "blijft hangen" of te laat op gang komt) zonder dat de volgorde zelf fout is.
+  // Met een IntersectionObserver onthouden we per cel of 'ie momenteel zichtbaar is;
+  // cellen buiten beeld slaan we in de tick hieronder gewoon over (geen video-laden,
+  // geen .play()) en hun 4 video's worden meteen gepauzeerd — zodra de cel weer in
+  // beeld komt, zet de normale tick-logica alles gewoon weer correct klaar (dezelfde
+  // "aan de beurt"-reset als bij een eerste render), dus geen speciale hersteldcode nodig.
+  const prKokZichtbaar = new WeakSet();
+  const prKokObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) prKokZichtbaar.add(entry.target);
+      else prKokZichtbaar.delete(entry.target);
+    });
+  }, { rootMargin: '200px 0px' }) : null;
+  const prKokGeobserveerd = new WeakSet();
   setInterval(() => {
     document.querySelectorAll('.pr-kok-duik-reis-gestart').forEach(reis => {
       const kokId = reis.getAttribute('data-kok-id');
@@ -4083,6 +4101,32 @@ document.addEventListener('DOMContentLoaded', () => {
       const kokVideoMan = document.getElementById('pr-kok-video-man-' + kokId);
       const kokVideoFiets = document.getElementById('pr-kok-video-fiets-' + kokId);
       if (!fotoBasis || !fotoZonder || !fotoMet || !fotoPpStatic || !fotoPpGif || !fotoPpLaatste) return;
+      const prWrap = reis.closest('.pr-eenmans-wrap');
+      if (prKokObserver && prWrap) {
+        if (!prKokGeobserveerd.has(prWrap)) {
+          prKokGeobserveerd.add(prWrap);
+          prKokObserver.observe(prWrap);
+          // Nieuw geobserveerde cel: tot de eerste observer-callback binnen is, behandelen
+          // we 'm als zichtbaar (voorkomt dat 'ie op de allereerste tick meteen onterecht
+          // gepauzeerd wordt voordat de observer kans heeft gehad te melden dat 'ie in beeld is).
+          prKokZichtbaar.add(prWrap);
+        }
+        if (!prKokZichtbaar.has(prWrap)) {
+          // Buiten beeld: alle 4 video's stilzetten en hun "aan de beurt"-status resetten,
+          // zodat ze bij terugkomst in beeld gewoon weer vanaf hun eigen beginpunt opstarten
+          // (dataset.actief/gestart op '0' zetten is voldoende, de gewone tick-logica hieronder
+          // pakt de rest weer op zodra 'ie weer draait).
+          [kokVideoWc, kokVideoPg, kokVideoMan, kokVideoFiets].forEach(v => {
+            if (v && v.dataset.actief === '1') {
+              v.dataset.actief = '0';
+              v.dataset.gestart = '0';
+              v.pause();
+              v.style.opacity = '0';
+            }
+          });
+          return;
+        }
+      }
       const anims = reis.getAnimations ? reis.getAnimations() : [];
       const anim = anims.find(a => a.animationName === 'pr-kok-duiken');
       if (!anim) return;
