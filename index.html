@@ -4231,9 +4231,38 @@ document.addEventListener('DOMContentLoaded', () => {
             // tick (150ms later) het gewoon opnieuw probeert — in plaats van na één
             // mislukte poging voorgoed te blijven hangen op het stilstaande eerste beeld.
             video.dataset.gestart = '1';
+            video.dataset.laatsteTijd = String(video.currentTime || 0);
+            video.dataset.laatsteTijdTs = String(Date.now());
             const speelAf = video.play();
             if (speelAf && speelAf.catch) {
               speelAf.catch(() => { video.dataset.gestart = '0'; });
+            }
+          } else if (eigenDuikWerkelijkBezig && video.dataset.gestart === '1' && !video.paused) {
+            // TWEEDE FIX: soms "lukt" .play() zonder fout (geen rejection om op te
+            // vangen), maar blijft currentTime toch gewoon stilstaan op een oud/leeg
+            // frame — precies het gedrag dat gebruiker meldde (fiets speelt eenmalig
+            // na refresh, daarna alleen nog het 1e beeld van de blauwe auto, zonder
+            // dat er ooit een foutmelding was). Daarom bewaken we hier actief of
+            // currentTime daadwerkelijk vooruitgaat; blijft 'ie >800ms steken, dan
+            // forceren we een verse .load() + herstart, alsof de video net opnieuw
+            // aan de beurt is gekomen.
+            const huidigeTijd = video.currentTime || 0;
+            const vorigeTijd = parseFloat(video.dataset.laatsteTijd || '0');
+            const vorigeTs = parseInt(video.dataset.laatsteTijdTs || '0', 10);
+            const nuTs = Date.now();
+            if (huidigeTijd > vorigeTijd + 0.05) {
+              // Vooruitgang gezien: gewoon de laatst-bekende stand bijwerken.
+              video.dataset.laatsteTijd = String(huidigeTijd);
+              video.dataset.laatsteTijdTs = String(nuTs);
+            } else if (vorigeTs && (nuTs - vorigeTs) > 800) {
+              // Al meer dan 800ms geen enkele vooruitgang: vastgelopen. Forceer
+              // een volledige herstart (net als bij het opnieuw aan de beurt komen).
+              video.load();
+              video.currentTime = 0;
+              video.pause();
+              video.dataset.gestart = '0';
+              video.dataset.laatsteTijd = '0';
+              video.dataset.laatsteTijdTs = String(nuTs);
             }
           }
           // Geen geforceerde stop ergens halverwege: als de video nog speelt wanneer
