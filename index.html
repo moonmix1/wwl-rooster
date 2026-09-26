@@ -5724,22 +5724,22 @@ const KOK_FOTO_1 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUF
             // lopen met de foto's.
             cellHtml = `<div class="pr-eenmans-wrap" style="position:relative;margin:-4px -8px;height:calc(100% + 8px);width:calc(100% + 16px);border-radius:3px;overflow:hidden;box-sizing:border-box;background:#12202e">
               <div style="position:absolute;top:0;left:0;width:100%;height:50%;overflow:hidden;z-index:1;background:#12202e">
-                <video id="pr-kok-video-wc-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0">
+                <video id="pr-kok-video-wc-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0;transform:translateZ(0);will-change:opacity">
                   <source src="data:video/webm;base64,${KOK_FOTO_WC_VIDEO_WEBM}" type="video/webm">
                   <source src="data:video/mp4;base64,${KOK_FOTO_WC_VIDEO}" type="video/mp4">
                 </video>
-                <video id="pr-kok-video-pg-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0">
+                <video id="pr-kok-video-pg-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0;transform:translateZ(0);will-change:opacity">
                   <source src="data:video/webm;base64,${KOK_FOTO_5_VIDEO_WEBM}" type="video/webm">
                   <source src="data:video/mp4;base64,${KOK_FOTO_5_VIDEO}" type="video/mp4">
                 </video>
-                <video id="pr-kok-video-man-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0">
+                <video id="pr-kok-video-man-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center calc(50% - 2px);display:block;position:absolute;top:0;left:0;opacity:0;transform:translateZ(0);will-change:opacity">
                   <source src="data:video/webm;base64,${KOK_FOTO_MAN_VIDEO_WEBM}" type="video/webm">
                   <source src="data:video/mp4;base64,${KOK_FOTO_MAN_VIDEO}" type="video/mp4">
                 </video>
               </div>
               <div style="position:absolute;top:50%;left:0;width:100%;height:50%;overflow:hidden;z-index:1">
                 <img id="pr-kok-foto-basis-${h}" data-huidig="basis" src="data:image/jpeg;base64,${KOK_FOTO_6}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center calc(100% + 6px);display:block;position:absolute;top:0;left:0;opacity:1">
-                <video id="pr-kok-video-fiets-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center bottom;display:block;position:absolute;top:0;left:0;opacity:0">
+                <video id="pr-kok-video-fiets-${h}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;object-position:center bottom;display:block;position:absolute;top:0;left:0;opacity:0;transform:translateZ(0);will-change:opacity">
                   <source src="data:video/webm;base64,${KOK_FOTO_FIETS_VIDEO_WEBM}" type="video/webm">
                   <source src="data:video/mp4;base64,${KOK_FOTO_FIETS_VIDEO}" type="video/mp4">
                 </video>
