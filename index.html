@@ -4224,9 +4224,16 @@ document.addEventListener('DOMContentLoaded', () => {
             video.style.opacity = '1';
           }
           if (eigenDuikWerkelijkBezig && video.dataset.gestart !== '1' && u >= speelVertragingU) {
+            // Zelfherstellend: als .play() mislukt (bijvoorbeeld omdat de video vlak
+            // hiervoor .load() heeft gedaan en de browser nog niet klaar is met opnieuw
+            // decoderen), zetten we dataset.gestart terug naar '0' zodat de eerstvolgende
+            // tick (150ms later) het gewoon opnieuw probeert — in plaats van na één
+            // mislukte poging voorgoed te blijven hangen op het stilstaande eerste beeld.
             video.dataset.gestart = '1';
             const speelAf = video.play();
-            if (speelAf && speelAf.catch) speelAf.catch(() => {});
+            if (speelAf && speelAf.catch) {
+              speelAf.catch(() => { video.dataset.gestart = '0'; });
+            }
           }
           // Geen geforceerde stop ergens halverwege: als de video nog speelt wanneer
           // de lift alweer terugkeert, loopt hij gewoon door; anders blijft het
