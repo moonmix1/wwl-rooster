@@ -1363,6 +1363,7 @@ async function gaNaarActueleWeek() {
   await weekALaadVoorOffset();
   renderWeek();
   prWeekOffset = 0;
+  prBewaarWeekOffset();
   renderPapierRooster();
 }
 
@@ -5187,7 +5188,18 @@ function luisterPriveOverzichtLive() {
 
 // ── PAPIEREN-STIJL ROOSTER (rooster B) ──────────────────────────────────
 let actiefRoosterType = 'a';
+// prWeekOffset wordt bewaard in localStorage, zodat een hard refresh (of het opnieuw
+// openen van de site) je op dezelfde week laat staan i.p.v. altijd terug te springen
+// naar de actuele week — dit was eerder al eens opgelost geweest maar bleek (opnieuw)
+// niet meer aanwezig te zijn in dit bestand.
 let prWeekOffset = 0; // 0 = deze week, -1 = vorige, +1 = volgende
+try {
+  const prOpgeslagenOffset = parseInt(localStorage.getItem('wwl_pr_week_offset'), 10);
+  if (!isNaN(prOpgeslagenOffset)) prWeekOffset = prOpgeslagenOffset;
+} catch(e) {}
+function prBewaarWeekOffset() {
+  try { localStorage.setItem('wwl_pr_week_offset', String(prWeekOffset)); } catch(e) {}
+}
 const PR_DAGEN = ["Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag","Maandag"];
 const PR_DIENSTEN = ['dag', 'avond', 'nacht'];
 
@@ -5311,6 +5323,7 @@ function prWeekNavigeer(richting) {
   if (nieuweOffset < prMinimaleWeekOffset()) return;
   if (nieuweOffset < -MAX_SCROLL_WEKEN_TERUG || nieuweOffset > MAX_SCROLL_WEKEN_VOORUIT) return;
   prWeekOffset = nieuweOffset;
+  prBewaarWeekOffset();
   renderPapierRooster();
 }
 
@@ -6737,6 +6750,7 @@ async function prKopieerNaarOffset(doelOffset) {
 
   papierRoosterCache[doelWeekKey] = doelData;
   prWeekOffset = doelOffset;
+  prBewaarWeekOffset();
   await renderPapierRooster(doelData);
 }
 
