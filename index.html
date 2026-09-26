@@ -4206,6 +4206,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Net aan de beurt gekomen (meestal tijdens de pauze boven, dus onzichtbaar
             // achter het kaartje): meteen klaarzetten op het eerste beeld, stilstaand,
             // zodat het al "klaarstaat" terwijl de lift boven is.
+            // BELANGRIJKE FIX: na een lange tijd verborgen/gepauzeerd (de andere 2 van de
+            // 3 duiken duren samen zo'n 76s) kan de browser de al-gedecodeerde beeldbuffer
+            // van deze video hebben opgeruimd (geheugendruk, vooral op een pagina met veel
+            // ingebouwde video's). Zonder expliciete .load() hervat een hernieuwde .play()
+            // dan soms stilzwijgend op die verouderde/lege buffer — het element toont enkel
+            // nog het allereerste (stilstaande) beeld, ook al meldt de browser zelf dat 'ie
+            // "speelt". Een expliciete .load() vlak voor de nieuwe beurt dwingt een verse
+            // decodering vanaf de data-bron af, zodat de video gegarandeerd weer echt
+            // afspeelt in plaats van op een stilstaand eerste beeld te blijven hangen.
+            video.load();
             video.dataset.actief = '1';
             video.dataset.gestart = '0';
             video.currentTime = 0;
