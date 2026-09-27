@@ -4200,27 +4200,44 @@ document.addEventListener('DOMContentLoaded', () => {
       // dezelfde duik horen. Dat geeft op dat moment wel een harde knip op de video
       // (i.p.v. verstopt achter het kaartje), maar wel altijd de juiste koppeling.
       const topWants = cyclusIdx;
-      function stuurVideo(video, ditIsAanDeBeurt, eigenDuikWerkelijkBezig, speelVertragingU) {
+      // Vroeg-laadsignaal (magAlLaden): welke top-video er als VOLGENDE aan de beurt
+      // komt, al zodra het bovenvak zeker bedekt is (u>=19, lift is net gaan stijgen)
+      // — dus ruim voordat topWants zelf op u=0 omslaat. Dit geeft de video zo'n 19
+      // seconden om (opnieuw) te decoderen vóór hij op u=1 van zijn eigen duik al moet
+      // spelen, in plaats van de eerdere ~1 seconde (van u=0 tot speelVertragingU=1).
+      const topWordtStraks = u >= 19 ? (cyclusIdx + 1) % 3 : -1;
+      function stuurVideo(video, ditIsAanDeBeurt, eigenDuikWerkelijkBezig, speelVertragingU, magAlLaden) {
         if (!video) return;
+        // VROEGE-LAADFIX: het "klaarzetten" (.load() + reset) hoeft niet te wachten tot
+        // het moment dat de video ook echt zichtbaar/actief hoort te worden (u=0 van zijn
+        // eigen duik) — dat gaf te weinig tijd (~1s, tot speelVertragingU) tussen het
+        // herstarten van de decodering en de .play()-poging, waardoor de video op t=8
+        // soms nog niet klaar was en het stilstaande eerste beeld bleef staan tot de
+        // stall-detectie het (te laat, pas rond het stijgen) oppikte. magAlLaden mag al
+        // veel eerder waar worden (nog tijdens het verborgen zijn achter het kaartje),
+        // zodat het .load() ruim vóór het echte startmoment gebeurt, zonder de
+        // zichtbaarheid (opacity, gekoppeld aan ditIsAanDeBeurt) te vervroegen.
+        if (magAlLaden && video.dataset.geladenVoor !== 'ja') {
+          video.dataset.geladenVoor = 'ja';
+          video.load();
+          video.dataset.gestart = '0';
+          video.currentTime = 0;
+          video.pause();
+        }
         if (ditIsAanDeBeurt) {
           if (video.dataset.actief !== '1') {
-            // Net aan de beurt gekomen (meestal tijdens de pauze boven, dus onzichtbaar
-            // achter het kaartje): meteen klaarzetten op het eerste beeld, stilstaand,
-            // zodat het al "klaarstaat" terwijl de lift boven is.
-            // BELANGRIJKE FIX: na een lange tijd verborgen/gepauzeerd (de andere 2 van de
-            // 3 duiken duren samen zo'n 76s) kan de browser de al-gedecodeerde beeldbuffer
-            // van deze video hebben opgeruimd (geheugendruk, vooral op een pagina met veel
-            // ingebouwde video's). Zonder expliciete .load() hervat een hernieuwde .play()
-            // dan soms stilzwijgend op die verouderde/lege buffer — het element toont enkel
-            // nog het allereerste (stilstaande) beeld, ook al meldt de browser zelf dat 'ie
-            // "speelt". Een expliciete .load() vlak voor de nieuwe beurt dwingt een verse
-            // decodering vanaf de data-bron af, zodat de video gegarandeerd weer echt
-            // afspeelt in plaats van op een stilstaand eerste beeld te blijven hangen.
-            video.load();
+            // Net aan de beurt gekomen (opacity/zichtbaarheid) — de eigenlijke .load()
+            // is dankzij magAlLaden hierboven vermoedelijk al veel eerder gebeurd, dus
+            // hier alleen nog zichtbaar maken. Was magAlLaden om wat voor reden niet
+            // (tijdig) gezet, dan doet dit blok het alsnog als vangnet.
+            if (video.dataset.geladenVoor !== 'ja') {
+              video.load();
+              video.dataset.gestart = '0';
+              video.currentTime = 0;
+              video.pause();
+            }
             video.dataset.actief = '1';
-            video.dataset.gestart = '0';
-            video.currentTime = 0;
-            video.pause();
+            video.dataset.geladenVoor = 'nee';
             video.style.transition = 'none';
             video.style.opacity = '1';
           }
@@ -4272,6 +4289,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (video.dataset.actief !== '0') {
             video.dataset.actief = '0';
             video.dataset.gestart = '0';
+            video.dataset.geladenVoor = 'nee';
             video.style.transition = 'none';
             video.style.opacity = '0';
             video.pause();
@@ -4281,14 +4299,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // wc hoort bij de zwerver-duik. Klaarzetten zodra het (iets vervroegde) "aan
       // de beurt"-moment aanbreekt; pas echt afspelen 1s nadat de lift daadwerkelijk
       // beneden is (u>=1 van de echte zwerver-duik).
-      stuurVideo(kokVideoWc, topWants === 0, isZwerverDuik && u < 19, 1);
+      stuurVideo(kokVideoWc, topWants === 0, isZwerverDuik && u < 19, 1, topWordtStraks === 0);
       // man-met-borden hoort bij de fiets-duik; zelfde principe als wc (1s vertraging
       // na het echt beneden komen van de lift, in lijn met hoe de andere top-video's
       // werken).
-      stuurVideo(kokVideoMan, topWants === 1, isFietsDuik && u < 19, 1);
+      stuurVideo(kokVideoMan, topWants === 1, isFietsDuik && u < 19, 1, topWordtStraks === 1);
       // plaaggeest hoort bij de panter-duik; zelfde principe, mag (net als voorheen)
       // direct beginnen met afspelen zodra de lift beneden is.
-      stuurVideo(kokVideoPg, topWants === 2, isPantherDuik && u < 19, 0);
+      stuurVideo(kokVideoPg, topWants === 2, isPantherDuik && u < 19, 0, topWordtStraks === 2);
       // Fiets-video (ONDER, i.p.v. een foto): zelfde stuurVideo-mechaniek als de
       // boven-video's, maar dan voor het onderste vak. BELANGRIJKE FIX: het onderste
       // vak is verstopt achter het kaartje tijdens u=0..19 (pauze onder + begin van het
