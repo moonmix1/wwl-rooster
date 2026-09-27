@@ -4290,11 +4290,18 @@ document.addEventListener('DOMContentLoaded', () => {
       // direct beginnen met afspelen zodra de lift beneden is.
       stuurVideo(kokVideoPg, topWants === 2, isPantherDuik && u < 19, 0);
       // Fiets-video (ONDER, i.p.v. een foto): zelfde stuurVideo-mechaniek als de
-      // boven-video's, maar dan voor het onderste vak — klaar/stilstaand zodra de
-      // fiets-duik aan de beurt is (dus al verstopt achter het kaartje tijdens de
-      // pauze onder), en 1s na het echt beneden komen van de lift begint 'ie af te
-      // spelen. Geen geforceerde stop: speelt/houdt gewoon door tot de duik voorbij is.
-      stuurVideo(kokVideoFiets, isFietsDuik, isFietsDuik && u < 19, 1);
+      // boven-video's, maar dan voor het onderste vak. BELANGRIJKE FIX: het onderste
+      // vak is verstopt achter het kaartje tijdens u=0..19 (pauze onder + begin van het
+      // stijgen) — precies het venster waarin voorheen (per ongeluk) al "u < 19" het
+      // startsein gaf. Daardoor begon de fiets-video te laden/spelen terwijl hij nog
+      // volledig onzichtbaar was, tegelijk met de man-video boven, en liep hij tegen de
+      // tijd dat hij eindelijk zichtbaar werd (na u=19) al een tijd te spelen/pauzeren —
+      // vermoedelijk de oorzaak van het freeze-op-1e-frame-gedrag. Het onderste vak is
+      // pas weer zichtbaar vanaf u=19 (lift begint te stijgen, kaartje schuift omhoog).
+      // Daarom nu: pas "aan de beurt" vanaf u>=19, en (net als de boven-video's) 1s
+      // vertraging na dat moment, dus u>=20 voor het echte startsein. Geen geforceerde
+      // stop: speelt/houdt gewoon door tot de duik voorbij is.
+      stuurVideo(kokVideoFiets, isFietsDuik, isFietsDuik && u >= 19, 20);
       // u=0..12 (t=7..19, pauze onder): kaartje ligt over de foto's heen, hierin wordt
       // bepaald welke cyclus dit wordt (zwerver of panter) en worden alle lagen gereset
       // zodat straks vanaf de klim de LEGE deur (fotoBasis, de onderste laag, altijd
