@@ -4196,16 +4196,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // gewoon de HUIDIGE duik (die wisselt pas op u=0 van de volgende duik). Dat gaf
       // dus 7 seconden lang de verkeerde combinatie te zien (bijv. zwerver onder +
       // de video van de VOLGENDE duik boven). Daarom nu simpel en synchroon: boven
-      // wisselt op exact hetzelfde moment als onder (u=0), zodat ze altijd bij
-      // dezelfde duik horen. Dat geeft op dat moment wel een harde knip op de video
-      // (i.p.v. verstopt achter het kaartje), maar wel altijd de juiste koppeling.
-      const topWants = cyclusIdx;
-      // Vroeg-laadsignaal (magAlLaden): welke top-video er als VOLGENDE aan de beurt
-      // komt, al zodra het bovenvak zeker bedekt is (u>=19, lift is net gaan stijgen)
-      // — dus ruim voordat topWants zelf op u=0 omslaat. Dit geeft de video zo'n 19
-      // seconden om (opnieuw) te decoderen vóór hij op u=1 van zijn eigen duik al moet
-      // spelen, in plaats van de eerdere ~1 seconde (van u=0 tot speelVertragingU=1).
-      const topWordtStraks = u >= 19 ? (cyclusIdx + 1) % 3 : -1;
+      // BELANGRIJKE CORRECTIE (2e ronde): topWants wisselde voorheen op exact hetzelfde
+      // moment als onder (u=0, lift komt BENEDEN aan) — maar het robuuste, objectieve
+      // trigger-moment voor het bovenvak moet het moment zijn dat de lift BOVEN aankomt
+      // (u=19, hij begint dan te stijgen en dekt het bovenvak op dat exacte moment af).
+      // Dat is ook de enige manier om de huidige boven-video op een hard, voorspelbaar
+      // moment te stoppen/verstoppen (i.p.v. hem willekeurig te laten doorlopen/hangen
+      // tot een volgende, niet-gesynchroniseerde gebeurtenis). Dus: voor u=0..19 (lift
+      // net beneden t/m vlak voor stijgen) toont boven nog de HUIDIGE duik; vanaf u=19
+      // (lift bereikt boven / begint te stijgen) schakelt boven al hard door naar de
+      // VOLGENDE duik — ruim (19s) voordat die volgende duik zelf op u=0 "officieel"
+      // begint en op u=1 pas echt gaat spelen. Dat geeft die volgende video meteen ook
+      // 19 seconden om rustig te (her)laden voordat hij moet spelen, in plaats van de
+      // eerdere ~1 seconde.
+      const topWants = u < 19 ? cyclusIdx : (cyclusIdx + 1) % 3;
       function stuurVideo(video, ditIsAanDeBeurt, eigenDuikWerkelijkBezig, speelVertragingU, magAlLaden) {
         if (!video) return;
         // VROEGE-LAADFIX: het "klaarzetten" (.load() + reset) hoeft niet te wachten tot
@@ -4299,14 +4303,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // wc hoort bij de zwerver-duik. Klaarzetten zodra het (iets vervroegde) "aan
       // de beurt"-moment aanbreekt; pas echt afspelen 1s nadat de lift daadwerkelijk
       // beneden is (u>=1 van de echte zwerver-duik).
-      stuurVideo(kokVideoWc, topWants === 0, isZwerverDuik && u < 19, 1, topWordtStraks === 0);
+      stuurVideo(kokVideoWc, topWants === 0, isZwerverDuik && u < 19, 1);
       // man-met-borden hoort bij de fiets-duik; zelfde principe als wc (1s vertraging
       // na het echt beneden komen van de lift, in lijn met hoe de andere top-video's
       // werken).
-      stuurVideo(kokVideoMan, topWants === 1, isFietsDuik && u < 19, 1, topWordtStraks === 1);
+      stuurVideo(kokVideoMan, topWants === 1, isFietsDuik && u < 19, 1);
       // plaaggeest hoort bij de panter-duik; zelfde principe, mag (net als voorheen)
       // direct beginnen met afspelen zodra de lift beneden is.
-      stuurVideo(kokVideoPg, topWants === 2, isPantherDuik && u < 19, 0, topWordtStraks === 2);
+      stuurVideo(kokVideoPg, topWants === 2, isPantherDuik && u < 19, 0);
       // Fiets-video (ONDER, i.p.v. een foto): zelfde stuurVideo-mechaniek als de
       // boven-video's, maar dan voor het onderste vak. BELANGRIJKE FIX: het onderste
       // vak is verstopt achter het kaartje tijdens u=0..19 (pauze onder + begin van het
