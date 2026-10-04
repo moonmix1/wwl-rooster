@@ -4312,10 +4312,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // na het echt beneden komen van de lift, in lijn met hoe de andere top-video's
       // werken).
       stuurVideo(kokVideoMan, topWants === 1, isFietsDuik && u < 19, 1);
-      // douche hoort bij de douche-duik (tussen fiets en panter); i.t.t. wc/man geen
-      // vertraging — moet onmiddellijk vanaf het trigger-moment (lift net beneden, u=0)
-      // spelen, geen stilstaand beginbeeld.
-      stuurVideo(kokVideoDouche, topWants === 2, isDoucheDuik && u < 19, 0);
+      // douche hoort bij de douche-duik (tussen fiets en panter), maar i.t.t. wc/man/
+      // plaaggeest (die starten zodra de lift ONDER aankomt, u=0/1) moet douche pas
+      // beginnen met spelen op het moment dat de lift BOVEN vertrekt en begint te dalen
+      // (u=31) — net zoals de fiets-video in het ondervak al werkt. Op dat moment is het
+      // bovenvak nog bedekt (tot u=38, einde van het dalen), dus de video speelt al een
+      // paar seconden voordat 'ie zichtbaar wordt, precies zoals bij fiets. ditIsAanDeBeurt
+      // (topWants===2, laden/zichtbaarheid) blijft ongewijzigd — alleen het moment waarop
+      // .play() wordt aangeroepen (eigenDuikWerkelijkBezig + speelVertragingU) verschuift
+      // van u=0/1 naar u=31.
+      stuurVideo(kokVideoDouche, topWants === 2, isDoucheDuik && u >= 31, 31);
       // plaaggeest hoort bij de panter-duik; zelfde principe, mag (net als voorheen)
       // direct beginnen met afspelen zodra de lift beneden is.
       stuurVideo(kokVideoPg, topWants === 3, isPantherDuik && u < 19, 0);
