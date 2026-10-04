@@ -4315,13 +4315,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // douche hoort bij de douche-duik (tussen fiets en panter), maar i.t.t. wc/man/
       // plaaggeest (die starten zodra de lift ONDER aankomt, u=0/1) moet douche pas
       // beginnen met spelen op het moment dat de lift BOVEN vertrekt en begint te dalen
-      // (u=31) — net zoals de fiets-video in het ondervak al werkt. Op dat moment is het
-      // bovenvak nog bedekt (tot u=38, einde van het dalen), dus de video speelt al een
-      // paar seconden voordat 'ie zichtbaar wordt, precies zoals bij fiets. ditIsAanDeBeurt
-      // (topWants===2, laden/zichtbaarheid) blijft ongewijzigd — alleen het moment waarop
-      // .play() wordt aangeroepen (eigenDuikWerkelijkBezig + speelVertragingU) verschuift
-      // van u=0/1 naar u=31.
-      stuurVideo(kokVideoDouche, topWants === 2, isDoucheDuik && u >= 31, 31);
+      // (u=31) — net zoals de fiets-video in het ondervak al werkt. BELANGRIJKE FIX:
+      // topWants===2 (dus "douche is aan de beurt" qua zichtbaarheid) wordt al waar
+      // tijdens u=19..38 van de VORIGE cyclus (de fiets-duik, cyclusIdx=1) — topWants
+      // loopt immers 1 duik op cyclusIdx vooruit. Op dat moment is isDoucheDuik (dat
+      // hoort bij cyclusIdx===2, pas de volgende cyclus) nog gewoon false, dus
+      // "isDoucheDuik && u>=31" werd binnen die hele u=19..38-periode nooit waar en de
+      // video startte nooit — hij bleef eeuwig op het stilstaande eerste frame staan.
+      // Daarom hier, net als bij fiets zelf (isFietsDuik && u>=19), de voorwaarde op de
+      // VORIGE cyclus se duik-vlag baseren (isFietsDuik), niet op isDoucheDuik.
+      stuurVideo(kokVideoDouche, topWants === 2, isFietsDuik && u >= 31, 31);
       // plaaggeest hoort bij de panter-duik; zelfde principe, mag (net als voorheen)
       // direct beginnen met afspelen zodra de lift beneden is.
       stuurVideo(kokVideoPg, topWants === 3, isPantherDuik && u < 19, 0);
