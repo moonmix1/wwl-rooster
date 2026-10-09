@@ -4330,10 +4330,14 @@ document.addEventListener('DOMContentLoaded', () => {
       stuurVideo(kokVideoDouche, topWants === 2, isFietsDuik && u >= 31, 31);
       // plaaggeest hoort bij de panter-duik; zelfde principe, mag (net als voorheen)
       // direct beginnen met afspelen zodra de lift beneden is.
-      // Bekeuring-duik (NIEUW — tussen douche en panter): gewone systeem, net als
-      // wc/man/plaaggeest — schakelt bij lift-boven (u=0/1), geen speciale
-      // onmiddellijke-start zoals bij douche/fiets nodig.
-      stuurVideo(kokVideoBekeuring, topWants === 3, isBekeuringDuik && u < 19, 1);
+      // Bekeuring-duik (tussen douche en panter): net als douche en fiets moet dit
+      // beeld ONMIDDELLIJK afspelen vanaf het triggermoment (lift vertrekt boven,
+      // u=31) — geen stilstaand beginbeeld en geen speelVertragingU van 1s (dat was
+      // sowieso een beginnersfout, nu overal verder intact gelaten waar het al werkt,
+      // maar hier dus niet toegepast). Zelfde cross-cycle-fix als bij douche: topWants
+      // wordt al waar tijdens de VORIGE cyclus (douche, cyclusIdx=2), dus de
+      // eigen-duik-vlag moet op isDoucheDuik gebaseerd zijn, niet op isBekeuringDuik.
+      stuurVideo(kokVideoBekeuring, topWants === 3, isDoucheDuik && u >= 31, 31);
       stuurVideo(kokVideoPg, topWants === 4, isPantherDuik && u < 19, 0);
       // Fiets-video (ONDER, i.p.v. een foto): zelfde stuurVideo-mechaniek als de
       // boven-video's, maar dan voor het onderste vak. BELANGRIJKE FIX: het onderste
