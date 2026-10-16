@@ -4360,7 +4360,15 @@ document.addEventListener('DOMContentLoaded', () => {
       // cross-cycle-fix nodig, isBekeuringDuik is hier direct bruikbaar. Moet
       // ONMIDDELLIJK spelen zodra de lift beneden vertrekt (u=0, geen stilstaand
       // beginbeeld, geen speelVertragingU-vertraging) — vandaar speelVertragingU=0.
-      stuurVideo(kokVideoVoordeur, isBekeuringDuik, isBekeuringDuik, 0);
+      // BELANGRIJKE FIX: zonder magAlLaden wordt deze video pas geladen op het moment
+      // dat 'ie ook daadwerkelijk aan de beurt komt (u=0) — en met speelVertragingU=0
+      // wordt diezelfde tick ook meteen .play() geprobeerd, dus de browser krijgt geen
+      // tijd om te decoderen. Resultaat: de video "start" technisch al, maar toont pas
+      // laat in zijn eigen duik het eerste echt afgespeelde beeld (precies het gemelde
+      // "pas zichtbaar als de video bijna afgelopen is"). Daarom hier, net als bij
+      // douche/bekeuring boven, al tijdens de VORIGE duik (douche, vanaf u=19 — ruim op
+      // tijd, zodra het kaartje weer omhoog begint te schuiven) laten voorladen.
+      stuurVideo(kokVideoVoordeur, isBekeuringDuik, isBekeuringDuik, 0, isDoucheDuik && u >= 19);
       // u=0..12 (t=7..19, pauze onder): kaartje ligt over de foto's heen, hierin wordt
       // bepaald welke cyclus dit wordt (zwerver of panter) en worden alle lagen gereset
       // zodat straks vanaf de klim de LEGE deur (fotoBasis, de onderste laag, altijd
