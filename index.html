@@ -4357,18 +4357,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // stilstaande voordeurfoto die anders ook tijdens deze duik getoond zou worden,
       // net zoals bij douche nog wél het geval is): dit onderste vak wisselt, anders dan
       // het bovenvak (topWants), gewoon synchroon met cyclusIdx op u=0 — dus geen
-      // cross-cycle-fix nodig, isBekeuringDuik is hier direct bruikbaar. Moet
-      // ONMIDDELLIJK spelen zodra de lift beneden vertrekt (u=0, geen stilstaand
-      // beginbeeld, geen speelVertragingU-vertraging) — vandaar speelVertragingU=0.
-      // BELANGRIJKE FIX: zonder magAlLaden wordt deze video pas geladen op het moment
-      // dat 'ie ook daadwerkelijk aan de beurt komt (u=0) — en met speelVertragingU=0
-      // wordt diezelfde tick ook meteen .play() geprobeerd, dus de browser krijgt geen
-      // tijd om te decoderen. Resultaat: de video "start" technisch al, maar toont pas
-      // laat in zijn eigen duik het eerste echt afgespeelde beeld (precies het gemelde
-      // "pas zichtbaar als de video bijna afgelopen is"). Daarom hier, net als bij
-      // douche/bekeuring boven, al tijdens de VORIGE duik (douche, vanaf u=19 — ruim op
-      // tijd, zodra het kaartje weer omhoog begint te schuiven) laten voorladen.
-      stuurVideo(kokVideoVoordeur, isBekeuringDuik, isBekeuringDuik, 0, isDoucheDuik && u >= 19);
+      // cross-cycle-fix nodig, isBekeuringDuik is hier direct bruikbaar.
+      // BELANGRIJKE FIX (2e ronde): het onderste vak zit van u=0 tot u=12 nog volledig
+      // verstopt achter het zwevende naamkaartje (zie het "BELANGRIJK ONTWERP-INZICHT"
+      // hierboven) — exact dezelfde reden waarom de fiets-video hieronder pas vanaf
+      // u>=19 (zijn eigen duik, cyclusIdx=1, iets andere tijdlijn) als "werkelijk bezig"
+      // geldt. Met speelVertragingU=0 begon deze video dus al bij u=0 onzichtbaar te
+      // spelen, en was-ie tegen de tijd dat het kaartje wegschoof (u=12, bijna een derde
+      // van de ~20s video) al bijna afgelopen — vandaar het gemelde "alleen de laatste
+      // seconden zichtbaar". Nu start de video pas ECHT (speelVertragingU=12) op het
+      // moment dat het kaartje wegschuift en het vak weer zichtbaar wordt, zodat je 'm
+      // vanaf zijn eigen eerste frame ziet. Voorladen (magAlLaden) gebeurt nog steeds
+      // ruim eerder, tijdens de voorgaande duik (douche, vanaf u=19), zodat er bij u=12
+      // geen laadvertraging meer optreedt.
+      stuurVideo(kokVideoVoordeur, isBekeuringDuik, isBekeuringDuik && u >= 12, 12, isDoucheDuik && u >= 19);
       // u=0..12 (t=7..19, pauze onder): kaartje ligt over de foto's heen, hierin wordt
       // bepaald welke cyclus dit wordt (zwerver of panter) en worden alle lagen gereset
       // zodat straks vanaf de klim de LEGE deur (fotoBasis, de onderste laag, altijd
